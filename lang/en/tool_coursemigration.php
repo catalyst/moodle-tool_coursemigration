@@ -25,6 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['coursemigration:migration'] = 'Course migration';
+$string['coursemigration:migrate'] = 'Course migration';
 $string['pluginname'] = 'Course migration';
 $string['privacy:metadata'] = 'Course migration does not store any personal data';
