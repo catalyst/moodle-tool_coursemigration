@@ -20,7 +20,6 @@ namespace tool_coursemigration;
  * The backup test class.
  *
  * @package     tool_coursemigration
- * @category    test
  * @copyright   2023 Catalyst IT
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
