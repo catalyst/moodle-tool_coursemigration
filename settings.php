@@ -26,10 +26,54 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage('tool_coursemigration_settings', new lang_string('pluginname', 'tool_coursemigration'));
 
     // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
     if ($ADMIN->fulltree) {
-        // TODO: Define actual plugin settings page and add it to the tree - {@link https://docs.moodle.org/dev/Admin_settings}.
+        $settings = new admin_settingpage('tool_coursemigration_settings', new lang_string('generalsettings', 'admin'));
+
+        $settings->add(new admin_setting_heading('tool_coursemigration/backup',
+            new lang_string('settings:backup', 'tool_coursemigration'), ''));
+
+        $settings->add(new admin_setting_configtext('tool_coursemigration/destinationwsurl',
+            get_string('settings:destinationwsurl', 'tool_coursemigration'),
+            get_string('settings:destinationwsurldesc', 'tool_coursemigration'),
+            '', PARAM_URL));
+
+        $settings->add(new admin_setting_configtext('tool_coursemigration/wstoken',
+            get_string('settings:wstoken', 'tool_coursemigration'),
+            get_string('settings:wstokendesc', 'tool_coursemigration'),
+            '', PARAM_ALPHANUMEXT));
+
+        $settings->add(new admin_setting_heading('tool_coursemigration/restore',
+            new lang_string('settings:restore', 'tool_coursemigration'), ''));
+
+        $settings->add(new admin_settings_coursecat_select('tool_coursemigration/defaultcategory',
+            get_string('settings:defaultcategory', 'tool_coursemigration'),
+            get_string('settings:defaultcategorydesc', 'tool_coursemigration'), 1));
+
+        $settings->add(new admin_setting_configcheckbox('tool_coursemigration/hiddencourse',
+            get_string('settings:hiddencourse', 'tool_coursemigration'),
+            get_string('settings:hiddencoursedesc', 'tool_coursemigration'),
+            0));
+
+        $settings->add(new admin_setting_configcheckbox('tool_coursemigration/successfuldelete',
+            get_string('settings:successfuldelete', 'tool_coursemigration'),
+            get_string('settings:successfuldeletedesc', 'tool_coursemigration'),
+            0));
+
+        $settings->add(new admin_setting_configcheckbox('tool_coursemigration/faildelete',
+            get_string('settings:faildelete', 'tool_coursemigration'),
+            get_string('settings:faildeletedesc', 'tool_coursemigration'),
+            0));
+
+        $settings->add(new admin_setting_heading('tool_coursemigration/storage',
+            new lang_string('settings:storage', 'tool_coursemigration'), ''));
+
+//        WIP
+//        $settings->add(new tool_coursemigration_storage('saveto'));
+//        $settings->add(new tool_coursemigration_storage('restorefrom'));
+
+        $ADMIN->add('tools', new admin_category('coursemigration', get_string('pluginname', 'tool_coursemigration')));
+        $ADMIN->add('coursemigration', $settings);
     }
 }
