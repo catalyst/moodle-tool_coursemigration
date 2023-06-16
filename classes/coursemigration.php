@@ -19,7 +19,7 @@ namespace tool_coursemigration;
 use core\persistent;
 
 /**
- * Bento box persistent class.
+ * coursemigration persistent class.
  *
  * @package    tool_coursemigration
  * @author     Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
