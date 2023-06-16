@@ -20,7 +20,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
-        <KEY NAME="destinationcategoryid" TYPE="foreign" FIELDS="courseid" REFTABLE="course_categories" REFFIELDS="id"/>
+        <KEY NAME="destinationcategoryid" TYPE="foreign" FIELDS="destinationcategoryid" REFTABLE="course_categories" REFFIELDS="id"/>
         <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
