@@ -27,4 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['coursemigration:migrate'] = 'Course migration';
 $string['pluginname'] = 'Course migration';
-$string['privacy:metadata'] = 'Course migration does not store any personal data';
+$string['privacy:metadata:tool_coursemigration'] = 'Data relating users for the tool coursemigration plugin';
+$string['privacy:metadata:tool_coursemigration:action'] = 'The action type for course migration';
+$string['privacy:metadata:tool_coursemigration:courseid'] = 'The source/destination courseid';
+$string['privacy:metadata:tool_coursemigration:destinationcategoryid'] = 'The destination categoryid';
+$string['privacy:metadata:tool_coursemigration:usermodified'] = 'The ID of the user who modified the record';
