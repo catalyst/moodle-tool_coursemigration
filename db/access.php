@@ -27,13 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
 
-    'tool/coursemigration:migrate' => [
+    'tool/coursemigration:restorecourse' => [
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS,
         'captype' => 'write',
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => [
-            'manager' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-        ],
-        'clonepermissionsfrom' => 'moodle/site:backup',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [],
     ],
 ];
