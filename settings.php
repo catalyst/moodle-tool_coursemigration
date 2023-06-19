@@ -28,9 +28,9 @@ defined('MOODLE_INTERNAL') || die();
 if ($hassiteconfig) {
 
     // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
-    if ($ADMIN->fulltree) {
-        $settings = new admin_settingpage('tool_coursemigration_settings', new lang_string('generalsettings', 'admin'));
+    $settings = new admin_settingpage('tool_coursemigration_settings', new lang_string('generalsettings', 'admin'));
 
+    if ($ADMIN->fulltree) {
         $settings->add(new admin_setting_heading('tool_coursemigration/backup',
             new lang_string('settings:backup', 'tool_coursemigration'), ''));
 
@@ -69,11 +69,13 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_heading('tool_coursemigration/storage',
             new lang_string('settings:storage', 'tool_coursemigration'), ''));
 
-//        WIP
-//        $settings->add(new tool_coursemigration_storage('saveto'));
-//        $settings->add(new tool_coursemigration_storage('restorefrom'));
+        // WIP
+        // $settings->add(new tool_coursemigration_storage('saveto'));
+        // $settings->add(new tool_coursemigration_storage('restorefrom'));
 
-        $ADMIN->add('tools', new admin_category('coursemigration', get_string('pluginname', 'tool_coursemigration')));
-        $ADMIN->add('coursemigration', $settings);
     }
+
+    $ADMIN->add('tools', new admin_category('coursemigration', get_string('pluginname', 'tool_coursemigration')));
+    $ADMIN->add('coursemigration', $settings);
+
 }
