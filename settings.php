@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 if ($hassiteconfig) {
 
     // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
+    $pluginname = get_string('pluginname', 'tool_coursemigration');
+
     $settings = new admin_settingpage('tool_coursemigration_settings', new lang_string('generalsettings', 'admin'));
 
     if ($ADMIN->fulltree) {
@@ -77,5 +79,11 @@ if ($hassiteconfig) {
 
     $ADMIN->add('tools', new admin_category('coursemigration', get_string('pluginname', 'tool_coursemigration')));
     $ADMIN->add('coursemigration', $settings);
+
+    // Section for uploading CSV.
+    $ADMIN->add('coursemigration', new admin_externalpage('coursemigrationupload',
+            get_string('coursemigrationupload', 'tool_coursemigration'),
+            new moodle_url('/admin/tool/coursemigration/uploadcourses.php'))
+    );
 
 }

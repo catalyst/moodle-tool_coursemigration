@@ -47,3 +47,16 @@ $string['settings:successfuldeletedesc'] = 'If enabled, the backup will be delet
 $string['settings:faildelete'] = 'Delete failed backups';
 $string['settings:faildeletedesc'] = 'If enabled, the backup will be deleted after a failed restore.';
 $string['settings:storage'] = 'Storage';
+$string['csvdelimiter'] = 'CSV delimiter';
+$string['csvdelimiter_help'] = 'CSV delimiter of the CSV file.';
+$string['encoding'] = 'Encoding';
+$string['encoding_help'] = 'Select the character encoding used for the data. (The standard encoding is UTF-8.) If the wrong encoding is selected by mistake, it will be noticeable when previewing the data for import.';
+$string['coursemigrationupload'] = 'Upload course list';
+$string['pluginname_help'] = 'Upload a list of courses as a CSV file that will be migrated to the remote instance as defined in the plugin settings';
+$string['csvfile'] = 'CSV file';
+$string['csvfile_help'] = 'The format of the CSV file is as follows:
+
+* Each line of the file contains one record.
+* Each record is a series of data in any order separated by commas or other standard delimiters.
+* CSV fields that needs to be supported: id (course id), url (url to a course so we could get course id from url), destination category id, destination category id number, destination category path.
+* One of id or url should  AND one of category id, category id number, category path should be in the file to pass validation.';
