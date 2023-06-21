@@ -15,17 +15,21 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * List of Web Services for the plugin.
  *
  * @package     tool_coursemigration
  * @copyright   2023 Catalyst IT
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_coursemigration';
-$plugin->release = '0.1.0';
-$plugin->version = 2023062100;
-$plugin->requires = 2020061500;
-$plugin->maturity = MATURITY_BETA;
+$functions = [
+    'tool_coursemigration_request_restore' => [
+        'classname' => 'tool_coursemigration\external\request_restore',
+        'methodname' => 'execute',
+        'description' => 'Request a restore ',
+        'type' => 'write',
+        'capabilities' => 'tool/coursemigration:restorecourse',
+        'ajax' => false,
+    ],
+];
