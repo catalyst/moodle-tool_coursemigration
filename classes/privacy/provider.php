@@ -47,7 +47,7 @@ class provider implements \core_privacy\local\metadata\provider,
                 'action' => 'privacy:metadata:tool_coursemigration:action',
                 'courseid' => 'privacy:metadata:tool_coursemigration:courseid',
                 'destinationcategoryid' => 'privacy:metadata:tool_coursemigration:destinationcategoryid',
-                'usermodified' => 'privacy:metadata:local_bentobuilder_bentobox:usermodified'
+                'usermodified' => 'privacy:metadata:tool_coursemigration:usermodified'
             ],
             'privacy:metadata:tool_coursemigration');
         return $collection;

@@ -87,6 +87,7 @@ class coursemigration extends persistent {
             ],
             'courseid' => [
                 'type' => PARAM_INT,
+                'default' => 0,
             ],
             'destinationcategoryid' => [
                 'type' => PARAM_INT,
