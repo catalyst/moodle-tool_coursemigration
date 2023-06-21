@@ -109,7 +109,7 @@ class request_restore_test extends externallib_advanced_testcase {
     }
 
     /**
-     * Test request_restore without permissions.
+     * Test request_restore with permissions.
      */
     public function test_request_restore_with_permissions() {
         $this->resetAfterTest();
@@ -140,5 +140,38 @@ class request_restore_test extends externallib_advanced_testcase {
         $this->assertEquals('test_filename.txt', $record->get('filename'));
         $this->assertEquals(null, $record->get('error'));
         $this->assertEquals($user->id, $record->get('usermodified'));
+    }
+
+    /**
+     * Test request_restore falls back to default category.
+     */
+    public function test_request_restore_falls_back_to_default_category() {
+        $this->resetAfterTest();
+
+        $this->setAdminUser();
+
+        $this->assertSame(0, coursemigration::count_records());
+        $category = $this->getDataGenerator()->create_category();
+        set_config('defaultcategory', $category->id, 'tool_coursemigration');
+
+        // Workaround to be able to call external_api::call_external_function.
+        $_POST['sesskey'] = sesskey();
+
+        $response = external_api::call_external_function('tool_coursemigration_request_restore', [
+            'filename' => 'test_filename.txt',
+            'categoryid' => 7777,
+        ]);
+
+        $this->verify_success($response);
+
+        $this->assertEquals(1, coursemigration::count_records());
+        $record = coursemigration::get_record(['destinationcategoryid' => $category->id]);
+
+        $this->assertEquals(coursemigration::ACTION_RESTORE, $record->get('action'));
+        $this->assertEquals(0, $record->get('courseid'));
+        $this->assertEquals($category->id, $record->get('destinationcategoryid'));
+        $this->assertEquals(coursemigration::STATUS_NOT_STARTED, $record->get('status'));
+        $this->assertEquals('test_filename.txt', $record->get('filename'));
+        $this->assertEquals(null, $record->get('error'));
     }
 }
