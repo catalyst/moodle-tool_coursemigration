@@ -26,6 +26,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['coursemigration:restorecourse'] = 'Restore courses';
+$string['destinationcategory'] = 'Destination category';
+$string['filename'] = 'Filename';
 $string['pluginname'] = 'Course migration';
 $string['privacy:metadata:tool_coursemigration'] = 'Data relating users for the tool coursemigration plugin';
 $string['privacy:metadata:tool_coursemigration:action'] = 'The action type for course migration';
@@ -73,3 +75,5 @@ $string['returnmessages'] = 'Errors in CSV file: {$a->errorcount}<br\>
 Total rows: {$a->rowcount}<br\>
 Success: {$a->success}<br\>
 Failed: {$a->failed}<br\>';
+$string['timecreated'] = 'Time created';
+$string['timemodified'] = 'Time modified';
