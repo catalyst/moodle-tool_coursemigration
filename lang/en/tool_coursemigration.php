@@ -54,6 +54,7 @@ $string['encoding_help'] = 'Select the character encoding used for the data. (Th
 $string['coursemigrationupload'] = 'Upload course list';
 $string['pluginname_help'] = 'Upload a list of courses as a CSV file that will be migrated to the remote instance as defined in the plugin settings';
 $string['csvfile'] = 'CSV file';
+$string['missing_column'] = 'CSV file must include one of {$a->columnlist} as column headings';
 $string['csvfile_help'] = 'The format of the CSV file is as follows:
 
 * Each line of the file contains one record.

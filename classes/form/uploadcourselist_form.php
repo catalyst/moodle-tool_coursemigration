@@ -48,9 +48,9 @@ class uploadcourselist_form extends \moodleform {
         $mform->addElement('html', '<p>'.get_string('pluginname_help', 'tool_coursemigration').'</p>');
 
         // Insert a File picker element.
-        $mform->addElement('filepicker', 'csvfile', get_string('file'));
+        $mform->addElement('filepicker', 'csvfile', get_string('file'), null, ['accepted_types' => '.csv']);
         $mform->addHelpButton('csvfile', 'csvfile', 'tool_coursemigration');
-        $mform->addRule('csvfile', null, 'required', null, 'client');
+        $mform->addRule('csvfile', null, 'required');
 
         $choices = \csv_import_reader::get_delimiter_list();
         $mform->addElement('select', 'delimiter_name', get_string('csvdelimiter', 'tool_coursemigration'), $choices);
@@ -83,10 +83,7 @@ class uploadcourselist_form extends \moodleform {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        if (empty($data['csvfile'])) {
-            $errors['csvfile'] = get_string('uploadcsvfilerequired', 'tool_uploadenrolmentmethods');
-        }
-
+        // Add form validation here.
         return $errors;
     }
 }

@@ -35,6 +35,7 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'tool_coursemigration'));
 
 echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('coursemigrationupload', 'tool_coursemigration'));
 
 list($status, $message) = uploadcourselist::display_upload_courses_form();
 
