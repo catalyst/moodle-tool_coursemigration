@@ -22,7 +22,9 @@ require_once($CFG->libdir . '/tablelib.php');
 
 use moodle_url;
 use table_sql;
+use stdClass;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\helper;
 use renderable;
 
 /**
@@ -35,16 +37,22 @@ use renderable;
 class coursemigration_table extends table_sql implements renderable {
 
     /**
+     * A list of filters to be applied to the sql query.
+     * @var stdClass
+     */
+    protected $filters;
+
+    /**
      * Sets up the table.
      *
      * @param moodle_url $url Url where this table is displayed.
+     * @param stdClass $filters
      * @param int $pagesize Number of bento boxes to display per page. 0 means display all.
      */
-    public function __construct(moodle_url $url, int $pagesize = 0) {
+    public function __construct(moodle_url $url, stdClass $filters, int $pagesize = 0) {
         parent::__construct('coursemigration_table');
 
         $this->define_columns([
-            'id',
             'action',
             'course',
             'destinationcategory',
@@ -53,11 +61,9 @@ class coursemigration_table extends table_sql implements renderable {
             'error',
             'usermodified',
             'timecreated',
-            'timemodified',
         ]);
 
         $this->define_headers([
-            get_string('idnumber'),
             get_string('action'),
             get_string('course'),
             get_string('destinationcategory', 'tool_coursemigration'),
@@ -66,7 +72,6 @@ class coursemigration_table extends table_sql implements renderable {
             get_string('error'),
             get_string('user'),
             get_string('timecreated', 'tool_coursemigration'),
-            get_string('timemodified', 'tool_coursemigration'),
         ]);
 
         $this->collapsible(false);
@@ -76,6 +81,7 @@ class coursemigration_table extends table_sql implements renderable {
         $this->pagesize = $pagesize;
         $this->is_downloadable(true);
         $this->define_baseurl($url);
+        $this->filters = $filters;
     }
 
     /**
@@ -85,121 +91,138 @@ class coursemigration_table extends table_sql implements renderable {
      * @param bool $useinitialsbar do you want to use the initials bar
      */
     public function query_db($pagesize, $useinitialsbar = false) {
+        global $DB;
+        $sql = 'SELECT tc.*, u.username, c.fullname coursename, cc.name categoryname
+                  FROM {tool_coursemigration} tc
+             LEFT JOIN {user} u ON tc.usermodified = u.id
+             LEFT JOIN {course} c ON tc.courseid = c.id
+             LEFT JOIN {course_categories} cc ON tc.destinationcategoryid = cc.id';
+        $where = [];
+        $params = [];
+        foreach ($this->filters as $field => $value) {
+            switch ($field) {
+                case 'action':
+                case 'status':
+                    if ($value >= 0) {
+                        $where[] = 'tc.' . $field . ' = :' .$field;
+                    }
+                    break;
+                case 'datefrom':
+                    if ($value > 0) {
+                        $where[] = 'tc.timecreated >= :' .$field;
+                    }
+                    break;
+                case 'datetill':
+                    if ($value > 0) {
+                        $where[] = 'tc.timecreated <= :' . $field;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            $params[$field] = $value;
+        }
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
         if (!empty($pagesize)) {
-            $total = coursemigration::count_records();
+            $countsql = 'SELECT COUNT(*) FROM {tool_coursemigration} tc';
+            if (!empty($where)) {
+                $countsql .= ' WHERE ' . implode(' AND ', $where);
+            }
+            $total = $DB->count_records_sql($countsql, $params);
             $this->pagesize($pagesize, $total);
 
-            $records = coursemigration::get_records([], 'timecreated', 'DESC',
-                $this->get_page_start(), $this->get_page_size());
+            $records = $DB->get_records_sql($sql, $params, $this->get_page_start(), $this->get_page_size());
 
             if ($useinitialsbar) {
                 $this->initialbars($total > $pagesize);
             }
         } else {
-            $records = coursemigration::get_records([], 'timecreated', 'DESC');
+            $records = $DB->get_records_sql($sql, $params);
         }
 
         $this->rawdata = $records;
     }
 
     /**
-     * ID column.
-     *
-     * @param coursemigration $row
-     * @return string
-     */
-    public function col_id(coursemigration $row): string {
-        return $row->get('id');
-    }
-
-    /**
      * Action column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_action(coursemigration $row): string {
-        return $row->get('action');
+    public function col_action(stdClass $row): string {
+        return helper::get_action_string($row->action);
     }
 
     /**
      * Course column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_course(coursemigration $row): string {
-        return $row->get('courseid');
+    public function col_course(stdClass $row): string {
+        return $row->coursename;
     }
 
     /**
      * Destination category column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_destinationcategory(coursemigration $row): string {
-        return $row->get('destinationcategoryid');
+    public function col_destinationcategory(stdClass $row): string {
+        return $row->categoryname;
     }
 
     /**
      * Status column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_status(coursemigration $row): string {
-        return $row->get('status');
+    public function col_status(stdClass $row): string {
+        return helper::get_status_string($row->status);
     }
 
     /**
      * Filename column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_filename(coursemigration $row): string {
-        return $row->get('filename');
+    public function col_filename(stdClass $row): string {
+        return $row->filename;
     }
 
     /**
      * Error column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_error(coursemigration $row): string {
-        return $row->get('error') ?? '';
+    public function col_error(stdClass $row): string {
+        return $row->error ?? '';
     }
 
     /**
      * User modified column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_usermodified(coursemigration $row): string {
-        return $row->get('usermodified');
+    public function col_usermodified(stdClass $row): string {
+        return $row->username;
     }
 
     /**
      * Time created column.
      *
-     * @param coursemigration $row
+     * @param stdClass $row
      * @return string
      */
-    public function col_timecreated(coursemigration $row): string {
-        return userdate($row->get('timecreated'));
+    public function col_timecreated(stdClass $row): string {
+        return userdate($row->timecreated);
     }
-
-    /**
-     * Time modified column.
-     *
-     * @param coursemigration $row
-     * @return string
-     */
-    public function col_timemodified(coursemigration $row): string {
-        return userdate($row->get('timemodified'));
-    }
-
 }

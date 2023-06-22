@@ -27,6 +27,8 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/tablelib.php');
 
+use tool_coursemigration\form\report_filter_form;
+
 $pagesize = optional_param('pagesize', 50, PARAM_INT);
 
 $context = context_system::instance();
@@ -43,8 +45,11 @@ $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
 $renderer = $PAGE->get_renderer('tool_coursemigration');
+$mform = new report_filter_form();
+$filters = $mform->get_data() ?? new stdClass();
 
 echo $renderer->header();
 echo $renderer->heading($title);
-echo $renderer->render_coursemigration_report($url, $pagesize);
+echo $mform->render();
+echo $renderer->render_coursemigration_report($url, $filters, $pagesize);
 echo $renderer->footer();

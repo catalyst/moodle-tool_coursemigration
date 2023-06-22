@@ -111,4 +111,28 @@ class coursemigration extends persistent {
             ],
         ];
     }
+
+    /**
+     * Get all actions with string by associative array.
+     * @return array
+     */
+    public static function get_action_list() {
+        $list = [];
+        foreach (self::ACTIONS as $val) {
+            $list[$val] = helper::get_action_string($val);
+        }
+        return $list;
+    }
+
+    /**
+     * Get all statuses with string by associative array.
+     * @return array
+     */
+    public static function get_status_list() {
+        $list = [];
+        foreach (self::STATUSES as $val) {
+            $list[$val] = helper::get_status_string($val);
+        }
+        return $list;
+    }
 }
