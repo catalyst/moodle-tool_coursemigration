@@ -93,7 +93,7 @@ class coursemigration_table extends table_sql implements renderable {
      */
     public function query_db($pagesize, $useinitialsbar = false) {
         global $DB;
-        $sql = 'SELECT tc.*, u.username, c.fullname coursename, cc.name categoryname
+        $sql = 'SELECT tc.*, u.firstname, u.lastname, c.fullname coursename, cc.name categoryname
                   FROM {tool_coursemigration} tc
              LEFT JOIN {user} u ON tc.usermodified = u.id
              LEFT JOIN {course} c ON tc.courseid = c.id
@@ -164,7 +164,7 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_course(stdClass $row): string {
-        return $row->coursename;
+        return $row->coursename ?? '';
     }
 
     /**
@@ -174,7 +174,7 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_destinationcategory(stdClass $row): string {
-        return $row->categoryname;
+        return $row->categoryname ?? '';
     }
 
     /**
@@ -194,7 +194,7 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_filename(stdClass $row): string {
-        return $row->filename;
+        return $row->filename ?? '';
     }
 
     /**
@@ -214,7 +214,7 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_usermodified(stdClass $row): string {
-        return $row->username;
+        return $row->firstname ? $row->firstname . ' ' . $row->lastname : '';
     }
 
     /**
