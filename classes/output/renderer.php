@@ -16,9 +16,7 @@
 
 namespace tool_coursemigration\output;
 
-use moodle_url;
 use plugin_renderer_base;
-use stdClass;
 
 /**
  * Implements the report renderer
@@ -32,15 +30,12 @@ class renderer extends plugin_renderer_base {
     /**
      * Render coursemigration table.
      *
-     * @param moodle_url $url Url where this table is displayed.
-     * @param stdClass $filters
-     * @param int $pagesize Number of records to display per page. 0 means display all.
+     * @param coursemigration_table $table
      * @return string
      */
-    public function render_coursemigration_report(moodle_url $url, stdClass $filters, int $pagesize = 0): string {
-        $renderable = new coursemigration_table($url, $filters, $pagesize);
+    public function render_coursemigration_table(coursemigration_table $table): string {
         ob_start();
-        $renderable->out($pagesize, true);
+        $table->out($table->pagesize, false);
         $output = ob_get_contents();
         ob_end_clean();
 

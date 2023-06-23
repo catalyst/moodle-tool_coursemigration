@@ -46,7 +46,6 @@ class report_filter_form extends moodleform {
         $mform->addElement('select', 'action', get_string('action'), $actionlist);
         $mform->setType('action', PARAM_INT);
         $mform->setDefault('action', -1);
-        var_dump($actionlist);
 
         $mform->addElement('date_time_selector', 'datefrom', get_string('from'), array('optional' => true));
         $mform->addElement('date_time_selector', 'datetill', get_string('to'), array('optional' => true));

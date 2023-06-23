@@ -28,7 +28,10 @@ require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/tablelib.php');
 
 use tool_coursemigration\form\report_filter_form;
+use tool_coursemigration\output\coursemigration_table;
 
+$download = optional_param('download', '', PARAM_ALPHA);
+$page = optional_param('page', 0, PARAM_INT);
 $pagesize = optional_param('pagesize', 50, PARAM_INT);
 
 $context = context_system::instance();
@@ -40,16 +43,23 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('standard');
 
+$output = $PAGE->get_renderer('tool_coursemigration');
+$mform = new report_filter_form();
+$filters = $mform->get_data() ?? new stdClass();
+
+$table = new coursemigration_table($url, $filters, $page, $pagesize);
+if ($table->is_downloading($download)) {
+    \core\session\manager::write_close();
+    echo $output->render($table);
+    die();
+}
+
 $title = get_string('reports');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 
-$renderer = $PAGE->get_renderer('tool_coursemigration');
-$mform = new report_filter_form();
-$filters = $mform->get_data() ?? new stdClass();
-
-echo $renderer->header();
-echo $renderer->heading($title);
+echo $output->header();
+echo $output->heading($title);
 echo $mform->render();
-echo $renderer->render_coursemigration_report($url, $filters, $pagesize);
-echo $renderer->footer();
+echo $output->render_coursemigration_table($table);
+echo $output->footer();

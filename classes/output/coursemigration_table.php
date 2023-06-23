@@ -23,7 +23,6 @@ require_once($CFG->libdir . '/tablelib.php');
 use moodle_url;
 use table_sql;
 use stdClass;
-use tool_coursemigration\coursemigration;
 use tool_coursemigration\helper;
 use renderable;
 
@@ -47,9 +46,10 @@ class coursemigration_table extends table_sql implements renderable {
      *
      * @param moodle_url $url Url where this table is displayed.
      * @param stdClass $filters
+     * @param int $page A current page.
      * @param int $pagesize Number of bento boxes to display per page. 0 means display all.
      */
-    public function __construct(moodle_url $url, stdClass $filters, int $pagesize = 0) {
+    public function __construct(moodle_url $url, stdClass $filters, int $page = 0, int $pagesize = 0) {
         parent::__construct('coursemigration_table');
 
         $this->define_columns([
@@ -80,6 +80,7 @@ class coursemigration_table extends table_sql implements renderable {
         $this->pageable(!empty($pagesize));
         $this->pagesize = $pagesize;
         $this->is_downloadable(true);
+        $this->show_download_buttons_at([TABLE_P_BOTTOM]);
         $this->define_baseurl($url);
         $this->filters = $filters;
     }
