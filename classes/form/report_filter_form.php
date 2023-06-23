@@ -26,7 +26,7 @@
 namespace tool_coursemigration\form;
 
 use moodleform;
-use tool_coursemigration\coursemigration;
+use tool_coursemigration\helper;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -42,7 +42,7 @@ class report_filter_form extends moodleform {
 
         $mform->addElement('header', 'filters', get_string('filters', 'tool_coursemigration'));
 
-        $actionlist = [-1 => ''] + coursemigration::get_action_list();
+        $actionlist = [-1 => ''] + helper::get_action_list();
         $mform->addElement('select', 'action', get_string('action'), $actionlist);
         $mform->setType('action', PARAM_INT);
         $mform->setDefault('action', -1);
@@ -50,7 +50,7 @@ class report_filter_form extends moodleform {
         $mform->addElement('date_time_selector', 'datefrom', get_string('from'), array('optional' => true));
         $mform->addElement('date_time_selector', 'datetill', get_string('to'), array('optional' => true));
 
-        $statuslist = [-1 => ''] + coursemigration::get_status_list();
+        $statuslist = [-1 => ''] + helper::get_status_list();
         $mform->addElement('select', 'status', get_string('status'), $statuslist);
         $mform->setType('status', PARAM_INT);
         $mform->setDefault('status', -1);

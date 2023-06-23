@@ -127,6 +127,10 @@ class coursemigration_table extends table_sql implements renderable {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
+        if ($this->downloadable) {
+            $pagesize = 0;
+        }
+
         if (!empty($pagesize)) {
             $countsql = 'SELECT COUNT(*) FROM {tool_coursemigration} tc';
             if (!empty($where)) {

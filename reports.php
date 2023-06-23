@@ -30,22 +30,55 @@ require_once($CFG->libdir.'/tablelib.php');
 use tool_coursemigration\form\report_filter_form;
 use tool_coursemigration\output\coursemigration_table;
 
-$download = optional_param('download', '', PARAM_ALPHA);
-$page = optional_param('page', 0, PARAM_INT);
-$pagesize = optional_param('pagesize', 50, PARAM_INT);
-
 $context = context_system::instance();
-
-admin_externalpage_setup('tool_coursemigration_reports');
-
-$url = new moodle_url('/admin/tool/coursemigration/reports.php', ['pagesize' => $pagesize]);
-$PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('standard');
 
-$output = $PAGE->get_renderer('tool_coursemigration');
+$download = optional_param('download', '', PARAM_ALPHA);
+$page = optional_param('page', 0, PARAM_INT);
+$pagesize = optional_param('pagesize', 50, PARAM_INT);
+$action = optional_param('action', -1, PARAM_INT);
+$status = optional_param('status', -1, PARAM_INT);
+
 $mform = new report_filter_form();
-$filters = $mform->get_data() ?? new stdClass();
+$filters = $mform->get_data();
+$datefrom = $filters->datefrom ?? 0;
+if (empty($datefrom)) {
+    $datefrom = optional_param('datefrom', 0, PARAM_INT);
+}
+$datetill = $filters->datetill ?? 0;
+if (empty($datetill)) {
+    $datetill = optional_param('datetill', 0, PARAM_INT);
+}
+if (empty($filters)) {
+    $filters = new stdClass();
+    $filters->action = $action;
+    if ($datefrom) {
+        $filters->datefrom = $datefrom;
+    }
+    if ($datetill) {
+        $filters->datetill = $datetill;
+    }
+    $filters->status = $status;
+    $mform->set_data($filters);
+}
+
+admin_externalpage_setup('tool_coursemigration_reports');
+
+$url = new moodle_url('/admin/tool/coursemigration/reports.php');
+$url->param('page', $page);
+$url->param('pagesize', $pagesize);
+$url->param('action', $action);
+if ($datefrom) {
+    $url->param('datefrom', $datefrom);
+}
+if ($datetill) {
+    $url->param('datetill', $datetill);
+}
+$url->param('status', $status);
+$PAGE->set_url($url);
+
+$output = $PAGE->get_renderer('tool_coursemigration');
 
 $table = new coursemigration_table($url, $filters, $page, $pagesize);
 if ($table->is_downloading($download)) {
