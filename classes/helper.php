@@ -27,6 +27,30 @@ namespace tool_coursemigration;
 class helper {
 
     /**
+     * Get all actions with string by associative array.
+     * @return array
+     */
+    public static function get_action_list() {
+        $list = [];
+        foreach (coursemigration::ACTIONS as $val) {
+            $list[$val] = self::get_action_string($val);
+        }
+        return $list;
+    }
+
+    /**
+     * Get all statuses with string by associative array.
+     * @return array
+     */
+    public static function get_status_list() {
+        $list = [];
+        foreach (coursemigration::STATUSES as $val) {
+            $list[$val] = self::get_status_string($val);
+        }
+        return $list;
+    }
+
+    /**
      * Returns action as a string.
      *
      * @param int $action Action to display.
