@@ -37,13 +37,10 @@ $PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'tool_coursem
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('coursemigrationupload', 'tool_coursemigration'));
 
-list($status, $message) = uploadcourselist::display_upload_courses_form();
+$messages = uploadcourselist::display_upload_courses_form();
 
-if (!$status) {
-    echo $OUTPUT->notification($message);
+if ($messages) {
+    echo $OUTPUT->notification($messages);
 }
-
-// Add AJAX feedback
-$PAGE->requires->js_call_amd('tool_coursemigration/uploadcourselist', 'init');
 
 echo $OUTPUT->footer();

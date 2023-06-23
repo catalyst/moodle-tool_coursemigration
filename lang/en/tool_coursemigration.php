@@ -54,10 +54,20 @@ $string['encoding_help'] = 'Select the character encoding used for the data. (Th
 $string['coursemigrationupload'] = 'Upload course list';
 $string['pluginname_help'] = 'Upload a list of courses as a CSV file that will be migrated to the remote instance as defined in the plugin settings';
 $string['csvfile'] = 'CSV file';
+$string['settings_link_text'] = 'Admin tools -> Course migration';
 $string['missing_column'] = 'CSV file must include one of {$a->columnlist} as column headings';
+$string['error:nonintegervalue'] = 'Non integer value for {$a->csvcolumn} found on row {$a->rownumber}';
+$string['error:pluginnotsetup'] = 'The course migration plugin is not setup: [Destination URL] and [Web service token] need to be configured in {$a}';
+
 $string['csvfile_help'] = 'The format of the CSV file is as follows:
 
 * Each line of the file contains one record.
 * Each record is a series of data in any order separated by commas or other standard delimiters.
 * CSV fields that needs to be supported: id (course id), url (url to a course so we could get course id from url), destination category id, destination category id number, destination category path.
 * One of id or url should  AND one of category id, category id number, category path should be in the file to pass validation.';
+
+$string['returnmessages'] = 'Errors in CSV file: {$a->errorcount}<br\>
+{$a->errormessages}<br\><br\>
+Total rows: {$a->rowcount}<br\>
+Success: {$a->success}<br\>
+Failed: {$a->failed}<br\>';

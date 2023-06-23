@@ -26,7 +26,7 @@ namespace tool_coursemigration\form;
 
 defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir.'/formslib.php');
-require_once $CFG->libdir . '/csvlib.class.php';
+require_once($CFG->libdir . '/csvlib.class.php');
 
 use moodleform;
 
