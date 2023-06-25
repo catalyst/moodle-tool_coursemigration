@@ -36,7 +36,7 @@ use moodle_url;
  * @copyright  2023 Catalyst IT
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class uploadcourselist {
+class upload_course_list {
 
     /**
      * List of valid colums and validation groups for each DB field.

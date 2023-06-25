@@ -78,7 +78,7 @@ if ($data = $form->get_data()) {
     }
 
     // Process CSV file.
-    $messages = uploadcourselist::process_submitted_form($csvimportreader);
+    $messages = upload_course_list::process_submitted_form($csvimportreader);
     if ($messages) {
         echo $OUTPUT->notification($messages);
         echo $OUTPUT->continue_button($returnurl);

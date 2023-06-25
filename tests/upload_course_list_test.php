@@ -26,7 +26,7 @@ require_once($CFG->libdir . '/csvlib.class.php');
  * @copyright  2023 Catalyst IT
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers     \tool_coursemigration\uploadcourselist
+ * @covers     \tool_coursemigration\upload_course_list
  */
 class upload_course_list_test extends advanced_testcase {
     /**
@@ -55,7 +55,7 @@ class upload_course_list_test extends advanced_testcase {
             ]));
         }
 
-        $messages = tool_coursemigration\uploadcourselist::process_submitted_form($csvimportreader);
+        $messages = tool_coursemigration\upload_course_list::process_submitted_form($csvimportreader);
 
         foreach ($dbrecords as $record) {
             $this->assertTrue($DB->record_exists('tool_coursemigration', [
