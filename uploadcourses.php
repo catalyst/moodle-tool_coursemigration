@@ -23,12 +23,27 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace tool_coursemigration;
+
+use csv_import_reader;
+use html_writer;
+use moodle_exception;
+use moodle_url;
+
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
-
-use tool_coursemigration\uploadcourselist;
+require_once($CFG->libdir . '/csvlib.class.php');
 
 admin_externalpage_setup('coursemigrationupload', '', null);
+
+// Set up the form.
+$uploadcoursesurl = new moodle_url('/admin/tool/coursemigration/uploadcourses.php');
+$form = new form\upload_course_list_form($uploadcoursesurl);
+$returnurl = new moodle_url('/admin/tool/coursemigration/uploadcourses.php');
+
+if ($form->is_cancelled()) {
+    redirect($PAGE->url);
+}
 
 $PAGE->set_heading($SITE->fullname);
 
@@ -37,10 +52,41 @@ $PAGE->set_title($SITE->fullname . ': ' . get_string('pluginname', 'tool_coursem
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('coursemigrationupload', 'tool_coursemigration'));
 
-$messages = uploadcourselist::display_upload_courses_form();
+// Check if plugin has been configured.
+if (!get_config('tool_coursemigration', 'destinationwsurl') || !get_config('tool_coursemigration', 'wstoken')) {
+    $settingsurl = new moodle_url('/admin/settings.php', ['section' => 'tool_coursemigration_settings']);
+    $link = html_writer::link($settingsurl, get_string('settings_link_text', 'tool_coursemigration'));
+    $displayform = false;
+    echo $OUTPUT->error_text(get_string('error:pluginnotsetup', 'tool_coursemigration', $link));
+    echo $OUTPUT->footer();
+    die();
+};
 
-if ($messages) {
-    echo $OUTPUT->notification($messages);
+if ($data = $form->get_data()) {
+    $importid = csv_import_reader::get_new_iid('csvfile');
+    $csvimportreader = new csv_import_reader($importid, 'csvfile');
+    $content = $form->get_file_content('csvfile');
+    $readcount = $csvimportreader->load_csv_content($content, $data->encoding, $data->delimiter_name);
+
+    unset($content);
+    if ($readcount === false) {
+        throw new moodle_exception('csvfileerror', 'error',
+            $returnurl, null, $csvimportreader->get_error());
+    } else if ($readcount == 0) {
+        throw new moodle_exception('csvemptyfile', 'error',
+            $returnurl, null, $csvimportreader->get_error());
+    }
+
+    // Process CSV file.
+    $messages = uploadcourselist::process_submitted_form($csvimportreader);
+    if ($messages) {
+        echo $OUTPUT->notification($messages);
+        echo $OUTPUT->continue_button($returnurl);
+    }
+
+} else {
+    $form->display();
 }
-
 echo $OUTPUT->footer();
+
+

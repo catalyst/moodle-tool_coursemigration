@@ -28,15 +28,13 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir.'/formslib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
 
-use moodleform;
-
 /**
  * Form to upload a CSV file containing a list of courses for processing.
  *
  * @copyright   2023 Catalyst IT
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class uploadcourselist_form extends \moodleform {
+class upload_course_list_form extends \moodleform {
 
     /**
      * Define the form.
@@ -70,20 +68,5 @@ class uploadcourselist_form extends \moodleform {
 
         // Standard buttons.
         $this->add_action_buttons(true, get_string('uploadthisfile'));
-    }
-
-    /**
-     * Validate submitted form data, and returns list of errors if it fails.
-     *
-     * @param      array  $data   The data fields submitted from the form.
-     * @param      array  $files  Files submitted from the form (not used)
-     *
-     * @return     array  List of errors to be displayed on the form if validation fails.
-     */
-    public function validation($data, $files) {
-        $errors = parent::validation($data, $files);
-
-        // Add form validation here.
-        return $errors;
     }
 }

@@ -25,6 +25,9 @@
 
 namespace tool_coursemigration;
 
+use csv_import_reader;
+use moodle_url;
+
 /**
  * Class that contains the helper functions.
  *
@@ -39,66 +42,43 @@ class uploadcourselist {
      * List of valid colums and validation groups for each DB field.
      * One of id or url AND one of category id, category id number, category path should be in the file to pass validation.
      */
-    const VALID_COLUMN_GROUPS = ['courseid' => ['courseid', 'url'],
-        'destinationcategoryid' => ['categoryid', 'categoryid_number', 'categorypath']];
+    const VALID_COLUMN_GROUPS = [
+        'courseid' => ['courseid', 'url'],
+        'destinationcategoryid' => ['categoryid', 'categoryid_number', 'categorypath']
+    ];
 
     /**
-     * Function to get upload courses form csv data.
+     * Function to process upload courses form.
      *
-     * @param object $uploadcourseform upload course form
-     * @return \csv_import_reader|false
+     * @param csv_import_reader $csvimportreader CSV import reader object.
+     * @return string messages.
      */
-    public static function get_upload_courses_form_csv_data($uploadcourseform) {
-        $uploadcourseformdata = $uploadcourseform->get_data();
-
-        if (is_null($uploadcourseformdata)) {
-            return false;
-        }
-
-        $records = [];
-        $iid = \csv_import_reader::get_new_iid('csvfile');
-        $cir = new \csv_import_reader($iid, 'csvfile');
-        $content = $uploadcourseform->get_file_content('csvfile');
-
-        $cir->load_csv_content($content, $uploadcourseformdata->encoding, $uploadcourseformdata->delimiter_name);
-
-        if (!is_null($cir->get_error())) {
-            return false;
-        }
-
-        return $cir;
-    }
-
-
-    /**
-     * Function to get csv data and import records to DB.
-     *
-     * @param \csv_import_reader $cir csv import reader
-     * @return string
-     */
-    public static function process_csv_file($cir) {
-        $columns = $cir->get_columns();
-
+    public static function process_submitted_form(csv_import_reader $csvimportreader): string {
+        $columns = $csvimportreader->get_columns();
         list($status, $message, $fields) = self::csv_required_columns($columns);
         if (!$status) {
             return $message;
         }
 
-        $cir->init();
+        $csvimportreader->init();
         $rownumber = 1;
         $errors = [];
         $success = 0;
         $failed = 0;
 
-        $coursemigration = new coursemigration;
-
-        while ($row = $cir->next()) {
+        while ($row = $csvimportreader->next()) {
+            $coursemigration = new coursemigration;
             [$status, $rowdata, $messages] = self::process_row($row, $fields, $rownumber);
             if ($status) {
                 // Add record to DB.
                 $coursemigration->from_record($rowdata);
-                $coursemigration->save();
-                $success++;
+                if ($coursemigration->is_valid()) {
+                    $coursemigration->save();
+                    $success++;
+                } else {
+                    $errors = array_merge($errors, $coursemigration->get_errors());
+                    $failed++;
+                }
             } else {
                 $errors = array_merge($errors, $messages);
                 $failed++;
@@ -107,12 +87,13 @@ class uploadcourselist {
         }
 
         // Prepare return messages.
-        $displaymessages = get_string('returnmessages', 'tool_coursemigration',
-        ['errorcount' => count($errors),
+        $displaymessages = get_string('returnmessages', 'tool_coursemigration', [
+            'errorcount' => count($errors),
             'errormessages' => implode("<br\>", $errors),
             'rowcount' => $rownumber - 1,
             'success' => $success,
-            'failed' => $failed]);
+            'failed' => $failed
+        ]);
 
         return $displaymessages;
     }
@@ -129,7 +110,7 @@ class uploadcourselist {
      * [courseid] Course id field name and index [ columnname, columnindex ]
      * [category] category field name and index [ columnname, columnindex ]
      */
-    public static function process_row($row, $fields, $rownumber) {
+    private static function process_row(array $row, array $fields, int $rownumber): array {
 
         // One of id or url AND one of category id, category id number, category path should be in the file to pass validation.
         $validcolumngroups = self::VALID_COLUMN_GROUPS;
@@ -153,7 +134,7 @@ class uploadcourselist {
                         $message, $params);
                     break;
                 case 'url':
-                    $url = new \moodle_url($row[$fields[$type]['columnindex']]);
+                    $url = new moodle_url($row[$fields[$type]['columnindex']]);
                     $data[$type] = $url->get_param('id');
                     break;
             }
@@ -165,15 +146,14 @@ class uploadcourselist {
     /**
      * Function to validate number of columns in csv file.
      *
-     * @param int $columns column count
+     * @param array $columns List of column names.
      * @return array|null [ status, message[], fields[] ]
      *
      * Deffinition: status   - validation pass or fail (true | false)
      *              messages - string containing validation errors.
      *              fields  - an array of the column numbers in the CSV file.
      */
-    public static function csv_required_columns($columns) {
-
+    private static function csv_required_columns(array $columns): ?array {
         // Change fields to lowercase.
         $columns = array_map('strtolower', $columns);
 
@@ -205,39 +185,6 @@ class uploadcourselist {
     }
 
     /**
-     * Function to display upload courses form.
-     *
-     * @return string messages.
-     */
-    public static function display_upload_courses_form() {
-        global $CFG;
-
-        if (!get_config('tool_coursemigration', 'destinationwsurl') || !get_config('tool_coursemigration', 'wstoken')) {
-            $settingsurl = new \moodle_url('/admin/settings.php', ['section' => 'tool_coursemigration_settings']);
-            $link = \html_writer::link($settingsurl, get_string('settings_link_text', 'tool_coursemigration'));
-            return get_string('error:pluginnotsetup', 'tool_coursemigration', $link);
-        };
-
-        $uploadcoursesurl = new \moodle_url('/admin/tool/coursemigration/uploadcourses.php');
-        $uploadcoursesform = new \tool_coursemigration\form\uploadcourselist_form($uploadcoursesurl);
-
-        $uploadcoursesform->get_data();
-        $cir = self::get_upload_courses_form_csv_data($uploadcoursesform);
-
-        if ($cir) {
-            // Process CSV file.
-            $messages = self::process_csv_file($cir);
-            // Display results of upload.
-            return $messages;
-        }
-
-        $uploadcoursesform->display();
-
-        // TODO: Form processing status and error messages.
-        return null;
-    }
-
-    /**
      * Function to validate CSV field.
      *
      * @param integer|string $datavalue Field value from CSV file.
@@ -250,20 +197,17 @@ class uploadcourselist {
      *         csvcolumn - Name of column in CSV file
      *         rownumber - The current row of the CSV file.
      */
-    public static function validate_csv_field($datavalue, &$status, &$message, $params) {
+    private static function validate_csv_field($datavalue, bool &$status, array &$message, array $params): ?int {
         $value = null;
-        switch ($params['mode']) {
-            case 'integer':
-                if (is_number($datavalue)) {
-                    $value = (int)$datavalue;
-                } else {
-                    $status = false;
-                    $message[] = get_string('error:nonintegervalue', 'tool_coursemigration',
-                        ['csvcolumn' => $params['csvcolumn'], 'rownumber' => $params['rownumber']]);
-                }
-                break;
+        if ($params['mode'] == 'integer') {
+            if (is_number($datavalue)) {
+                $value = (int)$datavalue;
+            } else {
+                $status = false;
+                $message[] = get_string('error:nonintegervalue', 'tool_coursemigration',
+                    ['csvcolumn' => $params['csvcolumn'], 'rownumber' => $params['rownumber']]);
+            }
         }
         return $value;
     }
-
 }
