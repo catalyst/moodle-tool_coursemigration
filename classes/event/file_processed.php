@@ -18,17 +18,16 @@ namespace tool_coursemigration\event;
 
 use core\event\base;
 use context_system;
-use coding_exception;
 
 /**
- * The CSV file uploaded event class.
+ * The CSV file processed event class.
  *
  * @package     tool_coursemigration
  * @category    event
  * @copyright   2023 Catalyst IT
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class file_uploaded extends base {
+class file_processed extends base {
 
     /**
      * Initialise the data.
@@ -46,7 +45,7 @@ class file_uploaded extends base {
      * @return string
      */
     public static function get_name(): string {
-        return get_string('event:file_uploaded', 'tool_coursemigration');
+        return get_string('event:file_processed', 'tool_coursemigration');
     }
 
     /**
@@ -55,7 +54,9 @@ class file_uploaded extends base {
      * @return string
      */
     public function get_description(): string {
-        return "File '{$this->other['filename']}' successfully uploaded.";
+        return "File '{$this->other['filename']}' successfully processed ." .
+            " Total rows: '{$this->other['rowcount']}'. Loaded: '{$this->other['success']}'." .
+            " Errors: '{$this->other['failed']}'.";
     }
 
     /**
@@ -67,7 +68,16 @@ class file_uploaded extends base {
         parent::validate_data();
 
         if (!isset($this->other['filename'])) {
-            throw new coding_exception('The \'filename\' value must be set in other.');
+            throw new \coding_exception('The \'filename\' value must be set in other.');
+        }
+        if (!isset($this->other['rowcount'])) {
+            throw new \coding_exception('The \'rowcount\' value must be set in other.');
+        }
+        if (!isset($this->other['success'])) {
+            throw new \coding_exception('The \'success\' value must be set in other.');
+        }
+        if (!isset($this->other['failed'])) {
+            throw new \coding_exception('The \'failed\' value must be set in other.');
         }
     }
 }

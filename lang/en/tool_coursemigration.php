@@ -70,11 +70,12 @@ $string['csvfile_help'] = 'The format of the CSV file is as follows:
 * CSV fields that needs to be supported: id (course id), url (url to a course so we could get course id from url), destination category id.
 * One of id or url should  AND one of category id should be in the file to pass validation.';
 
-$string['returnmessages'] = 'Errors in CSV file: {$a->errorcount}<br\>
-{$a->errormessages}<br\><br\>
+$string['returnmessages'] = 'File successfully processed.<br\><br\>
 Total rows: {$a->rowcount}<br\>
 Success: {$a->success}<br\>
-Failed: {$a->failed}<br\>';
+Failed: {$a->failed}<br\>
+Errors in CSV file: {$a->errorcount}<br\><br\>
+{$a->errormessages}';
 $string['status:notstarted'] = 'Not started';
 $string['status:inprogress'] = 'In progress';
 $string['status:completed'] = 'Completed';
@@ -83,3 +84,4 @@ $string['status:invalid'] = 'Invalid';
 $string['timecreated'] = 'Time created';
 $string['timemodified'] = 'Time modified';
 $string['event:file_uploaded'] = 'File uploaded';
+$string['event:file_processed'] = 'File processed';
