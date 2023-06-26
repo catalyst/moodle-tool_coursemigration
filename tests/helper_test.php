@@ -17,6 +17,7 @@
 namespace tool_coursemigration;
 
 use advanced_testcase;
+use context_user;
 
 /**
  * Tests for helper class.
@@ -109,7 +110,7 @@ class helper_test extends advanced_testcase {
         $this->resetAfterTest();
 
         $user = $this->getDataGenerator()->create_user();
-        $usercontext = \context_user::instance($user->id);
+        $usercontext = context_user::instance($user->id);
         $fs = get_file_storage();
 
         // Emulate file upload as it's uploaded as component user and draft file area.

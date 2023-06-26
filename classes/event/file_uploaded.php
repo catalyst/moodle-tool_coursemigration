@@ -18,6 +18,7 @@ namespace tool_coursemigration\event;
 
 use core\event\base;
 use context_system;
+use coding_exception;
 
 /**
  * The CSV file uploaded event class.
@@ -66,7 +67,7 @@ class file_uploaded extends base {
         parent::validate_data();
 
         if (!isset($this->other['filename'])) {
-            throw new \coding_exception('The \'filename\' value must be set in other.');
+            throw new coding_exception('The \'filename\' value must be set in other.');
         }
     }
 }
