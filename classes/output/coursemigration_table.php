@@ -58,20 +58,18 @@ class coursemigration_table extends table_sql implements renderable {
             'destinationcategory',
             'status',
             'filename',
-            'error',
-            'usermodified',
             'timecreated',
+            'error',
         ]);
 
         $this->define_headers([
             get_string('action'),
             get_string('course'),
-            get_string('destinationcategory', 'tool_coursemigration'),
+            get_string('category'),
             get_string('status'),
             get_string('filename', 'tool_coursemigration'),
-            get_string('error'),
-            get_string('user'),
             get_string('timecreated', 'tool_coursemigration'),
+            get_string('error'),
         ]);
 
         $this->collapsible(false);
@@ -94,10 +92,8 @@ class coursemigration_table extends table_sql implements renderable {
     public function query_db($pagesize, $useinitialsbar = false) {
         global $DB;
         $sql = 'SELECT tc.*,
-                       u.firstname, u.lastname, u.lastnamephonetic, u.firstnamephonetic, u.middlename, u.alternatename,
                        c.fullname coursename, cc.name categoryname
                   FROM {tool_coursemigration} tc
-             LEFT JOIN {user} u ON tc.usermodified = u.id
              LEFT JOIN {course} c ON tc.courseid = c.id
              LEFT JOIN {course_categories} cc ON tc.destinationcategoryid = cc.id';
         $where = [];
@@ -211,16 +207,6 @@ class coursemigration_table extends table_sql implements renderable {
      */
     public function col_error(stdClass $row): string {
         return $row->error ?? '';
-    }
-
-    /**
-     * User modified column.
-     *
-     * @param stdClass $row
-     * @return string
-     */
-    public function col_usermodified(stdClass $row): string {
-        return fullname($row);
     }
 
     /**

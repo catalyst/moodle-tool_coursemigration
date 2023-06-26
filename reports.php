@@ -81,7 +81,7 @@ $PAGE->set_url($url);
 $output = $PAGE->get_renderer('tool_coursemigration');
 
 $table = new coursemigration_table($url, $filters, $page, $pagesize);
-if ($table->is_downloading($download)) {
+if ($table->is_downloading($download, 'coursemigration_report')) {
     \core\session\manager::write_close();
     echo $output->render($table);
     die();

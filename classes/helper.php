@@ -30,7 +30,7 @@ class helper {
      * Get all actions with string by associative array.
      * @return array
      */
-    public static function get_action_list() {
+    public static function get_action_list(): array {
         $list = [];
         foreach (coursemigration::ACTIONS as $val) {
             $list[$val] = self::get_action_string($val);
@@ -42,7 +42,7 @@ class helper {
      * Get all statuses with string by associative array.
      * @return array
      */
-    public static function get_status_list() {
+    public static function get_status_list(): array {
         $list = [];
         foreach (coursemigration::STATUSES as $val) {
             $list[$val] = self::get_status_string($val);
