@@ -101,4 +101,37 @@ class helper_test extends advanced_testcase {
             helper::get_status_string(-1)
         );
     }
+
+    /**
+     * Test can get uploaded file name.
+     */
+    public function test_get_uploaded_filename() {
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+        $usercontext = \context_user::instance($user->id);
+        $fs = get_file_storage();
+
+        // Emulate file upload as it's uploaded as component user and draft file area.
+        $filerecord = [
+            'contextid' => $usercontext->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => 'test.txt',
+            'source' => 'PHPUnit test',
+        ];
+        $uploadedfile = $fs->create_file_from_string($filerecord, 'Test content');
+
+        // User uploaded file should get a file name.
+        $this->setUser($user);
+        $this->assertSame('', helper::get_uploaded_filename(99999));
+        $this->assertSame('test.txt', helper::get_uploaded_filename($uploadedfile->get_itemid()));
+
+        // Another user shouldn't get a filename as it's been uploaded by another user.
+        $this->setAdminUser();
+        $this->assertSame('', helper::get_uploaded_filename(99999));
+        $this->assertSame('', helper::get_uploaded_filename($uploadedfile->get_itemid()));
+    }
 }

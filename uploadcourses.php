@@ -29,6 +29,7 @@ use csv_import_reader;
 use html_writer;
 use moodle_exception;
 use moodle_url;
+use tool_coursemigration\event\file_uploaded;
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
@@ -56,13 +57,20 @@ echo $OUTPUT->heading(get_string('coursemigrationupload', 'tool_coursemigration'
 if (!get_config('tool_coursemigration', 'destinationwsurl') || !get_config('tool_coursemigration', 'wstoken')) {
     $settingsurl = new moodle_url('/admin/settings.php', ['section' => 'tool_coursemigration_settings']);
     $link = html_writer::link($settingsurl, get_string('settings_link_text', 'tool_coursemigration'));
-    $displayform = false;
     echo $OUTPUT->error_text(get_string('error:pluginnotsetup', 'tool_coursemigration', $link));
     echo $OUTPUT->footer();
     die();
 };
 
 if ($data = $form->get_data()) {
+
+    // Trigger uploaded event.
+    file_uploaded::create([
+        'other' => [
+            'filename' => helper::get_uploaded_filename($data->csvfile),
+        ]
+    ])->trigger();
+
     $importid = csv_import_reader::get_new_iid('csvfile');
     $csvimportreader = new csv_import_reader($importid, 'csvfile');
     $content = $form->get_file_content('csvfile');
