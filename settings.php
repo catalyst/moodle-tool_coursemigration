@@ -78,4 +78,10 @@ if ($hassiteconfig) {
     $ADMIN->add('tools', new admin_category('coursemigration', get_string('pluginname', 'tool_coursemigration')));
     $ADMIN->add('coursemigration', $settings);
 
+    // Section for uploading CSV.
+    $ADMIN->add('coursemigration', new admin_externalpage('coursemigrationupload',
+            get_string('coursemigrationupload', 'tool_coursemigration'),
+            new moodle_url('/admin/tool/coursemigration/uploadcourses.php'))
+    );
+
 }
