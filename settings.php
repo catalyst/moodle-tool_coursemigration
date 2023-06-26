@@ -84,4 +84,10 @@ if ($hassiteconfig) {
             new moodle_url('/admin/tool/coursemigration/uploadcourses.php'))
     );
 
+    $ADMIN->add('coursemigration',
+        new admin_externalpage('tool_coursemigration_reports',
+            new lang_string('reports'),
+            new moodle_url('/admin/tool/coursemigration/reports.php'))
+    );
+
 }
