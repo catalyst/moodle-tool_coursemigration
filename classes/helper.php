@@ -16,6 +16,8 @@
 
 namespace tool_coursemigration;
 
+use context_user;
+
 /**
  * Helper class.
  *
@@ -96,5 +98,29 @@ class helper {
                 break;
         }
         return $string;
+    }
+
+    /**
+     * Gets file name for uploaded file.
+     *
+     * @param string $fileitemid Uploaded file itemid.
+     * @return string
+     */
+    public static function get_uploaded_filename(string $fileitemid): string {
+        global $USER;
+
+        $filename = '';
+
+        $fs = get_file_storage();
+        $usercontext = context_user::instance($USER->id);
+        if ($files = $fs->get_area_files($usercontext->id, 'user', 'draft', $fileitemid, 'id DESC', false)) {
+            $file = reset($files);
+        }
+
+        if (!empty($file)) {
+            $filename = $file->get_filename();
+        }
+
+        return $filename;
     }
 }

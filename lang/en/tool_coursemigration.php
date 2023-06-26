@@ -82,3 +82,4 @@ $string['status:failed'] = 'Failed';
 $string['status:invalid'] = 'Invalid';
 $string['timecreated'] = 'Time created';
 $string['timemodified'] = 'Time modified';
+$string['event:file_uploaded'] = 'File uploaded';
