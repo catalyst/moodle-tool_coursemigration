@@ -23,6 +23,7 @@ require_once($CFG->libdir . '/tablelib.php');
 use moodle_url;
 use table_sql;
 use stdClass;
+use tool_coursemigration\coursemigration;
 use tool_coursemigration\helper;
 use renderable;
 
@@ -92,10 +93,11 @@ class coursemigration_table extends table_sql implements renderable {
     public function query_db($pagesize, $useinitialsbar = false) {
         global $DB;
         $sql = 'SELECT tc.*,
-                       c.fullname coursename, cc.name categoryname
+                       c.fullname coursename, cc1.name destinationcategoryname, cc2.name coursecategoryname
                   FROM {tool_coursemigration} tc
              LEFT JOIN {course} c ON tc.courseid = c.id
-             LEFT JOIN {course_categories} cc ON tc.destinationcategoryid = cc.id';
+             LEFT JOIN {course_categories} cc1 ON tc.destinationcategoryid = cc1.id
+             LEFT JOIN {course_categories} cc2 ON c.category = cc2.id';
         $where = [];
         $params = [];
         foreach ($this->filters as $field => $value) {
@@ -176,7 +178,18 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_destinationcategory(stdClass $row): string {
-        return $row->categoryname ?? '';
+        switch ($row->action) {
+            case coursemigration::ACTION_BACKUP:
+                $categoryname = $row->coursecategoryname ?? '';
+                break;
+            case coursemigration::ACTION_RESTORE:
+                $categoryname = $row->destinationcategoryname ?? '';
+                break;
+            default:
+                $categoryname = '';
+                break;
+        }
+        return $categoryname;
     }
 
     /**
