@@ -44,7 +44,7 @@ class upload_course_list {
      */
     const VALID_COLUMN_GROUPS = [
         'courseid' => ['courseid', 'url'],
-        'destinationcategoryid' => ['categoryid', 'categoryid_number', 'categorypath']
+        'destinationcategoryid' => ['categoryid']
     ];
 
     /**
@@ -112,16 +112,13 @@ class upload_course_list {
      */
     private static function process_row(array $row, array $fields, int $rownumber): array {
 
-        // One of id or url AND one of category id, category id number, category path should be in the file to pass validation.
-        $validcolumngroups = self::VALID_COLUMN_GROUPS;
-
         // Initialise return data.
         $data = [];
         $message = [];
         $status = true;
 
         // Compare column headings in CSV file with valid column groups.
-        foreach ($validcolumngroups as $type => $validcolumns) {
+        foreach (self::VALID_COLUMN_GROUPS as $type => $validcolumns) {
             $datafield = $fields[$type]['columnname'];
 
             // Specific handling for each type of column in CSV fie.
@@ -157,16 +154,13 @@ class upload_course_list {
         // Change fields to lowercase.
         $columns = array_map('strtolower', $columns);
 
-        // One of id or url AND one of category id, category id number, category path should be in the file to pass validation.
-        $validcolumngroups = self::VALID_COLUMN_GROUPS;
-
         // Set default vale for passing validation.
         $status = true;
         $errors = [];
         $fields = [];
 
         // Compare column headings in CSV file with valid column groups.
-        foreach ($validcolumngroups as $type => $validcolumns) {
+        foreach (self::VALID_COLUMN_GROUPS as $type => $validcolumns) {
             // The preferred column will be at index 0.
             $check = array_values(array_intersect($columns, $validcolumns));
             if (empty($check)) {

@@ -28,8 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 if ($hassiteconfig) {
 
     // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
-    $pluginname = get_string('pluginname', 'tool_coursemigration');
-
     $settings = new admin_settingpage('tool_coursemigration_settings', new lang_string('generalsettings', 'admin'));
 
     if ($ADMIN->fulltree) {

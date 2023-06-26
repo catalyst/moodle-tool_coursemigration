@@ -24,6 +24,10 @@
 
 namespace tool_coursemigration\form;
 
+use csv_import_reader;
+use html_writer;
+use moodle_url;
+
 defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir.'/formslib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
@@ -44,13 +48,16 @@ class upload_course_list_form extends \moodleform {
 
         // Heading.
         $mform->addElement('html', '<p>'.get_string('pluginname_help', 'tool_coursemigration').'</p>');
-
+        $url = new moodle_url('example.csv');
+        $link = html_writer::link($url, 'example.csv');
+        $mform->addElement('static', 'examplecsv', get_string('examplecsv', 'tool_coursemigration'), $link);
+        $mform->addHelpButton('examplecsv', 'examplecsv', 'tool_coursemigration');
         // Insert a File picker element.
         $mform->addElement('filepicker', 'csvfile', get_string('file'), null, ['accepted_types' => '.csv']);
         $mform->addHelpButton('csvfile', 'csvfile', 'tool_coursemigration');
         $mform->addRule('csvfile', null, 'required');
 
-        $choices = \csv_import_reader::get_delimiter_list();
+        $choices = csv_import_reader::get_delimiter_list();
         $mform->addElement('select', 'delimiter_name', get_string('csvdelimiter', 'tool_coursemigration'), $choices);
         if (array_key_exists('cfg', $choices)) {
             $mform->setDefault('delimiter_name', 'cfg');
