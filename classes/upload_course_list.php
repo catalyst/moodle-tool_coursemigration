@@ -51,13 +51,16 @@ class upload_course_list {
      * Function to process upload courses form.
      *
      * @param csv_import_reader $csvimportreader CSV import reader object.
-     * @return string messages.
+     * @return upload_results.
      */
-    public static function process_submitted_form(csv_import_reader $csvimportreader): string {
+    public static function process_submitted_form(csv_import_reader $csvimportreader): upload_results {
+        $results = new upload_results();
+
         $columns = $csvimportreader->get_columns();
         list($status, $message, $fields) = self::csv_required_columns($columns);
         if (!$status) {
-            return $message;
+            $results->set_result_message($message);
+            return $results;
         }
 
         $csvimportreader->init();
@@ -87,15 +90,22 @@ class upload_course_list {
         }
 
         // Prepare return messages.
-        $displaymessages = get_string('returnmessages', 'tool_coursemigration', [
+        $rowcount = $rownumber - 1;
+        $displaymessage = get_string('returnmessages', 'tool_coursemigration', [
             'errorcount' => count($errors),
             'errormessages' => implode("<br\>", $errors),
-            'rowcount' => $rownumber - 1,
+            'rowcount' => $rowcount,
             'success' => $success,
             'failed' => $failed
         ]);
 
-        return $displaymessages;
+        $results->set_errorcount(count($errors));
+        $results->set_result_message($displaymessage);
+        $results->set_rowcount($rowcount);
+        $results->set_failed($failed);
+        $results->set_success($success);
+
+        return $results;
     }
 
     /**

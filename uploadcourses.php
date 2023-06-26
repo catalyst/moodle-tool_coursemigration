@@ -23,13 +23,12 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_coursemigration;
-
-use csv_import_reader;
-use html_writer;
-use moodle_exception;
-use moodle_url;
+use core\output\notification;
+use tool_coursemigration\upload_course_list;
+use tool_coursemigration\helper;
+use tool_coursemigration\event\file_processed;
 use tool_coursemigration\event\file_uploaded;
+use tool_coursemigration\form\upload_course_list_form;
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
@@ -39,7 +38,7 @@ admin_externalpage_setup('coursemigrationupload', '', null);
 
 // Set up the form.
 $uploadcoursesurl = new moodle_url('/admin/tool/coursemigration/uploadcourses.php');
-$form = new form\upload_course_list_form($uploadcoursesurl);
+$form = new upload_course_list_form($uploadcoursesurl);
 $returnurl = new moodle_url('/admin/tool/coursemigration/uploadcourses.php');
 
 if ($form->is_cancelled()) {
@@ -86,11 +85,20 @@ if ($data = $form->get_data()) {
     }
 
     // Process CSV file.
-    $messages = upload_course_list::process_submitted_form($csvimportreader);
-    if ($messages) {
-        echo $OUTPUT->notification($messages);
-        echo $OUTPUT->continue_button($returnurl);
-    }
+    $results = upload_course_list::process_submitted_form($csvimportreader);
+
+    file_processed::create([
+        'other' => [
+            'filename' => helper::get_uploaded_filename($data->csvfile),
+            'rowcount' => $results->get_rowcount(),
+            'success' => $results->get_success(),
+            'failed' => $results->get_failed(),
+        ]
+    ])->trigger();
+
+    $notificationtype = $results->get_success() > 0 ? notification::NOTIFY_SUCCESS : notification::NOTIFY_ERROR;
+    echo $OUTPUT->notification($results->get_result_message(), $notificationtype);
+    echo $OUTPUT->continue_button($returnurl);
 
 } else {
     $form->display();

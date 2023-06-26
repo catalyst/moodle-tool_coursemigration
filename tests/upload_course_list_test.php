@@ -14,7 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+namespace tool_coursemigration;
+
+use advanced_testcase;
+use csv_import_reader;
+
 defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->libdir . '/csvlib.class.php');
 
@@ -39,7 +45,7 @@ class upload_course_list_test extends advanced_testcase {
      */
     public function test_csv_content($input, $expected, $dbrecords) {
         global $DB;
-        $this->resetAfterTest(true);
+        $this->resetAfterTest();
 
         $content = $input;
         $content = implode("\n", $content);
@@ -55,7 +61,7 @@ class upload_course_list_test extends advanced_testcase {
             ]));
         }
 
-        $messages = tool_coursemigration\upload_course_list::process_submitted_form($csvimportreader);
+        $results = upload_course_list::process_submitted_form($csvimportreader);
 
         foreach ($dbrecords as $record) {
             $this->assertTrue($DB->record_exists('tool_coursemigration', [
@@ -64,8 +70,7 @@ class upload_course_list_test extends advanced_testcase {
             ]));
         }
 
-        $this->assertEquals($expected, $messages);
-
+        $this->assertEquals($expected, $results->get_result_message());
     }
 
     /**
@@ -77,14 +82,17 @@ class upload_course_list_test extends advanced_testcase {
             "One row, valid courseid and category" => [
                 'input' => ["courseid,categoryid",
                     "2,1"],
-                'expected' => "Errors in CSV file: 0<br\>\n<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\nFailed: 0<br\>",
-                'dbrecords' => [[2,1],],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'dbrecords' => [[2, 1], ],
             ],
             "One row, valid url and category" => [
                 'input' => ["url,categoryid",
                     "https://test39.localhost/course/view.php?id=2,1"],
-                'expected' => "Errors in CSV file: 0<br\>\n<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\nFailed: 0<br\>",
-                'dbrecords' => [[2,1],],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+
+                'dbrecords' => [[2, 1], ],
             ],
             "Four rows, one valid and three errors" => [
                 'input' => ["courseid,categoryid",
@@ -92,16 +100,17 @@ class upload_course_list_test extends advanced_testcase {
                     "a,2",
                     "3,abc",
                     "4.5,6"],
-                'expected' => "Errors in CSV file: 3<br\>\nNon integer value for courseid found on row 2<br\>Non integer value" .
-                    " for categoryid found on row 3<br\>Non integer value for courseid found on row 4<br\><br\>\nTotal rows:" .
-                    " 4<br\>\nSuccess: 1<br\>\nFailed: 3<br\>",
-                'dbrecords' => [[2,1],],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 4<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 3<br\>\nErrors in CSV file: 3<br\><br\>\n" .
+                    "Non integer value for courseid found on row 2<br\>Non integer value" .
+                    " for categoryid found on row 3<br\>Non integer value for courseid found on row 4",
+                'dbrecords' => [[2, 1], ],
             ],
             "Invalid columns" => [
                 'input' => ["invalid,invalid",
                     "2,1"],
                 'expected' => "CSV file must include one of courseid, url as column headings AND CSV file must include one of" .
-                    " categoryid, categoryid_number, categorypath as column headings",
+                    " categoryid as column headings",
                 'dbrecords' => [],
             ],
         ];
