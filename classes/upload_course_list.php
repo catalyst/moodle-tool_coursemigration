@@ -40,7 +40,7 @@ class upload_course_list {
 
     /**
      * List of valid colums and validation groups for each DB field.
-     * One of id or url AND one of category id, category id number, category path should be in the file to pass validation.
+     * One of id or url AND one of category id should be in the file to pass validation.
      */
     const VALID_COLUMN_GROUPS = [
         'courseid' => ['courseid', 'url'],

@@ -65,8 +65,8 @@ $string['csvfile_help'] = 'The format of the CSV file is as follows:
 
 * Each line of the file contains one record.
 * Each record is a series of data in any order separated by commas or other standard delimiters.
-* CSV fields that needs to be supported: id (course id), url (url to a course so we could get course id from url), destination category id, destination category id number, destination category path.
-* One of id or url should  AND one of category id, category id number, category path should be in the file to pass validation.';
+* CSV fields that needs to be supported: id (course id), url (url to a course so we could get course id from url), destination category id.
+* One of id or url should  AND one of category id should be in the file to pass validation.';
 
 $string['returnmessages'] = 'Errors in CSV file: {$a->errorcount}<br\>
 {$a->errormessages}<br\><br\>
