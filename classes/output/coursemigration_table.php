@@ -22,6 +22,7 @@ require_once($CFG->libdir . '/tablelib.php');
 
 use moodle_url;
 use table_sql;
+use html_writer;
 use stdClass;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\helper;
@@ -167,7 +168,13 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_course(stdClass $row): string {
-        return $row->coursename ?? '';
+        $coursename = $row->coursename ?? '';
+        if ($this->is_downloading()) {
+            return $coursename;
+        } else {
+            $url = new moodle_url('/course/view.php', ['id' => $row->courseid]);
+            return html_writer::link($url, $coursename);
+        }
     }
 
     /**
