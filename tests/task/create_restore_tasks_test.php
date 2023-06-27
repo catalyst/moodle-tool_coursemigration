@@ -73,6 +73,46 @@ class create_restore_tasks_test extends advanced_testcase {
     }
 
     /**
+     * Test ignoring backup tasks.
+     *
+     * @covers ::create_restore_tasks
+     */
+    public function test_create_restore_tasks_ignore_backup() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $category = $generator->create_category();
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'destinationcategoryid' => $category->id,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+        ]);
+        $coursemigration->save();
+
+        // Confirm there is no adhoc tasks.
+        $tasks = manager::get_adhoc_tasks(restore::class);
+        $this->assertCount(0, $tasks);
+
+        // Run the schedule task.
+        $task = new create_restore_tasks();
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        // Confirm there is a adhoc task.
+        $this->assertStringContainsString('0 courses found.', $output);
+        $tasks = manager::get_adhoc_tasks(restore::class);
+        $this->assertCount(0, $tasks);
+
+        // Confirm the status is not changed.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_NOT_STARTED, $currentcoursemigration->get('status'));
+    }
+
+    /**
      * Test create_restore_tasks.
      *
      * @covers ::create_restore_tasks
