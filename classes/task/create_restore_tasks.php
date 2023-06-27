@@ -16,19 +16,13 @@
 
 namespace tool_coursemigration\task;
 
-use backup;
 use core_course_category;
-use core\task\asynchronous_restore_task;
 use core\task\manager;
 use core\task\scheduled_task;
-use Exception;
 use moodle_exception;
 use tool_coursemigration\coursemigration;
-use restore_controller;
-use restore_controller_dbops;
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 
 /**
  * Scheduled task to create restore adhoc tasks.
@@ -61,41 +55,19 @@ class create_restore_tasks extends scheduled_task {
         mtrace(count($coursemigrations) . ' courses found.');
         foreach ($coursemigrations as $coursemigration) {
             try {
-                $category = core_course_category::get($coursemigration->get('destinationcategoryid'));
+                core_course_category::get($coursemigration->get('destinationcategoryid'));
+                $task = new restore();
+                $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+                $task->set_custom_data($customdata);
+                manager::queue_adhoc_task($task);
+                mtrace('A restore task has been successfully added. id=' . $coursemigration->get('id'));
+                $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS)
+                    ->save();
             } catch (moodle_exception $e) {
-                $errormsg = 'Invalid categoryid:' . $e->getMessage();
-                $coursemigration->set('status', coursemigration::STATUS_FAILED);
-                $coursemigration->set('error', $errormsg);
-                $coursemigration->save();
-                mtrace($errormsg);
-                continue;
-            }
-
-            $backupdir = "restore_" . uniqid();
-
-            try {
-                $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS);
-                $coursemigration->save();
-                list($fullname, $shortname) = restore_controller_dbops::calculate_course_names(0, get_string('restoringcourse', 'backup'),
-                    get_string('restoringcourseshortname', 'backup'));
-
-                $courseid = restore_controller_dbops::create_new_course($fullname, $shortname, $category->id);
-
-                $rc = new restore_controller($backupdir, $courseid, backup::INTERACTIVE_NO,
-                    backup::MODE_GENERAL, $USER->id, backup::TARGET_NEW_COURSE);
-
-                $restoreid = $rc->get_restoreid();
-                $asynctask = new asynchronous_restore_task();
-                $asynctask->set_blocking(false);
-                $asynctask->set_userid($USER->id);
-                $asynctask->set_custom_data(array('backupid' => $restoreid));
-                manager::queue_adhoc_task($asynctask);
-                mtrace('A restore task is successfully added.');
-            } catch (Exception $e) {
-                $errormsg = 'Cannot create adhoc task:' . $e->getMessage();
-                $coursemigration->set('status', coursemigration::STATUS_FAILED);
-                $coursemigration->set('error', $errormsg);
-                $coursemigration->save();
+                $errormsg = 'Could not create a restore task. id=' . $coursemigration->get('id') . ',error=' . $e->getMessage();
+                $coursemigration->set('status', coursemigration::STATUS_FAILED)
+                    ->set('error', $errormsg)
+                    ->save();
                 mtrace($errormsg);
                 continue;
             }

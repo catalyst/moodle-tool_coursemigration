@@ -17,7 +17,6 @@
 namespace tool_coursemigration\task;
 
 use advanced_testcase;
-use core\task\asynchronous_restore_task;
 use core\task\manager;
 use tool_coursemigration\coursemigration;
 
@@ -43,21 +42,18 @@ class create_restore_tasks_test extends advanced_testcase {
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $course = $generator->create_course();
         $category = $generator->create_category();
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
             'action' => coursemigration::ACTION_RESTORE,
-            'courseid' => $course->id,
             'destinationcategoryid' => $category->id,
             'status' => coursemigration::STATUS_NOT_STARTED,
-            'filename' => 'testfilename',
         ]);
         $coursemigration->save();
 
         // Confirm there is no adhoc tasks.
-        $tasks = manager::get_adhoc_tasks(asynchronous_restore_task::class);
+        $tasks = manager::get_adhoc_tasks(restore::class);
         $this->assertCount(0, $tasks);
 
         // Run the schedule task.
@@ -67,12 +63,52 @@ class create_restore_tasks_test extends advanced_testcase {
         $output = ob_get_clean();
 
         // Confirm there is a adhoc task.
-        $this->assertStringContainsString('A restore task is successfully added.', $output);
-        $tasks = manager::get_adhoc_tasks(asynchronous_restore_task::class);
+        $this->assertStringContainsString('A restore task has been successfully added. id=' . $coursemigration->get('id'), $output);
+        $tasks = manager::get_adhoc_tasks(restore::class);
         $this->assertCount(1, $tasks);
 
         // Confirm the status is changed.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
         $this->assertEquals(coursemigration::STATUS_IN_PROGRESS, $currentcoursemigration->get('status'));
+    }
+
+    /**
+     * Test create_restore_tasks.
+     *
+     * @covers ::create_restore_tasks
+     */
+    public function test_fail_to_create_restore_tasks() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $category = 99999;
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => $category,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+        ]);
+        $coursemigration->save();
+
+        // Confirm there is no adhoc tasks.
+        $tasks = manager::get_adhoc_tasks(restore::class);
+        $this->assertCount(0, $tasks);
+
+        // Run the schedule task.
+        $task = new create_restore_tasks();
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        // Confirm there is a adhoc task.
+        $this->assertStringContainsString('Could not create a restore task. id=' . $coursemigration->get('id'), $output);
+        $tasks = manager::get_adhoc_tasks(restore::class);
+        $this->assertCount(0, $tasks);
+
+        // Confirm the status is changed.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_FAILED, $currentcoursemigration->get('status'));
     }
 }
