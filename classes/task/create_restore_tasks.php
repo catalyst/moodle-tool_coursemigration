@@ -52,7 +52,10 @@ class create_restore_tasks extends scheduled_task {
 
         mtrace('Starting to create restore adhoc tasks for course migration.');
 
-        $coursemigrations = coursemigration::get_records(['status' => coursemigration::STATUS_NOT_STARTED]);
+        $coursemigrations = coursemigration::get_records([
+            'action' => coursemigration::ACTION_RESTORE,
+            'status' => coursemigration::STATUS_NOT_STARTED
+        ]);
         mtrace(count($coursemigrations) . ' courses found.');
         foreach ($coursemigrations as $coursemigration) {
             try {
