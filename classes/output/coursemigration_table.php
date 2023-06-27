@@ -126,7 +126,7 @@ class coursemigration_table extends table_sql implements renderable {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        if ($this->downloadable) {
+        if ($this->is_downloading()) {
             $pagesize = 0;
         }
 
