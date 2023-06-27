@@ -29,6 +29,7 @@ use tool_coursemigration\helper;
 use tool_coursemigration\event\file_processed;
 use tool_coursemigration\event\file_uploaded;
 use tool_coursemigration\form\upload_course_list_form;
+use tool_coursemigration\coursemigration;
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
@@ -62,6 +63,7 @@ if (!get_config('tool_coursemigration', 'destinationwsurl') || !get_config('tool
 };
 
 if ($data = $form->get_data()) {
+    $datefrom = time();
 
     // Trigger uploaded event.
     file_uploaded::create([
@@ -97,9 +99,16 @@ if ($data = $form->get_data()) {
     ])->trigger();
 
     $notificationtype = $results->get_success() > 0 ? notification::NOTIFY_SUCCESS : notification::NOTIFY_ERROR;
-    echo $OUTPUT->notification($results->get_result_message(), $notificationtype);
-    echo $OUTPUT->continue_button($returnurl);
 
+    echo $OUTPUT->notification($results->get_result_message(), $notificationtype);
+
+    if ($notificationtype == notification::NOTIFY_SUCCESS) {
+        echo html_writer::link(new moodle_url('/admin/tool/coursemigration/reports.php', [
+            'action' => coursemigration::ACTION_BACKUP,
+            'datefrom' => $datefrom,
+        ]), get_string('checkprogress', 'tool_coursemigration'));
+    }
+    echo $OUTPUT->continue_button($returnurl);
 } else {
     $form->display();
 }
