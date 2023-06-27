@@ -20,8 +20,8 @@ use advanced_testcase;
 use backup;
 use backup_controller;
 use context_course;
-use core\task\asynchronous_restore_task;
 use core\task\manager;
+use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
 
 defined('MOODLE_INTERNAL') || die();
@@ -86,12 +86,7 @@ class restore_test extends advanced_testcase {
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
-        ob_start();
         $task->execute();
-        $output = ob_get_clean();
-
-        // Confirm there is a adhoc task.
-        $this->assertStringContainsString('The restore task has been successfully completed.', $output);
 
         // Confirm the status is now completed.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
@@ -102,5 +97,41 @@ class restore_test extends advanced_testcase {
         $this->assertNotEquals($course->id, $newcourse->id);
         $this->assertEquals($category->id, $newcourse->category);
         $this->assertStringContainsString('Test restore course', $newcourse->fullname);
+    }
+
+    /**
+     * Test restore without param.
+     *
+     * @covers ::restore
+     */
+    public function test_restore_invalid_param() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $task = new restore();
+        manager::queue_adhoc_task($task);
+
+        $this->expectException(invalid_parameter_exception::class);
+        $this->expectExceptionMessage('Invalid data. Error: missing one of the required parameters.');
+        $task->execute();
+    }
+
+    /**
+     * Test restore.
+     *
+     * @covers ::restore
+     */
+    public function test_restore_invalid_value() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $task = new restore();
+        $customdata = ['coursemigrationid' => 12345];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+
+        $this->expectException(invalid_parameter_exception::class);
+        $this->expectExceptionMessage('Invalid id. Error: could not find record for restore.');
+        $task->execute();
     }
 }

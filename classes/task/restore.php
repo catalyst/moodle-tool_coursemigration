@@ -19,6 +19,7 @@ namespace tool_coursemigration\task;
 use backup;
 use core\task\adhoc_task;
 use Exception;
+use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
 use restore_controller;
 use restore_dbops;
@@ -44,16 +45,17 @@ class restore extends adhoc_task {
     public function execute() {
         global $CFG, $USER;
 
-        mtrace('Start to restore the course.');
-        $coursemigrationid = $this->get_custom_data()->coursemigrationid;
+        $data = (array) $this->get_custom_data();
+        if (!$this->is_custom_data_valid($data)) {
+            // TODO: #18 Event when restore adhoc task failed.
+            throw new invalid_parameter_exception('Invalid data. Error: missing one of the required parameters.');
+        }
+
+        $coursemigrationid = $data['coursemigrationid'];
         $coursemigration = coursemigration::get_record(['id' => $coursemigrationid]);
         if (empty($coursemigration)) {
-            $errormsg = 'Could not find coursemigration record.';
-            $coursemigration->set('status', coursemigration::STATUS_FAILED)
-                ->set('error', $errormsg)
-                ->save();
-            mtrace($errormsg);
-            return;
+            // TODO: #18 Event when restore adhoc task failed.
+            throw new invalid_parameter_exception('Invalid id. Error: could not find record for restore.');
         }
 
         $backupdir = "restore_" . uniqid();
@@ -61,6 +63,7 @@ class restore extends adhoc_task {
 
         try {
             $fp = get_file_packer('application/vnd.moodle.backup');
+            // TODO: Replace the filename to actual location.
             $fp->extract_to_pathname($coursemigration->get('filename'), $path);
 
             list($fullname, $shortname) = restore_dbops::calculate_course_names(0, get_string('restoringcourse', 'backup'),
@@ -77,14 +80,32 @@ class restore extends adhoc_task {
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
                 ->set('courseid', $courseid)
                 ->save();
-            mtrace('The restore task has been successfully completed.');
+            // TODO: #17 Event when restore adhoc task completed.
         } catch (Exception $e) {
             $errormsg = 'Cannot restore the course. ' . $e->getMessage();
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $errormsg)
                 ->save();
-            mtrace($errormsg);
+            // TODO: #18 Event when restore adhoc task failed.
             fulldelete($path);
         }
+    }
+
+    /**
+     * Check custom data is valid, (contains all required params).
+     *
+     * @param array $data custom data to validate.
+     * @return bool true if valid, false otherwise.
+     */
+    protected function is_custom_data_valid(array $data): bool {
+        $keys = array_keys($data);
+        $requiredfields = ['coursemigrationid'];
+
+        foreach ($requiredfields as $requiredfield) {
+            if (!in_array($requiredfield, $keys)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
