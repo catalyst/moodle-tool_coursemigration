@@ -66,7 +66,7 @@ class coursemigration_table extends table_sql implements renderable {
         $this->define_headers([
             get_string('action'),
             get_string('course'),
-            get_string('category'),
+            get_string('destinationcategory', 'tool_coursemigration'),
             get_string('status'),
             get_string('filename', 'tool_coursemigration'),
             get_string('timecreated', 'tool_coursemigration'),
