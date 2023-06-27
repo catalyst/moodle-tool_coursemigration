@@ -17,6 +17,8 @@
 namespace tool_coursemigration;
 
 use context_user;
+use core_course_category;
+use invalid_parameter_exception;
 
 /**
  * Helper class.
@@ -122,5 +124,32 @@ class helper {
         }
 
         return $filename;
+    }
+
+    /**
+     * Get category by categoryid with defaultcategory fallback.
+     *
+     * @param int $categoryid
+     * @return core_course_category
+     */
+    public static function get_restore_category(int $categoryid): core_course_category {
+
+        // Check that category exists.
+        if (!empty($categoryid)) {
+            $category = core_course_category::get($categoryid, IGNORE_MISSING);
+        }
+
+        // If category is not exist fall back to configured default category.
+        if (empty($category)) {
+            $categoryid = get_config('tool_coursemigration', 'defaultcategory');
+            $category = core_course_category::get($categoryid, IGNORE_MISSING);
+        }
+
+        // If default category is also not exist, then explode.
+        if (empty($category)) {
+            throw new invalid_parameter_exception('Invalid category');
+        }
+
+        return $category;
     }
 }

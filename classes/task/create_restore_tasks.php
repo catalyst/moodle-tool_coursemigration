@@ -21,6 +21,7 @@ use core\task\manager;
 use core\task\scheduled_task;
 use moodle_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\helper;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -55,7 +56,7 @@ class create_restore_tasks extends scheduled_task {
         mtrace(count($coursemigrations) . ' courses found.');
         foreach ($coursemigrations as $coursemigration) {
             try {
-                core_course_category::get($coursemigration->get('destinationcategoryid'));
+                $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
                 $task = new restore();
                 $customdata = ['coursemigrationid' => $coursemigration->get('id')];
                 $task->set_custom_data($customdata);

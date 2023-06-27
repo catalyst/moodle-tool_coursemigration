@@ -81,13 +81,12 @@ class create_restore_tasks_test extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        $generator = $this->getDataGenerator();
-        $category = 99999;
+        set_config('defaultcategory', 12345, 'tool_coursemigration');
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
             'action' => coursemigration::ACTION_RESTORE,
-            'destinationcategoryid' => $category,
+            'destinationcategoryid' => 99999,
             'status' => coursemigration::STATUS_NOT_STARTED,
         ]);
         $coursemigration->save();

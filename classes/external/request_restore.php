@@ -20,9 +20,9 @@ use external_api;
 use external_function_parameters;
 use external_value;
 use invalid_parameter_exception;
-use core_course_category;
 use context_coursecat;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\helper;
 
 /**
  * Request restore external APIs.
@@ -58,21 +58,8 @@ class request_restore extends external_api {
             'categoryid' => $categoryid,
         ]);
 
-        // Check that category exists.
-        if (!empty($categoryid)) {
-            $category = core_course_category::get($categoryid, IGNORE_MISSING);
-        }
-
-        // If category is not exist fall back to configured default category.
-        if (empty($category)) {
-            $categoryid = get_config('tool_coursemigration', 'defaultcategory');
-            $category = core_course_category::get($categoryid, IGNORE_MISSING);
-        }
-
-        // If default category is also not exist, then explode.
-        if (empty($category)) {
-            throw new invalid_parameter_exception('Invalid category');
-        }
+        $category = helper::get_restore_category($categoryid);
+        $categoryid = $category->id;
 
         $context = context_coursecat::instance($categoryid);
         self::validate_context($context);
