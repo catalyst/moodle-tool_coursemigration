@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['coursemigration:restorecourse'] = 'Restore courses';
+$string['destinationcategory'] = 'Destination category';
 $string['filename'] = 'Filename';
 $string['filters'] = 'Filters';
 $string['pluginname'] = 'Course migration';

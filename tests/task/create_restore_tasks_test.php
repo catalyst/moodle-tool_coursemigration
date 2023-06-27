@@ -102,7 +102,7 @@ class create_restore_tasks_test extends advanced_testcase {
         $task->execute();
         $output = ob_get_clean();
 
-        // Confirm there is a adhoc task.
+        // Confirm there is still no adhoc tasks.
         $this->assertStringContainsString('0 courses found.', $output);
         $tasks = manager::get_adhoc_tasks(restore::class);
         $this->assertCount(0, $tasks);
