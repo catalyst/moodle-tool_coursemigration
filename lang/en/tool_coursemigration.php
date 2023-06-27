@@ -81,6 +81,7 @@ $string['status:inprogress'] = 'In progress';
 $string['status:completed'] = 'Completed';
 $string['status:failed'] = 'Failed';
 $string['status:invalid'] = 'Invalid';
+$string['task:createrestoretasks'] = 'Create restore adhoc tasks for course migration';
 $string['timecreated'] = 'Time created';
 $string['timemodified'] = 'Time modified';
 $string['event:file_uploaded'] = 'File uploaded';

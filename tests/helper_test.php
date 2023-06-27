@@ -18,6 +18,7 @@ namespace tool_coursemigration;
 
 use advanced_testcase;
 use context_user;
+use invalid_parameter_exception;
 
 /**
  * Tests for helper class.
@@ -134,5 +135,37 @@ class helper_test extends advanced_testcase {
         $this->setAdminUser();
         $this->assertSame('', helper::get_uploaded_filename(99999));
         $this->assertSame('', helper::get_uploaded_filename($uploadedfile->get_itemid()));
+    }
+
+    /**
+     * Test restore category.
+     */
+    public function test_get_restore_category() {
+        $this->resetAfterTest();
+        $category = $this->getDataGenerator()->create_category();
+        $restorecategory = helper::get_restore_category($category->id);
+        $this->assertEquals($category->id, $restorecategory->id);
+    }
+
+    /**
+     * Test restore default category.
+     */
+    public function test_get_restore_category_default() {
+        $this->resetAfterTest();
+        $category = $this->getDataGenerator()->create_category();
+        set_config('defaultcategory', $category->id, 'tool_coursemigration');
+        $restorecategory = helper::get_restore_category(99999);
+        $this->assertEquals($category->id, $restorecategory->id);
+    }
+
+    /**
+     * Test invalid category.
+     */
+    public function test_get_restore_category_invalid() {
+        $this->resetAfterTest();
+        set_config('defaultcategory', 12345, 'tool_coursemigration');
+        $this->expectException(invalid_parameter_exception::class);
+        $this->expectExceptionMessage('Invalid category');
+        $restorecategory = helper::get_restore_category(99999);
     }
 }
