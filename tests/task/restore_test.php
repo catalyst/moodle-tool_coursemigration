@@ -23,6 +23,7 @@ use context_course;
 use core\task\manager;
 use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\event\restore_completed;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -51,6 +52,7 @@ class restore_test extends advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         // Create a course with some availability data set.
         $generator = $this->getDataGenerator();
@@ -97,6 +99,21 @@ class restore_test extends advanced_testcase {
         $this->assertNotEquals($course->id, $newcourse->id);
         $this->assertEquals($category->id, $newcourse->category);
         $this->assertStringContainsString('Test restore course', $newcourse->fullname);
+
+        $eventclass = restore_completed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals($newcourse->id, $event->other['courseid']);
+        $this->assertEquals($newcourse->fullname, $event->other['coursename']);
+        $this->assertEquals($category->id, $event->other['destinationcategoryid']);
+        $this->assertEquals($category->name, $event->other['destinationcategoryname']);
+        $expectdescription = "Restoring course '{$newcourse->fullname}' (id: {$newcourse->id})" .
+            " is successfully completed into category '{$category->name}' (id: {$category->id}).";
+        $this->assertEquals($expectdescription, $event->get_description());
+        $this->assertEquals(get_string('event:restore_completed', 'tool_coursemigration'), $event->get_name());
     }
 
     /**

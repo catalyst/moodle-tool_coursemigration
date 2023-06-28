@@ -20,8 +20,6 @@ use advanced_testcase;
 use core\task\manager;
 use tool_coursemigration\coursemigration;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Create restore tasks tests.
  *
