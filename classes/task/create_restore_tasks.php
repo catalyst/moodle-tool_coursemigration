@@ -23,8 +23,6 @@ use moodle_exception;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\helper;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Scheduled task to create restore adhoc tasks.
  *

@@ -21,6 +21,8 @@ use core\task\adhoc_task;
 use Exception;
 use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\event\restore_completed;
+use tool_coursemigration\helper;
 use restore_controller;
 use restore_dbops;
 
@@ -71,6 +73,7 @@ class restore extends adhoc_task {
 
             $courseid = restore_dbops::create_new_course($fullname, $shortname, $coursemigration->get('destinationcategoryid'));
             $coursemigration->set('courseid', $courseid)->save();
+            $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
 
             $rc = new restore_controller($backupdir, $courseid, backup::INTERACTIVE_NO,
                 backup::MODE_GENERAL, $USER->id, backup::TARGET_NEW_COURSE);
@@ -80,7 +83,17 @@ class restore extends adhoc_task {
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
                 ->set('courseid', $courseid)
                 ->save();
-            // TODO: #17 Event when restore adhoc task completed.
+            $course = get_course($courseid);
+            restore_completed::create([
+                'objectid' => $coursemigration->get('id'),
+                'other' => [
+                    'courseid' => $courseid,
+                    'coursename' => $course->fullname,
+                    'destinationcategoryid' => $coursemigration->get('destinationcategoryid'),
+                    'destinationcategoryname' => $category->name,
+                ]
+            ])->trigger();
+
         } catch (Exception $e) {
             $errormsg = 'Cannot restore the course. ' . $e->getMessage();
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
