@@ -88,4 +88,5 @@ $string['timemodified'] = 'Time modified';
 $string['event:file_uploaded'] = 'File uploaded';
 $string['event:file_processed'] = 'File processed';
 $string['event:restore_completed'] = 'Restore completed';
+$string['event:restore_failed'] = 'Restore failed';
 $string['checkprogress'] = 'Check progress';

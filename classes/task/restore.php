@@ -22,6 +22,7 @@ use Exception;
 use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
+use tool_coursemigration\event\restore_failed;
 use tool_coursemigration\helper;
 use restore_controller;
 use restore_dbops;
@@ -49,15 +50,27 @@ class restore extends adhoc_task {
 
         $data = (array) $this->get_custom_data();
         if (!$this->is_custom_data_valid($data)) {
-            // TODO: #18 Event when restore adhoc task failed.
-            throw new invalid_parameter_exception('Invalid data. Error: missing one of the required parameters.');
+            $errormsg = 'Invalid data. Error: missing one of the required parameters.';
+            restore_failed::create([
+                'objectid' => 0,
+                'other' => [
+                    'error' => $errormsg,
+                ]
+            ])->trigger();
+            throw new invalid_parameter_exception($errormsg);
         }
 
         $coursemigrationid = $data['coursemigrationid'];
         $coursemigration = coursemigration::get_record(['id' => $coursemigrationid]);
         if (empty($coursemigration)) {
-            // TODO: #18 Event when restore adhoc task failed.
-            throw new invalid_parameter_exception('Invalid id. Error: could not find record for restore.');
+            $errormsg = 'Invalid id. Error: could not find record for restore.';
+            restore_failed::create([
+                'objectid' => 0,
+                'other' => [
+                    'error' => $errormsg,
+                ]
+            ])->trigger();
+            throw new invalid_parameter_exception($errormsg);
         }
 
         $backupdir = "restore_" . uniqid();
@@ -99,7 +112,12 @@ class restore extends adhoc_task {
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $errormsg)
                 ->save();
-            // TODO: #18 Event when restore adhoc task failed.
+            restore_failed::create([
+                'objectid' => $coursemigration->get('id'),
+                'other' => [
+                    'error' => $errormsg,
+                ]
+            ])->trigger();
             fulldelete($path);
         }
     }
