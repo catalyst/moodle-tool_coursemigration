@@ -21,9 +21,11 @@ use backup;
 use backup_controller;
 use context_course;
 use core\task\manager;
+use Exception;
 use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
+use tool_coursemigration\event\restore_failed;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -48,7 +50,7 @@ class restore_test extends advanced_testcase {
      * @covers ::restore
      */
     public function test_restore() {
-        global $CFG, $USER, $DB;
+        global $CFG, $USER;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -124,31 +126,101 @@ class restore_test extends advanced_testcase {
     public function test_restore_invalid_param() {
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         $task = new restore();
         manager::queue_adhoc_task($task);
 
-        $this->expectException(invalid_parameter_exception::class);
-        $this->expectExceptionMessage('Invalid data. Error: missing one of the required parameters.');
-        $task->execute();
+        try {
+            $task->execute();
+        } catch (Exception $e) {
+            $exceptionclassname = invalid_parameter_exception::class;
+            $this->assertTrue($e instanceof $exceptionclassname);
+            $this->assertStringContainsString('Invalid data. Error: missing one of the required parameters.', $e->getMessage());
+        }
+
+        $eventclass = restore_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $expectdescription = "Restoring course is failed. Error: Invalid data. Error: missing one of the required parameters.";
+        $this->assertEquals($expectdescription, $event->get_description());
+        $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
     }
 
     /**
-     * Test restore.
+     * Test restore with invalid coursemigrationid.
      *
      * @covers ::restore
      */
-    public function test_restore_invalid_value() {
+    public function test_restore_invalid_coursemigrationid() {
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         $task = new restore();
         $customdata = ['coursemigrationid' => 12345];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
 
-        $this->expectException(invalid_parameter_exception::class);
-        $this->expectExceptionMessage('Invalid id. Error: could not find record for restore.');
+        try {
+            $task->execute();
+        } catch (Exception $e) {
+            $exceptionclassname = invalid_parameter_exception::class;
+            $this->assertTrue($e instanceof $exceptionclassname);
+            $this->assertStringContainsString('Invalid id. Error: could not find record for restore.', $e->getMessage());
+        }
+
+        $eventclass = restore_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $expectdescription = "Restoring course is failed. Error: Invalid id. Error: could not find record for restore.";
+        $this->assertEquals($expectdescription, $event->get_description());
+        $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
+    }
+
+    /**
+     * Test restore with invalid filename.
+     *
+     * @covers ::restore
+     */
+    public function test_restore_invalid_filename() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
+
+        // Create a course with some availability data set.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test restore course']);
+        $category = $generator->create_category();
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => $category->id,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => 'invalid file name',
+        ]);
+        $coursemigration->save();
+
+        $task = new restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
         $task->execute();
+
+        $eventclass = restore_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertStringContainsString("No such file or directory", $event->get_description());
+        $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
     }
 }

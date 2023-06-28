@@ -46,8 +46,6 @@ class create_restore_tasks extends scheduled_task {
      * Run the task to create restore adhoc tasks.
      */
     public function execute() {
-        global $USER;
-
         mtrace('Starting to create restore adhoc tasks for course migration.');
 
         $coursemigrations = coursemigration::get_records([
