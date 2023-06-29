@@ -61,9 +61,10 @@ $string['settings_link_text'] = 'Admin tools -> Course migration';
 $string['missing_column'] = 'CSV file must include one of {$a->columnlist} as column headings';
 $string['error:nonintegervalue'] = 'Non integer value for {$a->csvcolumn} found on row {$a->rownumber}';
 $string['error:pluginnotsetup'] = 'The course migration plugin is not setup: [Destination URL] and [Web service token] need to be configured in {$a}';
-$string['error:createbackuptask'] = 'Error in creating backup task id: {a$->coursemigrationid} error message: {$a->errormessage}';
+$string['error:createbackuptask'] = 'Error in creating backup task id: {$a->coursemigrationid} error message: {$a->errormessage}';
 $string['error:backupalreadyrunning'] = 'Backup adhoc task id: {a$->coursemigrationid} for course: {$a->courseid} is already running.';
-$string['successfullycreatebackuptask'] = 'Successfully created backup task id: {a$->coursemigrationid}';
+$string['error:copydestination'] = 'Error in copying file to destination directory: {$a}.';
+$string['successfullycreatebackuptask'] = 'Successfully created backup task id: {$a->coursemigrationid}';
 $string['examplecsv'] = 'Example text file';
 $string['examplecsv_help'] = 'To use the example text file, download it then open it with a text or spreadsheet editor. Leave the first line unchanged, then edit the following lines (records) and add your course ids and category ids. Save the file as CSV then upload it.';
 

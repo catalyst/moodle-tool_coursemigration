@@ -19,49 +19,52 @@ namespace tool_coursemigration\task;
 use advanced_testcase;
 use core\task\manager;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\task\restore;
 
 /**
- * Create restore tasks tests.
+ * Create backup tasks tests.
  *
  * @package    tool_coursemigration
  * @author     Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
  * @copyright  2023 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \tool_coursemigration\task\create_restore_tasks
  */
-class create_restore_tasks_test extends advanced_testcase {
+class create_backup_tasks_test extends advanced_testcase {
 
     /**
-     * Test create_restore_tasks.
+     * Test create_backup_tasks.
+     *
+     * @covers ::create_backup_tasks
      */
-    public function test_create_restore_tasks() {
+    public function test_create_backup_tasks() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $category = $generator->create_category();
+        $course = $generator->create_course();
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
-            'action' => coursemigration::ACTION_RESTORE,
-            'destinationcategoryid' => $category->id,
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
             'status' => coursemigration::STATUS_NOT_STARTED,
         ]);
         $coursemigration->save();
 
         // Confirm there is no adhoc tasks.
-        $tasks = manager::get_adhoc_tasks(course_restore::class);
+        $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(0, $tasks);
 
         // Run the schedule task.
-        $task = new create_restore_tasks();
+        $task = new create_backup_tasks();
         ob_start();
         $task->execute();
         $output = ob_get_clean();
 
         // Confirm there is a adhoc task.
-        $this->assertStringContainsString('A restore task has been successfully added. id=' . $coursemigration->get('id'), $output);
-        $tasks = manager::get_adhoc_tasks(course_restore::class);
+        $this->assertStringContainsString('Successfully created backup task id: ' . $coursemigration->get('id'), $output);
+        $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(1, $tasks);
 
         // Confirm the status is changed.
@@ -71,35 +74,36 @@ class create_restore_tasks_test extends advanced_testcase {
 
     /**
      * Test ignoring backup tasks.
+     *
+     * @covers ::create_backup_tasks
      */
-    public function test_create_restore_tasks_ignore_backup() {
+    public function test_create_backup_tasks_ignore_restore() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $category = $generator->create_category();
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
-            'action' => coursemigration::ACTION_BACKUP,
-            'destinationcategoryid' => $category->id,
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => 1,
             'status' => coursemigration::STATUS_NOT_STARTED,
         ]);
         $coursemigration->save();
 
         // Confirm there is no adhoc tasks.
-        $tasks = manager::get_adhoc_tasks(course_restore::class);
+        $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(0, $tasks);
 
         // Run the schedule task.
-        $task = new create_restore_tasks();
+        $task = new create_backup_tasks();
         ob_start();
         $task->execute();
         $output = ob_get_clean();
 
         // Confirm there is still no adhoc tasks.
-        $this->assertStringContainsString('0 courses found.', $output);
-        $tasks = manager::get_adhoc_tasks(course_restore::class);
+        $this->assertStringContainsString('Found 0 courses to backup', $output);
+        $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(0, $tasks);
 
         // Confirm the status is not changed.
@@ -108,35 +112,36 @@ class create_restore_tasks_test extends advanced_testcase {
     }
 
     /**
-     * Test create_restore_tasks.
+     * Test create_backup_tasks.
+     *
+     * @covers ::create_backup_tasks
      */
-    public function test_fail_to_create_restore_tasks() {
+    public function test_fail_to_create_backup_tasks() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        set_config('defaultcategory', 12345, 'tool_coursemigration');
-
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
-            'action' => coursemigration::ACTION_RESTORE,
-            'destinationcategoryid' => 99999,
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => 99999,
+            'destinationcategoryid' => 1,
             'status' => coursemigration::STATUS_NOT_STARTED,
         ]);
         $coursemigration->save();
 
         // Confirm there is no adhoc tasks.
-        $tasks = manager::get_adhoc_tasks(course_restore::class);
+        $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(0, $tasks);
 
         // Run the schedule task.
-        $task = new create_restore_tasks();
+        $task = new create_backup_tasks();
         ob_start();
         $task->execute();
         $output = ob_get_clean();
 
         // Confirm there is a adhoc task.
-        $this->assertStringContainsString('Could not create a restore task. id=' . $coursemigration->get('id'), $output);
-        $tasks = manager::get_adhoc_tasks(course_restore::class);
+        $this->assertStringContainsString('Error in creating backup task id: ' . $coursemigration->get('id'), $output);
+        $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(0, $tasks);
 
         // Confirm the status is changed.

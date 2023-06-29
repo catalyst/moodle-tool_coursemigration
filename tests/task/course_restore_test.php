@@ -35,19 +35,18 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 require_once($CFG->libdir . '/completionlib.php');
 
 /**
- * Create restore tests.
+ * Course restore tests.
  *
  * @package    tool_coursemigration
  * @author     Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
  * @copyright  2023 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \tool_coursemigration\task\course_restore
  */
-class restore_test extends advanced_testcase {
+class course_restore_test extends advanced_testcase {
 
     /**
      * Test restore.
-     *
-     * @covers ::restore
      */
     public function test_restore() {
         global $CFG, $USER;
@@ -86,7 +85,7 @@ class restore_test extends advanced_testcase {
         ]);
         $coursemigration->save();
 
-        $task = new restore();
+        $task = new course_restore();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
@@ -128,7 +127,7 @@ class restore_test extends advanced_testcase {
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
 
-        $task = new restore();
+        $task = new course_restore();
         manager::queue_adhoc_task($task);
 
         try {
@@ -160,7 +159,7 @@ class restore_test extends advanced_testcase {
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
 
-        $task = new restore();
+        $task = new course_restore();
         $customdata = ['coursemigrationid' => 12345];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
@@ -208,7 +207,7 @@ class restore_test extends advanced_testcase {
         ]);
         $coursemigration->save();
 
-        $task = new restore();
+        $task = new course_restore();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);

@@ -56,7 +56,7 @@ class create_restore_tasks extends scheduled_task {
         foreach ($coursemigrations as $coursemigration) {
             try {
                 $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
-                $task = new restore();
+                $task = new course_restore();
                 $customdata = ['coursemigrationid' => $coursemigration->get('id')];
                 $task->set_custom_data($customdata);
                 manager::queue_adhoc_task($task);

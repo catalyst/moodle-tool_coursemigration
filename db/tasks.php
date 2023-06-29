@@ -27,13 +27,13 @@ defined('MOODLE_INTERNAL') || die();
 
 $tasks = [
     [
-        'classname' => 'tool_coursemigration\task\backup',
-        'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
-        'day' => '*',
+        'classname' => 'tool_coursemigration\task\create_backup_tasks',
+        'blocking'  => 0,
+        'minute'    => '*',
+        'hour'      => '*',
+        'day'       => '*',
         'dayofweek' => '*',
-        'month' => '*'
+        'month'     => '*'
     ],
     [
         'classname' => 'tool_coursemigration\task\create_restore_tasks',
