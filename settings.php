@@ -23,6 +23,9 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_coursemigration\local\storage\backup_directory;
+use tool_coursemigration\local\storage\storage_setting_configselect;
+
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
@@ -69,9 +72,10 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_heading('tool_coursemigration/storage',
             new lang_string('settings:storage', 'tool_coursemigration'), ''));
 
-        // WIP
-        // $settings->add(new tool_coursemigration_storage('saveto'));
-        // $settings->add(new tool_coursemigration_storage('restorefrom'));
+        $settings->add(new storage_setting_configselect());
+
+        $settings->add(new backup_directory('saveto'));
+        $settings->add(new backup_directory('restorefrom'));
 
     }
 
