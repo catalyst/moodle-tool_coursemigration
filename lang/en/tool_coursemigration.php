@@ -94,4 +94,6 @@ $string['event:file_uploaded'] = 'File uploaded';
 $string['event:file_processed'] = 'File processed';
 $string['event:restore_completed'] = 'Restore completed';
 $string['event:restore_failed'] = 'Restore failed';
+$string['event:http_request_failed'] = 'HTTP request failed';
 $string['checkprogress'] = 'Check progress';
+$string['error:http:get'] = 'Error attempting to make HTTP request: {$a}.';

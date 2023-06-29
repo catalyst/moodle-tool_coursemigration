@@ -97,7 +97,7 @@ class coursemigration_table extends table_sql implements renderable {
                        c.fullname coursename, cc.name coursecategoryname
                   FROM {tool_coursemigration} tc
              LEFT JOIN {course} c ON tc.courseid = c.id
-             LEFT JOIN {course_categories} cc ON c.category = cc.id';
+             LEFT JOIN {course_categories} cc ON tc.destinationcategoryid = cc.id';
         $where = [];
         $params = [];
         foreach ($this->filters as $field => $value) {
