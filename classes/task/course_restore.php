@@ -40,7 +40,7 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  * @copyright  2023 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class restore extends adhoc_task {
+class course_restore extends adhoc_task {
 
     /**
      * Run the task to restore the course.

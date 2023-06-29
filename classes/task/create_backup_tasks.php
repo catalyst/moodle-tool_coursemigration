@@ -16,22 +16,21 @@
 
 namespace tool_coursemigration\task;
 
-use core_course_category;
 use core\task\manager;
 use core\task\scheduled_task;
 use moodle_exception;
 use tool_coursemigration\coursemigration;
-use tool_coursemigration\helper;
 
 /**
- * Scheduled task to create restore adhoc tasks.
+ * Class that has functions to create ad-hoc backup tasks;
  *
  * @package    tool_coursemigration
- * @author     Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
+ * @author     Glenn Poder <glennpoder@catalyst-au.net>
  * @copyright  2023 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
  */
-class create_restore_tasks extends scheduled_task {
+class create_backup_tasks extends scheduled_task {
 
     /**
      * Returns the task name.
@@ -39,38 +38,51 @@ class create_restore_tasks extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('task:createrestoretasks', 'tool_coursemigration');
+        return get_string('task:createbackuptasks', 'tool_coursemigration');
     }
 
     /**
-     * Run the task to create restore adhoc tasks.
+     * Create ad-hoc backup tasks.
      */
     public function execute() {
-        mtrace('Starting to create restore adhoc tasks for course migration.');
+
+        mtrace('Starting to create backup adhoc tasks for course migration.');
 
         $coursemigrations = coursemigration::get_records([
-            'action' => coursemigration::ACTION_RESTORE,
+            'action' => coursemigration::ACTION_BACKUP,
             'status' => coursemigration::STATUS_NOT_STARTED
         ]);
-        mtrace(count($coursemigrations) . ' courses found.');
+
+        mtrace('  Found ' . count($coursemigrations) . ' courses to backup');
         foreach ($coursemigrations as $coursemigration) {
             try {
-                $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
-                $task = new course_restore();
-                $customdata = ['coursemigrationid' => $coursemigration->get('id')];
-                $task->set_custom_data($customdata);
-                manager::queue_adhoc_task($task);
-                mtrace('A restore task has been successfully added. id=' . $coursemigration->get('id'));
+                $courseid = $coursemigration->get('courseid');
+                // Check if the provided course exists. If not, update status to Failed and save the error.
+                $course = get_course($courseid);
+
+                $asynctask = new course_backup();
+                $asynctask->set_blocking(false);
+                $asynctask->set_custom_data([
+                    'coursemigrationid' => $coursemigration->get('id')
+                ]);
+                manager::queue_adhoc_task($asynctask);
                 $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS)
                     ->save();
+                mtrace(get_string('successfullycreatebackuptask', 'tool_coursemigration', [
+                    'coursemigrationid' => $coursemigration->get('id'),
+                ]));
             } catch (moodle_exception $e) {
-                $errormsg = 'Could not create a restore task. id=' . $coursemigration->get('id') . ',error=' . $e->getMessage();
+                $message = get_string('error:createbackuptask', 'tool_coursemigration', [
+                    'coursemigrationid' => $coursemigration->get('id'),
+                    'errormessage' => $e->getMessage()
+                ]);
                 $coursemigration->set('status', coursemigration::STATUS_FAILED)
-                    ->set('error', $errormsg)
+                    ->set('error', $message)
                     ->save();
-                mtrace($errormsg);
+                mtrace($message);
                 continue;
             }
         }
     }
+
 }

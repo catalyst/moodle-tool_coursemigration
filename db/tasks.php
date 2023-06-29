@@ -15,17 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tasks definition.
+ * Definition of course migration tasks.
  *
  * @package    tool_coursemigration
- * @author     Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
+ * @author     Glenn Poder <glennpoder@catalyst-au.net>
  * @copyright  2023 Catalyst IT
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $tasks = [
+    [
+        'classname' => 'tool_coursemigration\task\create_backup_tasks',
+        'blocking'  => 0,
+        'minute'    => '*',
+        'hour'      => '*',
+        'day'       => '*',
+        'dayofweek' => '*',
+        'month'     => '*'
+    ],
     [
         'classname' => 'tool_coursemigration\task\create_restore_tasks',
         'blocking'  => 0,
@@ -36,4 +45,3 @@ $tasks = [
         'month'     => '*'
     ],
 ];
-
