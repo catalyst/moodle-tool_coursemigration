@@ -106,7 +106,6 @@ class course_backup extends adhoc_task {
                     throw new file_exception($message);
                 }
             }
-            $bc->destroy();
         } catch (moodle_exception $e) {
             $message = $e->getMessage();
             $cmrecord->set('status', coursemigration::STATUS_FAILED)
@@ -117,6 +116,9 @@ class course_backup extends adhoc_task {
             // Delete backup file from course.
             if (isset($file) && $file) {
                 $file->delete();
+            }
+            if (!empty($bc)) {
+                $bc->destroy();
             }
         }
     }

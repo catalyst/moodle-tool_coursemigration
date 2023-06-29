@@ -38,7 +38,7 @@ class create_backup_tasks extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('create_ad-hoc_backup_tasks', 'tool_coursemigration');
+        return get_string('task:createbackuptasks', 'tool_coursemigration');
     }
 
     /**
