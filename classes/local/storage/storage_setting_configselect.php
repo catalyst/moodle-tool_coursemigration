@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_coursemigration\local\storage;
+
 /**
  * Autoloads course migration storage config select.
  *
@@ -22,9 +24,6 @@
  * @copyright  2023 Catalyst IT
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_coursemigration\local\storage;
-
 class storage_setting_configselect extends \admin_setting_configselect {
     /**
      * Calls parent::__construct with specific arguments.
@@ -40,7 +39,12 @@ class storage_setting_configselect extends \admin_setting_configselect {
             $options
         );
     }
-    public static function get_storage_names() {
+
+    /**
+     * Gets the display name of the storage classes to be used in config settings.
+     * @return array A list of the options for the drop down list.
+     */
+    public static function get_storage_names(): array {
         $storagenames = [];
         $files = scandir(__DIR__  . '/type');
         foreach ($files as $file) {
@@ -54,17 +58,5 @@ class storage_setting_configselect extends \admin_setting_configselect {
             $storagenames[$base] = $storageclass::STORAGE_TYPE_NAME;
         }
         return $storagenames;
-    }
-
-    /**
-     * Returns a storage class object as selected in configuration.
-     * @return storage_interface|null storage class object
-     */
-    public static function get_selected() {
-        $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
-        if ($configselectedstorage) {
-            return new $configselectedstorage;
-        }
-        return null;
     }
 }

@@ -14,15 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Class to handle shared disk file functions.
- * @package    tool_coursemigration
- * @author     Glenn Poder <glennpoder@catalyst-au.net>
- * @copyright  2023 Catalyst IT
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_coursemigration\local\storage\type;
+use context_system;
 use moodle_exception;
 use tool_coursemigration\local\storage\storage_interface;
 
@@ -35,22 +28,32 @@ use tool_coursemigration\local\storage\storage_interface;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class shared_disk_storage implements storage_interface {
+    /**
+     * Construct the shared disk storage.
+     */
     public function __construct() {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         $thisclass = get_class($this);
 
         if ($configselectedstorage == $thisclass) {
-            // Savetodirectory => Full path to the directory where you want to save the backup files.
-            // Restorefromdirectory => Full path to the directory where the backup files are restored from.
-            $this->settings = (object)[
-                'savetodirectory' => rtrim(get_config('tool_coursemigration', 'saveto'), '/') . '/',
-                'restorefromdirectory' => rtrim(get_config('tool_coursemigration', 'restorefrom'), '/') . '/'
+            // Initialise directory paths.
+            $this->savetodirectory = rtrim(get_config('tool_coursemigration', 'saveto'), '/') . '/';
+            $this->restorefromdirectory = rtrim(get_config('tool_coursemigration', 'restorefrom'), '/') . '/';
             ];
         }
     }
 
     /** Name of storage type */
     const STORAGE_TYPE_NAME = 'Shared disk storage';
+    /**
+     * @var string Full path to the directory where you want to save the backup files.
+     */
+    protected $savetodirectory;
+
+    /**
+     * @var string Full path to the directory where the backup files are restored from.
+     */
+    protected $restorefromdirectory;
 
     /**
      * @var object The settings from this class.
@@ -63,30 +66,16 @@ class shared_disk_storage implements storage_interface {
     protected $errormessage;
 
     /**
-     * @return object Get the save to and restore from directories.
-     */
-    public function get_settings($property = null) {
-        if ($property) {
-            if (property_exists($this->settings, $property)) {
-                return $this->settings->$property;
-            } else {
-                return null;
-            }
-        } else {
-            return $this->settings;
-        }
-    }
-
-    /**
      * Download (pull) file.
      * @param $filename string Name of file to be restored.
      * @return \stored_file|null A file record object of the retrieved file.
      */
-    public function pull_file($filename, $contextid) {
+    public function pull_file(string $filename): \stored_file {
         try {
-            $sourcefullpath = self::get_settings('restorefromdirectory') . $filename;
+            $context = context_system::instance();
+            $sourcefullpath = $this->restorefromdirectory . $filename;
             $fs = get_file_storage();
-            $filerecord = array('contextid' => $contextid, 'component' => 'course', 'filearea' => 'backup',
+            $filerecord = array('contextid' => $context->id, 'component' => 'course', 'filearea' => 'backup',
                 'itemid' => 0, 'filepath' => '/', 'filename' => $filename,
                 'timecreated' => time(), 'timemodified' => time());
             // Delete existing file (if any) and create new one.
@@ -102,13 +91,27 @@ class shared_disk_storage implements storage_interface {
      * Upload (push) file.
      * @param $filename string Name of file to be backed up.
      * @param $filerecord \stored_file A file record object of the fle to be backed up.
-     * @return boolean true if successfully cretaed.
+     * @return boolean|null true if successfully cretaed.
      */
-    public function push_file($filename, $filerecord): ?bool
-    {
+    public function push_file(string $filename, \stored_file $filerecord): ?bool {
         try {
-            $destinationfullpath = self::get_settings('savetodirectory') . $filename;
+            $destinationfullpath = $this->restorefromdirectory . $filename;
             return $filerecord->copy_content_to($destinationfullpath);
+        } catch (moodle_exception $e) {
+            $this->errormessage = $e->getMessage();
+            return null;
+        }
+    }
+
+    /**
+     * Delete file.
+     * @param $filename string Name of file to be backed up.
+     * @return boolean|null true if successfully deleted.
+     */
+    public function delete_file(string $filename): ?bool {
+        try {
+            $sourcefullpath = $this->restorefromdirectory . $filename;
+            return unlink($sourcefullpath);
         } catch (moodle_exception $e) {
             $this->errormessage = $e->getMessage();
             return null;
@@ -119,7 +122,7 @@ class shared_disk_storage implements storage_interface {
      * Any error message from exception.
      * @return string error message.
      */
-    public function get_error() {
+    public function get_error(): string {
         return $this->errormessage;
     }
 
@@ -130,7 +133,7 @@ class shared_disk_storage implements storage_interface {
      * @param file_storage $fs File storage
      * @param array $filerecord File record in same format used to create file
      */
-    public static function delete_existing_file_record(\file_storage $fs, array $filerecord) {
+    public static function delete_existing_file_record(file_storage $fs, array $filerecord) {
         if ($existing = $fs->get_file($filerecord['contextid'], $filerecord['component'],
             $filerecord['filearea'], $filerecord['itemid'], $filerecord['filepath'],
             $filerecord['filename'])) {
