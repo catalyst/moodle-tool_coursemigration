@@ -29,7 +29,7 @@ class storage_setting_configselect extends \admin_setting_configselect {
      * Calls parent::__construct with specific arguments.
      */
     public function __construct() {
-        $options = self::get_storage_names();
+        $options = $this->get_storage_names();
         $default = array_key_first($options);
         parent::__construct(
             'tool_coursemigration/storagetype',
@@ -44,7 +44,7 @@ class storage_setting_configselect extends \admin_setting_configselect {
      * Gets the display name of the storage classes to be used in config settings.
      * @return array A list of the options for the drop down list.
      */
-    public static function get_storage_names(): array {
+    public function get_storage_names(): array {
         $storagenames = [];
         $files = scandir(__DIR__  . '/type');
         foreach ($files as $file) {
@@ -53,9 +53,8 @@ class storage_setting_configselect extends \admin_setting_configselect {
                 // Skip hidden.
                 continue;
             }
-            $base = __NAMESPACE__ . '\type\\' . $base;
-            $storageclass = new $base();
-            $storagenames[$base] = $storageclass::STORAGE_TYPE_NAME;
+            $fullpath = __NAMESPACE__ . '\type\\' . $base;
+            $storagenames[$fullpath] = get_string('storage:' . $base, 'tool_coursemigration');
         }
         return $storagenames;
     }

@@ -17,6 +17,7 @@
 namespace tool_coursemigration\local\storage\type;
 use context_system;
 use moodle_exception;
+use stored_file;
 use tool_coursemigration\local\storage\storage_interface;
 
 /**
@@ -39,12 +40,9 @@ class shared_disk_storage implements storage_interface {
             // Initialise directory paths.
             $this->savetodirectory = rtrim(get_config('tool_coursemigration', 'saveto'), '/') . '/';
             $this->restorefromdirectory = rtrim(get_config('tool_coursemigration', 'restorefrom'), '/') . '/';
-            ];
         }
     }
 
-    /** Name of storage type */
-    const STORAGE_TYPE_NAME = 'Shared disk storage';
     /**
      * @var string Full path to the directory where you want to save the backup files.
      */
@@ -68,14 +66,14 @@ class shared_disk_storage implements storage_interface {
     /**
      * Download (pull) file.
      * @param $filename string Name of file to be restored.
-     * @return \stored_file|null A file record object of the retrieved file.
+     * @return stored_file|null A file record object of the retrieved file.
      */
-    public function pull_file(string $filename): \stored_file {
+    public function pull_file(string $filename): ?stored_file {
         try {
             $context = context_system::instance();
             $sourcefullpath = $this->restorefromdirectory . $filename;
             $fs = get_file_storage();
-            $filerecord = array('contextid' => $context->id, 'component' => 'course', 'filearea' => 'backup',
+            $filerecord = array('contextid' => $context->id, 'component' => 'tool_coursemigration', 'filearea' => 'backup',
                 'itemid' => 0, 'filepath' => '/', 'filename' => $filename,
                 'timecreated' => time(), 'timemodified' => time());
             // Delete existing file (if any) and create new one.
@@ -90,10 +88,10 @@ class shared_disk_storage implements storage_interface {
     /**
      * Upload (push) file.
      * @param $filename string Name of file to be backed up.
-     * @param $filerecord \stored_file A file record object of the fle to be backed up.
+     * @param $filerecord stored_file A file record object of the fle to be backed up.
      * @return boolean|null true if successfully cretaed.
      */
-    public function push_file(string $filename, \stored_file $filerecord): ?bool {
+    public function push_file(string $filename, stored_file $filerecord): ?bool {
         try {
             $destinationfullpath = $this->restorefromdirectory . $filename;
             return $filerecord->copy_content_to($destinationfullpath);
@@ -106,15 +104,15 @@ class shared_disk_storage implements storage_interface {
     /**
      * Delete file.
      * @param $filename string Name of file to be backed up.
-     * @return boolean|null true if successfully deleted.
+     * @return boolean true if successfully deleted.
      */
-    public function delete_file(string $filename): ?bool {
+    public function delete_file(string $filename): bool {
         try {
             $sourcefullpath = $this->restorefromdirectory . $filename;
             return unlink($sourcefullpath);
         } catch (moodle_exception $e) {
             $this->errormessage = $e->getMessage();
-            return null;
+            return false;
         }
     }
 

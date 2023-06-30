@@ -16,6 +16,8 @@
 
 namespace tool_coursemigration\local\storage;
 
+use stored_file;
+
 /**
  * Interface for file storage.
  *
@@ -28,17 +30,17 @@ interface storage_interface {
     /**
      * Download (pull) file.
      * @param $filename string Name of file to be restored.
-     * @return \stored_file
+     * @return stored_file|null
      */
-    public function pull_file(string $filename): \stored_file;
+    public function pull_file(string $filename): ?stored_file;
 
     /**
      * Upload (push) file.
      * @param $filename string Name of file to be backed up.
-     * @param $filerecord \stored_file A file record object of the fle to be backed up.
+     * @param $filerecord stored_file A file record object of the fle to be backed up.
      * @return boolean true if successfully cretaed.
      */
-    public function push_file(string $filename, \stored_file $filerecord): ?bool;
+    public function push_file(string $filename, stored_file $filerecord): ?bool;
 
     /**
      * Delete file.
