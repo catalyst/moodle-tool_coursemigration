@@ -39,7 +39,7 @@ if ($hassiteconfig) {
             get_string('settings:destinationwsurldesc', 'tool_coursemigration'),
             '', PARAM_URL));
 
-        $settings->add(new admin_setting_configtext('tool_coursemigration/wstoken',
+        $settings->add(new admin_setting_configpasswordunmask('tool_coursemigration/wstoken',
             get_string('settings:wstoken', 'tool_coursemigration'),
             get_string('settings:wstokendesc', 'tool_coursemigration'),
             '', PARAM_ALPHANUMEXT));
