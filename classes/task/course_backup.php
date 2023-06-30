@@ -97,15 +97,13 @@ class course_backup extends adhoc_task {
                 $fullpath = $destination . DIRECTORY_SEPARATOR . $filename;
                 mtrace("Writing " . $fullpath);
                 if ($file->copy_content_to($fullpath)) {
-
-                    $coursemigration
-                        ->set('status', coursemigration::STATUS_COMPLETED)
-                        ->set('filename', $filename)
-                        ->save();
+                    $coursemigration->set('filename', $filename);
 
                     $api = restore_api_factory::get_restore_api();
                     if ($api->request_restore($filename, (int)$coursemigration->get('destinationcategoryid'))) {
-                        $coursemigration->set('status', coursemigration::STATUS_COMPLETED)->save();
+                        $coursemigration
+                            ->set('status', coursemigration::STATUS_COMPLETED)
+                            ->save();
                     } else {
                         throw new moodle_exception('error:restorerequestfailed', 'tool_coursemigration');
                     }
