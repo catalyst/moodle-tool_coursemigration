@@ -28,7 +28,6 @@ require_once($CFG->libdir.'/adminlib.php');
  * @copyright  2023 Catalyst IT
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class backup_directory extends \admin_setting_configdirectory {
     /**
      * Calls parent::__construct with specific arguments.
@@ -43,10 +42,10 @@ class backup_directory extends \admin_setting_configdirectory {
 
     /**
      * Check if the directory must be set.
-     * @param string $data Form data.
-     * @return string Empty when no errors.
+     * @param mixed $data Gets converted to str for comparison against yes value
+     * @return string empty string or error
      */
-    public function write_setting($data) {
+    public function write_setting($data): string {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         if ($configselectedstorage == __NAMESPACE__ . '\type\shared_disk_storage') {
             if (empty($data) || !file_exists($data) || !is_dir($data) || !is_writable($data)) {

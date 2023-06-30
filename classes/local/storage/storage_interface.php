@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_coursemigration\local\storage;
+
 /**
  * Interface for file storage.
  *
@@ -22,37 +24,26 @@
  * @copyright  2023 Catalyst IT
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_coursemigration\local\storage;
-
-/**
- * Interface for file storage.
- * @property string $errormessage
- */
 interface storage_interface {
-    /**
-     * List storage types here.
-     */
-    const TYPE_SHARED_DISK_STORAGE = 0;
-
-    /**
-     * Get settings.
-     */
-    public function get_settings();
-
     /**
      * Download (pull) file.
      * @param $filename string Name of file to be restored.
-     * @param $contextid integer Context id for file storage.
      * @return \stored_file
      */
-    public function pull_file($filename, $contextid);
+    public function pull_file(string $filename): \stored_file;
 
     /**
      * Upload (push) file.
      * @param $filename string Name of file to be backed up.
-     * @param $filecontents \stored_file
+     * @param $filerecord \stored_file A file record object of the fle to be backed up.
      * @return boolean true if successfully cretaed.
      */
-    public function push_file($filename, $filecontents);
+    public function push_file(string $filename, \stored_file $filerecord): ?bool;
+
+    /**
+     * Delete file.
+     * @param $filename string Name of file to be backed up.
+     * @return boolean|null true if successfully deleted.
+     */
+    public function delete_file(string $filename): ?bool;
 }

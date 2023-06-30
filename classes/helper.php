@@ -19,6 +19,7 @@ namespace tool_coursemigration;
 use context_user;
 use core_course_category;
 use invalid_parameter_exception;
+use tool_coursemigration\local\storage\storage_interface;
 
 /**
  * Helper class.
@@ -151,5 +152,17 @@ class helper {
         }
 
         return $category;
+    }
+
+    /**
+     * Returns a storage class object as selected in configuration.
+     * @return storage_interface|null storage class object
+     */
+    public static function get_selected(): ?storage_interface {
+        $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
+        if ($configselectedstorage) {
+            return new $configselectedstorage;
+        }
+        return null;
     }
 }
