@@ -64,6 +64,7 @@ $string['error:pluginnotsetup'] = 'The course migration plugin is not setup: [De
 $string['error:createbackuptask'] = 'Error in creating backup task. Migration id: {$a->coursemigrationid} error message: {$a->errormessage}';
 $string['error:backupalreadyrunning'] = 'Backup task, Migration id: {a$->coursemigrationid} for course: {$a->courseid}, is already running.';
 $string['error:copydestination'] = 'Error in copying file to destination directory: {$a}.';
+$string['error:restorerequestfailed'] = 'Restore request WS call failed.';
 $string['successfullycreatebackuptask'] = 'Successfully created a backup task. Migration id: {$a->coursemigrationid}';
 $string['examplecsv'] = 'Example text file';
 $string['examplecsv_help'] = 'To use the example text file, download it then open it with a text or spreadsheet editor. Leave the first line unchanged, then edit the following lines (records) and add your course ids and category ids. Save the file as CSV then upload it.';

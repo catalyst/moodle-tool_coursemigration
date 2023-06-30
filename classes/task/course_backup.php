@@ -107,7 +107,7 @@ class course_backup extends adhoc_task {
                     if ($api->request_restore($filename, (int)$coursemigration->get('destinationcategoryid'))) {
                         $coursemigration->set('status', coursemigration::STATUS_COMPLETED)->save();
                     } else {
-                        throw new moodle_exception('httpfailed');
+                        throw new moodle_exception('error:restorerequestfailed', 'tool_coursemigration');
                     }
 
                     mtrace("Backup completed.");
