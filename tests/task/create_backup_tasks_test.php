@@ -63,7 +63,10 @@ class create_backup_tasks_test extends advanced_testcase {
         $output = ob_get_clean();
 
         // Confirm there is a adhoc task.
-        $this->assertStringContainsString('Successfully created backup task id: ' . $coursemigration->get('id'), $output);
+        $this->assertStringContainsString(
+            'Successfully created a backup task. Migration id: ' . $coursemigration->get('id'),
+            $output
+        );
         $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(1, $tasks);
 
@@ -80,8 +83,6 @@ class create_backup_tasks_test extends advanced_testcase {
     public function test_create_backup_tasks_ignore_restore() {
         $this->resetAfterTest();
         $this->setAdminUser();
-
-        $generator = $this->getDataGenerator();
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
@@ -140,7 +141,10 @@ class create_backup_tasks_test extends advanced_testcase {
         $output = ob_get_clean();
 
         // Confirm there is a adhoc task.
-        $this->assertStringContainsString('Error in creating backup task id: ' . $coursemigration->get('id'), $output);
+        $this->assertStringContainsString(
+            'Error in creating backup task. Migration id: ' . $coursemigration->get('id'),
+            $output
+        );
         $tasks = manager::get_adhoc_tasks(course_backup::class);
         $this->assertCount(0, $tasks);
 
