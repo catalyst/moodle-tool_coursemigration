@@ -33,6 +33,7 @@ use file_exception;
 use invalid_parameter_exception;
 use moodle_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\restore_api_factory;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -53,7 +54,7 @@ class course_backup extends adhoc_task {
      * Run the adhoc task and preform the backup.
      */
     public function execute() {
-        global $CFG, $USER, $DB;
+        global $CFG, $USER;
 
         $data = (array) $this->get_custom_data();
         if (!$this->is_custom_data_valid($data)) {
@@ -61,10 +62,9 @@ class course_backup extends adhoc_task {
             throw new invalid_parameter_exception($errormsg);
         }
 
-        $coursemigrationid = $data['coursemigrationid'];
-        $cmrecord = coursemigration::get_record(['id' => $coursemigrationid]);
-        if (empty($cmrecord)) {
-            throw new invalid_parameter_exception('No match for Course migration id: ' . $coursemigrationid);
+        $coursemigration = coursemigration::get_record(['id' => $data['coursemigrationid']]);
+        if (empty($coursemigration)) {
+            throw new invalid_parameter_exception('No match for Course migration id: ' . $data['coursemigrationid']);
         }
 
         $backupdir = "backup_" . uniqid();
@@ -74,7 +74,7 @@ class course_backup extends adhoc_task {
         }
 
         try {
-            $course = get_course($cmrecord->get('courseid'));
+            $course = get_course($coursemigration->get('courseid'));
             $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
                 backup::INTERACTIVE_NO, backup::MODE_GENERAL, $USER->id);
 
@@ -97,18 +97,27 @@ class course_backup extends adhoc_task {
                 $fullpath = $destination . DIRECTORY_SEPARATOR . $filename;
                 mtrace("Writing " . $fullpath);
                 if ($file->copy_content_to($fullpath)) {
-                    mtrace("Backup completed.");
-                    // TODO: Implement trigger WS.
-                    $cmrecord->set('status', coursemigration::STATUS_COMPLETED)
+
+                    $coursemigration
+                        ->set('status', coursemigration::STATUS_COMPLETED)
+                        ->set('filename', $filename)
                         ->save();
+
+                    $api = restore_api_factory::get_restore_api();
+                    if ($api->request_restore($filename, (int)$coursemigration->get('destinationcategoryid'))) {
+                        $coursemigration->set('status', coursemigration::STATUS_COMPLETED)->save();
+                    } else {
+                        throw new moodle_exception('httpfailed');
+                    }
+
+                    mtrace("Backup completed.");
                 } else {
-                    $message = get_string('error:copydestination', 'tool_coursemigration', $fullpath);
-                    throw new file_exception($message);
+                    throw new file_exception(get_string('error:copydestination', 'tool_coursemigration', $fullpath));
                 }
             }
-        } catch (moodle_exception $e) {
+        } catch (\Exception $e) {
             $message = $e->getMessage();
-            $cmrecord->set('status', coursemigration::STATUS_FAILED)
+            $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $message)
                 ->save();
             mtrace($message);

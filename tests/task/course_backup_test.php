@@ -21,6 +21,8 @@ use core\task\manager;
 use Exception;
 use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\restore_api;
+use tool_coursemigration\restore_api_factory;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -50,7 +52,11 @@ class course_backup_test extends advanced_testcase {
         // Create a course with some availability data set.
         $generator = $this->getDataGenerator();
         $course = $generator->create_course(['fullname' => 'Test restore course']);
-        $category = $generator->create_category();
+
+        // Mock restore api.
+        $mockedrestoreapi = $this->createStub(restore_api::class);
+        $mockedrestoreapi->method('request_restore')->willReturn(true);
+        restore_api_factory::set_restore_api($mockedrestoreapi);
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
@@ -60,6 +66,7 @@ class course_backup_test extends advanced_testcase {
             'status' => coursemigration::STATUS_NOT_STARTED,
         ]);
         $coursemigration->save();
+        $this->assertEmpty($coursemigration->get('filename'));
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -74,12 +81,14 @@ class course_backup_test extends advanced_testcase {
         // Confirm the status is now completed.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
         $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
+        $this->assertNotEmpty($currentcoursemigration->get('filename'));
+        restore_api_factory::reset_restore_api();
     }
 
     /**
      * Test backup without param.
      */
-    public function test_restore_invalid_param() {
+    public function test_backup_invalid_param() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
