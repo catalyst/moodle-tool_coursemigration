@@ -97,10 +97,7 @@ $string['event:restore_completed'] = 'Restore completed';
 $string['event:restore_failed'] = 'Restore failed';
 $string['event:http_request_failed'] = 'HTTP request failed';
 $string['checkprogress'] = 'Check progress';
-<<<<<<< HEAD
 $string['error:http:get'] = 'Error attempting to make HTTP request: {$a}.';
-=======
->>>>>>> Issue23
 $string['saveto'] = 'Save to';
 $string['saveto_help'] = 'Full path to the directory where you want to save the backup files';
 $string['restorefrom'] = 'Restore from';
