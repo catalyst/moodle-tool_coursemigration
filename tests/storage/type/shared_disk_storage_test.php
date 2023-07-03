@@ -31,9 +31,9 @@ use tool_coursemigration\local\storage\type\shared_disk_storage;
  */
 class shared_disk_storage_test extends advanced_testcase {
 // Test directory name for where files are saved to.
-const SAVE_TO = '/tmp/saveto';
+const SAVE_TO = '/tmp/saveto/';
 // Test directory name for where files are restored from.
-const RESTORE_FROM = '/tmp/restorefrom';
+const RESTORE_FROM = '/tmp/restorefrom/';
 // File name of test pull.
 const TEST_PULL_FILE = 'testpull.txt';
 // File name of test push.
@@ -57,7 +57,7 @@ const TEST_PUSH_FILE = 'testpush.txt';
         set_config('restorefrom', $this::RESTORE_FROM, 'tool_coursemigration');
 
         // Add a test file to the temp dir.
-        $file = fopen($this::RESTORE_FROM . '/test.txt', 'w');
+        $file = fopen($this::RESTORE_FROM . $this::TEST_PULL_FILE, 'w');
         fwrite($file, 'sometestdata');
         fclose($file);
     }
@@ -66,14 +66,14 @@ const TEST_PUSH_FILE = 'testpush.txt';
      * Removes test files and directories..
      */
     private function cleanup() {
-        if (file_exists($this::SAVE_TO . '/testpush.txt')) {
-            unlink($this::SAVE_TO . '/testpush.txt');
+        if (file_exists($this::SAVE_TO . $this::TEST_PUSH_FILE)) {
+            unlink($this::SAVE_TO . $this::TEST_PUSH_FILE);
         }
 
-        if (file_exists($this::RESTORE_FROM . '/test.txt')) {
-            unlink($this::RESTORE_FROM . '/test.txt');
+        if (file_exists($this::RESTORE_FROM . $this::TEST_PULL_FILE)) {
+            unlink($this::RESTORE_FROM . $this::TEST_PULL_FILE);
         }
-        
+
         if (is_dir($this::SAVE_TO)) {
             rmdir($this::SAVE_TO);
         }
@@ -104,12 +104,16 @@ const TEST_PUSH_FILE = 'testpush.txt';
         $this->assertEquals($expected, $storage->get_error());
 
         // Test pull a file that exists.
-        $filerecord = $storage->pull_file('test.txt');
+        $filerecord = $storage->pull_file($this::TEST_PULL_FILE);
         $this->assertNotNull($filerecord);
 
         // Test push a file.
-        $storage->push_file('testpush.txt', $filerecord);
-        $this->assertFileExists('/tmp/saveto/testpush.txt');
+        $storage->push_file($this::TEST_PUSH_FILE, $filerecord);
+        $this->assertFileExists($this::SAVE_TO . $this::TEST_PUSH_FILE);
+
+        // Test delete a file.
+        $storage->delete_file($this::TEST_PULL_FILE);
+        $this->assertFileNotExists($this::TEST_PULL_FILE);
 
         $this->cleanup();
     }
