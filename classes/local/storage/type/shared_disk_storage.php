@@ -16,6 +16,7 @@
 
 namespace tool_coursemigration\local\storage\type;
 use context_system;
+use file_storage;
 use moodle_exception;
 use stored_file;
 use tool_coursemigration\local\storage\storage_interface;
@@ -93,7 +94,7 @@ class shared_disk_storage implements storage_interface {
      */
     public function push_file(string $filename, stored_file $filerecord): ?bool {
         try {
-            $destinationfullpath = $this->restorefromdirectory . $filename;
+            $destinationfullpath = $this->savetodirectory . $filename;
             return $filerecord->copy_content_to($destinationfullpath);
         } catch (moodle_exception $e) {
             $this->errormessage = $e->getMessage();

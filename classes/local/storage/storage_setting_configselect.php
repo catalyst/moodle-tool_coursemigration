@@ -16,6 +16,8 @@
 
 namespace tool_coursemigration\local\storage;
 
+use \admin_setting_configselect;
+
 /**
  * Autoloads course migration storage config select.
  *
@@ -24,7 +26,7 @@ namespace tool_coursemigration\local\storage;
  * @copyright  2023 Catalyst IT
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class storage_setting_configselect extends \admin_setting_configselect {
+class storage_setting_configselect extends admin_setting_configselect {
     /**
      * Calls parent::__construct with specific arguments.
      */
@@ -44,7 +46,7 @@ class storage_setting_configselect extends \admin_setting_configselect {
      * Gets the display name of the storage classes to be used in config settings.
      * @return array A list of the options for the drop down list.
      */
-    public function get_storage_names(): array {
+    private function get_storage_names(): array {
         $storagenames = [];
         $files = scandir(__DIR__  . '/type');
         foreach ($files as $file) {

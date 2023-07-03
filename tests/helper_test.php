@@ -168,4 +168,16 @@ class helper_test extends advanced_testcase {
         $this->expectExceptionMessage('Invalid category');
         $restorecategory = helper::get_restore_category(99999);
     }
+
+    /**
+     * Test invalid category.
+     */
+    public function test_get_selected() {
+        // Tests default storage class.
+        $selectedclass = helper::get_selected();
+        $expected = 'tool_coursemigration\\local\\storage\\storage_interface';
+        $classimplements = class_implements($selectedclass);
+        $this->assertCount(1, $classimplements);
+        $this->assertEquals($expected, array_key_first($classimplements));
+    }
 }

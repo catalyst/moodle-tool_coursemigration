@@ -16,6 +16,8 @@
 
 namespace tool_coursemigration\local\storage;
 
+use admin_setting_configdirectory;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/adminlib.php');
@@ -28,7 +30,7 @@ require_once($CFG->libdir.'/adminlib.php');
  * @copyright  2023 Catalyst IT
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class backup_directory extends \admin_setting_configdirectory {
+class backup_directory extends admin_setting_configdirectory {
     /**
      * Calls parent::__construct with specific arguments.
      */
