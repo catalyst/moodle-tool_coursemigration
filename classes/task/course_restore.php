@@ -76,10 +76,18 @@ class course_restore extends adhoc_task {
         $backupdir = "restore_" . uniqid();
         $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $backupdir;
 
+        // Retrieve stored_file.
+        $storage = helper::get_selected();
+        $restorefile = $storage->pull_file($coursemigration->get('filename'));
+
         try {
+            if (!$restorefile) {
+                throw new \file_exception($storage->get_error());
+            }
             $fp = get_file_packer('application/vnd.moodle.backup');
-            // TODO: Replace the filename to actual location.
-            $fp->extract_to_pathname($coursemigration->get('filename'), $path);
+            $fp->extract_to_pathname($restorefile, $path);
+            // stored_file is temporary and is no longer needed.
+            $restorefile->delete();
 
             list($fullname, $shortname) = restore_dbops::calculate_course_names(0, get_string('restoringcourse', 'backup'),
                 get_string('restoringcourseshortname', 'backup'));
