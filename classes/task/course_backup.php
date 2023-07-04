@@ -33,6 +33,7 @@ use file_exception;
 use invalid_parameter_exception;
 use moodle_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\helper;
 use tool_coursemigration\restore_api_factory;
 
 defined('MOODLE_INTERNAL') || die();
@@ -94,9 +95,9 @@ class course_backup extends adhoc_task {
             $file = $results['backup_destination'];
 
             if ($file) {
-                $fullpath = $destination . DIRECTORY_SEPARATOR . $filename;
-                mtrace("Writing " . $fullpath);
-                if ($file->copy_content_to($fullpath)) {
+                $storage = helper::get_selected();
+                mtrace("Writing " . $filename);
+                if ($storage->push_file($filename, $file)) {
                     $coursemigration->set('filename', $filename);
 
                     $api = restore_api_factory::get_restore_api();
