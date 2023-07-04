@@ -38,6 +38,8 @@ const RESTORE_FROM = '/tmp/restorefrom/';
 const TEST_PULL_FILE = 'testpull.txt';
 // File name of test push.
 const TEST_PUSH_FILE = 'testpush.txt';
+// File name of test push.
+    const TEST_DELETE_FILE = 'testdelete.txt';
 
 
     /**
@@ -46,11 +48,11 @@ const TEST_PUSH_FILE = 'testpush.txt';
     private function setup_test_file() {
 
         if (!is_dir($this::SAVE_TO)) {
-            mkdir($this::SAVE_TO, '0777');
+            mkdir($this::SAVE_TO);
         }
 
         if (!is_dir($this::RESTORE_FROM)) {
-            mkdir($this::RESTORE_FROM, '0777');
+            mkdir($this::RESTORE_FROM);
         }
 
         set_config('saveto', $this::SAVE_TO, 'tool_coursemigration');
@@ -60,27 +62,17 @@ const TEST_PUSH_FILE = 'testpush.txt';
         $file = fopen($this::RESTORE_FROM . $this::TEST_PULL_FILE, 'w');
         fwrite($file, 'sometestdata');
         fclose($file);
+
+        // Add a file to test the delete of a ready only file.
+        copy($this::RESTORE_FROM . $this::TEST_PULL_FILE, $this::RESTORE_FROM . $this::TEST_DELETE_FILE);
     }
 
     /**
      * Removes test files and directories..
      */
     private function cleanup() {
-        if (file_exists($this::SAVE_TO . $this::TEST_PUSH_FILE)) {
-            unlink($this::SAVE_TO . $this::TEST_PUSH_FILE);
-        }
-
-        if (file_exists($this::RESTORE_FROM . $this::TEST_PULL_FILE)) {
-            unlink($this::RESTORE_FROM . $this::TEST_PULL_FILE);
-        }
-
-        if (is_dir($this::SAVE_TO)) {
-            rmdir($this::SAVE_TO);
-        }
-
-        if (is_dir($this::RESTORE_FROM)) {
-            rmdir($this::RESTORE_FROM);
-        }
+        fulldelete($this::SAVE_TO);
+        fulldelete($this::RESTORE_FROM);
     }
 
     /**
@@ -102,6 +94,7 @@ const TEST_PUSH_FILE = 'testpush.txt';
         $this->assertNull($filerecord);
         $expected = 'Cannot read file. Either the file does not exist or there is a permission problem. (/tmp/restorefrom/notexist.txt)';
         $this->assertEquals($expected, $storage->get_error());
+        $storage->clear_error();
 
         // Test pull a file that exists.
         $filerecord = $storage->pull_file($this::TEST_PULL_FILE);
@@ -114,6 +107,13 @@ const TEST_PUSH_FILE = 'testpush.txt';
         // Test delete a file.
         $storage->delete_file($this::TEST_PULL_FILE);
         $this->assertFileNotExists($this::TEST_PULL_FILE);
+        $storage->clear_error();
+
+        // Test delete a file that does not exist.
+        $result = $storage->delete_file($this::TEST_PULL_FILE);
+        $expected = 'unlink(/tmp/restorefrom/testpull.txt): No such file or directory';
+        $this->assertFalse($result);
+        $this->assertEquals($expected, $storage->get_error());
 
         $this->cleanup();
     }

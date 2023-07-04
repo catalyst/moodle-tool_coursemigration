@@ -19,6 +19,7 @@ namespace tool_coursemigration;
 use advanced_testcase;
 use context_user;
 use invalid_parameter_exception;
+use storage\type\mock_storage_class;
 
 /**
  * Tests for helper class.
@@ -170,14 +171,20 @@ class helper_test extends advanced_testcase {
     }
 
     /**
-     * Test invalid category.
+     * Test the selected storage class.
      */
     public function test_get_selected() {
+        $this->resetAfterTest();
         // Tests default storage class.
         $selectedclass = helper::get_selected();
         $expected = 'tool_coursemigration\\local\\storage\\storage_interface';
         $classimplements = class_implements($selectedclass);
         $this->assertCount(1, $classimplements);
         $this->assertEquals($expected, array_key_first($classimplements));
+
+        // Tests for plugin not setup - no storage class has been chosen.
+        unset_config('storagetype', 'tool_coursemigration');
+        $selectedclass = helper::get_selected();
+        $this->assertNull($selectedclass);
     }
 }

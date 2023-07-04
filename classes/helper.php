@@ -16,6 +16,7 @@
 
 namespace tool_coursemigration;
 
+use coding_exception;
 use context_user;
 use core_course_category;
 use invalid_parameter_exception;
@@ -161,7 +162,12 @@ class helper {
     public static function get_selected(): ?storage_interface {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         if ($configselectedstorage) {
-            return new $configselectedstorage;
+            $storage = new $configselectedstorage;
+            $classimplements = class_implements($storage);
+            if (!isset($classimplements['tool_coursemigration\local\storage\storage_interface'])) {
+                throw new coding_exception('The selected Storage class does not implement the storage_interface.');
+            }
+            return $storage;
         }
         return null;
     }

@@ -40,12 +40,12 @@ interface storage_interface {
      * @param $filerecord stored_file A file record object of the fle to be backed up.
      * @return boolean true if successfully cretaed.
      */
-    public function push_file(string $filename, stored_file $filerecord): ?bool;
+    public function push_file(string $filename, stored_file $filerecord): bool;
 
     /**
      * Delete file.
      * @param $filename string Name of file to be backed up.
-     * @return boolean|null true if successfully deleted.
+     * @return boolean true if successfully deleted.
      */
-    public function delete_file(string $filename): ?bool;
+    public function delete_file(string $filename): bool;
 }

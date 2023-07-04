@@ -16,6 +16,7 @@
 
 namespace tool_coursemigration\local\storage\type;
 use context_system;
+use Exception;
 use file_storage;
 use moodle_exception;
 use stored_file;
@@ -80,7 +81,7 @@ class shared_disk_storage implements storage_interface {
             // Delete existing file (if any) and create new one.
             $this::delete_existing_file_record($fs, $filerecord);
             return $fs->create_file_from_pathname($filerecord, $sourcefullpath);
-        } catch (moodle_exception $e) {
+        } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
             return null;
         }
@@ -90,15 +91,15 @@ class shared_disk_storage implements storage_interface {
      * Upload (push) file.
      * @param $filename string Name of file to be backed up.
      * @param $filerecord stored_file A file record object of the fle to be backed up.
-     * @return boolean|null true if successfully cretaed.
+     * @return boolean true if successfully cretaed.
      */
-    public function push_file(string $filename, stored_file $filerecord): ?bool {
+    public function push_file(string $filename, stored_file $filerecord): bool {
         try {
             $destinationfullpath = $this->savetodirectory . $filename;
             return $filerecord->copy_content_to($destinationfullpath);
-        } catch (moodle_exception $e) {
+        } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
-            return null;
+            return false;
         }
     }
 
@@ -111,7 +112,7 @@ class shared_disk_storage implements storage_interface {
         try {
             $sourcefullpath = $this->restorefromdirectory . $filename;
             return unlink($sourcefullpath);
-        } catch (moodle_exception $e) {
+        } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
             return false;
         }
@@ -123,6 +124,13 @@ class shared_disk_storage implements storage_interface {
      */
     public function get_error(): string {
         return $this->errormessage;
+    }
+
+    /**
+     * Clear error message from exception.
+     */
+    public function clear_error() {
+        $this->errormessage = null;
     }
 
     /**

@@ -45,7 +45,7 @@ class backup_directory_test extends advanced_testcase {
         $this->assertEmpty($backupdirectory->write_setting('/tmp'));
         $this->assertEquals('/tmp', get_config('tool_coursemigration', 'saveto'));
 
-        // Test writing a change to a folder that exists.
+        // Test writing a change to a folder that does not exist.
         // Error message should be returned.
         $expected = 'The backup destination folder does not exist or is not writable.';
         $this->assertEquals($expected, $backupdirectory->write_setting('/something'));
