@@ -13,12 +13,11 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 namespace tool_coursemigration;
 
 use advanced_testcase;
-use cleaner_muc\clean;
 use moodle_exception;
-use tool_coursemigration\local\storage\backup_directory;
 use tool_coursemigration\local\storage\type\shared_disk_storage;
 
 /**
@@ -108,7 +107,7 @@ class shared_disk_storage_test extends advanced_testcase {
 
         // Test delete a file.
         $storage->delete_file(self::TEST_PULL_FILE);
-        $this->does (self::TEST_PULL_FILE);
+        $this->assertFileNotExists (self::TEST_PULL_FILE);
         $storage->clear_error();
 
         // Test delete a file that does not exist.
