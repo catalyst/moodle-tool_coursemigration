@@ -40,8 +40,14 @@ class shared_disk_storage implements storage_interface {
 
         if ($configselectedstorage == $thisclass) {
             // Initialise directory paths.
-            $this->savetodirectory = rtrim(get_config('tool_coursemigration', 'saveto'), '/') . '/';
-            $this->restorefromdirectory = rtrim(get_config('tool_coursemigration', 'restorefrom'), '/') . '/';
+            $saveto = get_config('tool_coursemigration', 'saveto');
+            $restorefrom = get_config('tool_coursemigration', 'restorefrom');
+            // Check that directories have been configured.
+            if (!$saveto || !$restorefrom) {
+                throw new moodle_exception('error:dirnotconfig', 'tool_coursemigration');
+            }
+            $this->savetodirectory = rtrim($saveto, '/') . '/';
+            $this->restorefromdirectory = rtrim($restorefrom, '/') . '/';
         }
     }
 

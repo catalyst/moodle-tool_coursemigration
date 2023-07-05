@@ -46,6 +46,8 @@ class course_backup_test extends advanced_testcase {
      * Test backup.
      */
     public function test_course_backup() {
+        global $CFG;
+
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -54,7 +56,7 @@ class course_backup_test extends advanced_testcase {
         $course = $generator->create_course(['fullname' => 'Test restore course']);
 
         // Mock restore api.
-        $mockedrestoreapi = $this->createStub(restore_api::class);
+        $mockedrestoreapi = $this->createMock(restore_api::class);
         $mockedrestoreapi->method('request_restore')->willReturn(true);
         restore_api_factory::set_restore_api($mockedrestoreapi);
 
@@ -67,6 +69,10 @@ class course_backup_test extends advanced_testcase {
         ]);
         $coursemigration->save();
         $this->assertEmpty($coursemigration->get('filename'));
+
+        // Configure backup and restore directories.
+        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
+        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -89,6 +95,8 @@ class course_backup_test extends advanced_testcase {
      * Test backup failed on WS call.
      */
     public function test_course_backup_failed_on_ws_call() {
+        global $CFG;
+
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -97,7 +105,7 @@ class course_backup_test extends advanced_testcase {
         $course = $generator->create_course(['fullname' => 'Test restore course']);
 
         // Mock restore api.
-        $mockedrestoreapi = $this->createStub(restore_api::class);
+        $mockedrestoreapi = $this->createMock(restore_api::class);
         $mockedrestoreapi->method('request_restore')->willReturn(false);
         restore_api_factory::set_restore_api($mockedrestoreapi);
 
@@ -110,6 +118,10 @@ class course_backup_test extends advanced_testcase {
         ]);
         $coursemigration->save();
         $this->assertEmpty($coursemigration->get('filename'));
+
+        // Configure backup and restore directories.
+        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
+        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];

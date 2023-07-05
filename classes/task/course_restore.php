@@ -20,6 +20,7 @@ use backup;
 use core\task\adhoc_task;
 use Exception;
 use invalid_parameter_exception;
+use moodle_exception;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
 use tool_coursemigration\event\restore_failed;
@@ -78,11 +79,15 @@ class course_restore extends adhoc_task {
 
         // Retrieve stored_file.
         $storage = helper::get_selected();
+        // Check that the storage class has been configured.
+        if (!$storage) {
+            throw new coding_exception('error:storagenotconfig', 'tool_coursemigration');
+        }
         $restorefile = $storage->pull_file($coursemigration->get('filename'));
 
         try {
             if (!$restorefile) {
-                throw new \file_exception($storage->get_error());
+                throw new moodle_exception('error:pullfile', 'tool_coursemigration', '', $storage->get_error());
             }
             $fp = get_file_packer('application/vnd.moodle.backup');
             $fp->extract_to_pathname($restorefile, $path);

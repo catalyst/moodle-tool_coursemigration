@@ -17,6 +17,7 @@ namespace tool_coursemigration;
 
 use advanced_testcase;
 use cleaner_muc\clean;
+use moodle_exception;
 use tool_coursemigration\local\storage\backup_directory;
 use tool_coursemigration\local\storage\type\shared_disk_storage;
 
@@ -30,15 +31,15 @@ use tool_coursemigration\local\storage\type\shared_disk_storage;
  * @covers     \tool_coursemigration\local\storage\type\shared_disk_storage
  */
 class shared_disk_storage_test extends advanced_testcase {
-// Test directory name for where files are saved to.
-const SAVE_TO = '/tmp/saveto/';
-// Test directory name for where files are restored from.
-const RESTORE_FROM = '/tmp/restorefrom/';
-// File name of test pull.
-const TEST_PULL_FILE = 'testpull.txt';
-// File name of test push.
-const TEST_PUSH_FILE = 'testpush.txt';
-// File name of test push.
+    /** @var string Test directory name for where files are saved to */
+    const SAVE_TO = '/tmp/saveto/';
+    /** @var string Test directory name for where files are restored from */
+    const RESTORE_FROM = '/tmp/restorefrom/';
+    /** @var string File name of test pull */
+    const TEST_PULL_FILE = 'testpull.txt';
+    /** @var string File name of test push */
+    const TEST_PUSH_FILE = 'testpush.txt';
+    /** @var string File name of test push */
     const TEST_DELETE_FILE = 'testdelete.txt';
 
 
@@ -92,7 +93,8 @@ const TEST_PUSH_FILE = 'testpush.txt';
         // Test pull a file that does not exist.
         $filerecord = $storage->pull_file('notexist.txt');
         $this->assertNull($filerecord);
-        $expected = 'Cannot read file. Either the file does not exist or there is a permission problem. (/tmp/restorefrom/notexist.txt)';
+        $expected = 'Cannot read file. Either the file does not exist or there is a permission problem.'
+            . ' (/tmp/restorefrom/notexist.txt)';
         $this->assertEquals($expected, $storage->get_error());
         $storage->clear_error();
 
@@ -117,4 +119,25 @@ const TEST_PUSH_FILE = 'testpush.txt';
 
         $this->cleanup();
     }
+
+    /**
+     * Test construct without directories configured.
+     */
+    public function test_construct_without_directories_configured()
+    {
+        $raised = false;
+        try {
+            $storage = new shared_disk_storage;
+        } catch (moodle_exception $e) {
+            $raised = true;
+            $this->assertInstanceOf('moodle_exception', $e);
+            $this->assertStringContainsString('directories have not been configured', $e->getMessage());
+        }
+
+        if (!$raised) {
+            $this->fail('New instance should not be allowed if directories are not configured.');
+        }
+
+    }
+
 }

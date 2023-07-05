@@ -23,6 +23,7 @@ use context_course;
 use core\task\manager;
 use Exception;
 use invalid_parameter_exception;
+use moodle_exception;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
 use tool_coursemigration\event\restore_failed;
@@ -72,17 +73,23 @@ class course_restore_test extends advanced_testcase {
         $coursecontext = context_course::instance($course->id);
         $fs = get_file_storage();
         $files = $fs->get_area_files($coursecontext->id, 'backup', 'course', false, 'id ASC');
+        /** @var \stored_file $backupfile */
         $backupfile = reset($files);
-        $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR . "restoretest";
-        $backupfile->copy_content_to($backuppath);
+        $filename = $backupfile->get_filename();
+        $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
+        $backupfile->copy_content_to($backuppath . $filename);
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
             'action' => coursemigration::ACTION_RESTORE,
             'destinationcategoryid' => $category->id,
             'status' => coursemigration::STATUS_NOT_STARTED,
-            'filename' => $backuppath,
+            'filename' => $filename,
         ]);
+
+        set_config('restorefrom', $backuppath, 'tool_coursemigration');
+        set_config('saveto', $backuppath, 'tool_coursemigration');
+
         $coursemigration->save();
 
         $task = new course_restore();
@@ -189,6 +196,8 @@ class course_restore_test extends advanced_testcase {
      * @covers ::restore
      */
     public function test_restore_invalid_filename() {
+        global $CFG;
+
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -207,11 +216,21 @@ class course_restore_test extends advanced_testcase {
         ]);
         $coursemigration->save();
 
+        $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
+        set_config('restorefrom', $backuppath, 'tool_coursemigration');
+        set_config('saveto', $backuppath, 'tool_coursemigration');
+
         $task = new course_restore();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
         $task->execute();
+
+        // Check exception was thrown.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $expected = 'Cannot restore the course. File can not be pulled from the storage. Error: Cannot read file. ' .
+            'Either the file does not exist or there is a permission problem. (/var/lib/phpunitdata/temp/invalid file name)';
+        $this->assertEquals($expected, $currentcoursemigration->get('error'));
 
         $eventclass = restore_failed::class;
         $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
@@ -219,7 +238,7 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
-        $this->assertStringContainsString("No such file or directory", $event->get_description());
+        $this->assertStringContainsString("file does not exist", $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
     }
 }
