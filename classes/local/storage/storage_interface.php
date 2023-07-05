@@ -48,4 +48,10 @@ interface storage_interface {
      * @return boolean true if successfully deleted.
      */
     public function delete_file(string $filename): bool;
+
+    /**
+     * Any error message from exception.
+     * @return string error message.
+     */
+    public function get_error(): string;
 }

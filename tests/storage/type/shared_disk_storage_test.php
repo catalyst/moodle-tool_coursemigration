@@ -123,8 +123,7 @@ class shared_disk_storage_test extends advanced_testcase {
     /**
      * Test construct without directories configured.
      */
-    public function test_construct_without_directories_configured()
-    {
+    public function test_construct_without_directories_configured() {
         $raised = false;
         try {
             $storage = new shared_disk_storage;

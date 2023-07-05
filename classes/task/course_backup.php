@@ -116,7 +116,11 @@ class course_backup extends adhoc_task {
 
                     mtrace("Backup completed.");
                 } else {
-                    throw new file_exception(get_string('error:copydestination', 'tool_coursemigration', $fullpath));
+                    throw new file_exception(get_string(
+                        'error:copydestination',
+                        'tool_coursemigration',
+                        $storage->get_error()
+                    ));
                 }
             }
         } catch (\Exception $e) {
