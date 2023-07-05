@@ -110,10 +110,16 @@ class course_restore extends adhoc_task {
                 ->set('courseid', $courseid)
                 ->save();
             $course = get_course($courseid);
-            $deleteaftersuccess = get_config('tool_coursemigration', 'successfuldelete');
-            if ($deleteaftersuccess) {
+
+            if (get_config('tool_coursemigration', 'hiddencourse')) {
+                $course->visible = false;
+                update_course($course);
+            }
+
+            if (get_config('tool_coursemigration', 'successfuldelete')) {
                 $storage->delete_file($coursemigration->get('filename'));
             }
+
             restore_completed::create([
                 'objectid' => $coursemigration->get('id'),
                 'other' => [
