@@ -20,6 +20,7 @@ use backup;
 use core\task\adhoc_task;
 use Exception;
 use invalid_parameter_exception;
+use moodle_exception;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
 use tool_coursemigration\event\restore_failed;
@@ -76,10 +77,22 @@ class course_restore extends adhoc_task {
         $backupdir = "restore_" . uniqid();
         $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $backupdir;
 
+        // Retrieve stored_file.
+        $storage = helper::get_selected();
+        // Check that the storage class has been configured.
+        if (!$storage) {
+            throw new coding_exception('error:storagenotconfig', 'tool_coursemigration');
+        }
+        $restorefile = $storage->pull_file($coursemigration->get('filename'));
+
         try {
+            if (!$restorefile) {
+                throw new moodle_exception('error:pullfile', 'tool_coursemigration', '', $storage->get_error());
+            }
             $fp = get_file_packer('application/vnd.moodle.backup');
-            // TODO: Replace the filename to actual location.
-            $fp->extract_to_pathname($coursemigration->get('filename'), $path);
+            $fp->extract_to_pathname($restorefile, $path);
+            // stored_file is temporary and is no longer needed.
+            $restorefile->delete();
 
             list($fullname, $shortname) = restore_dbops::calculate_course_names(0, get_string('restoringcourse', 'backup'),
                 get_string('restoringcourseshortname', 'backup'));
@@ -97,6 +110,10 @@ class course_restore extends adhoc_task {
                 ->set('courseid', $courseid)
                 ->save();
             $course = get_course($courseid);
+            $deleteaftersuccess = get_config('tool_coursemigration', 'successfuldelete');
+            if ($deleteaftersuccess) {
+                $storage->delete_file($coursemigration->get('filename'));
+            }
             restore_completed::create([
                 'objectid' => $coursemigration->get('id'),
                 'other' => [
@@ -112,6 +129,10 @@ class course_restore extends adhoc_task {
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $errormsg)
                 ->save();
+            $deleteafterfail = get_config('tool_coursemigration', 'faildelete');
+            if ($deleteafterfail) {
+                $storage->delete_file($coursemigration->get('filename'));
+            }
             restore_failed::create([
                 'objectid' => $coursemigration->get('id'),
                 'other' => [

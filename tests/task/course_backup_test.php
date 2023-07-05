@@ -46,6 +46,8 @@ class course_backup_test extends advanced_testcase {
      * Test backup.
      */
     public function test_course_backup() {
+        global $CFG;
+
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -68,6 +70,10 @@ class course_backup_test extends advanced_testcase {
         $coursemigration->save();
         $this->assertEmpty($coursemigration->get('filename'));
 
+        // Configure backup and restore directories.
+        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
+        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
@@ -89,6 +95,8 @@ class course_backup_test extends advanced_testcase {
      * Test backup failed on WS call.
      */
     public function test_course_backup_failed_on_ws_call() {
+        global $CFG;
+
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -110,6 +118,10 @@ class course_backup_test extends advanced_testcase {
         ]);
         $coursemigration->save();
         $this->assertEmpty($coursemigration->get('filename'));
+
+        // Configure backup and restore directories.
+        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
+        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -165,5 +177,43 @@ class course_backup_test extends advanced_testcase {
             $this->assertTrue($e instanceof $exceptionclassname);
             $this->assertStringContainsString('No match for Course migration id: 12345', $e->getMessage());
         }
+    }
+
+    /**
+     * Test push file error.
+     */
+    public function test_push_file_error() {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course with some availability data set.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test restore course']);
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+        ]);
+        $coursemigration->save();
+        $this->assertEmpty($coursemigration->get('filename'));
+
+        // Configure INVALID backup and restore directories to force exception.
+        set_config('restorefrom', $CFG->tempdir . 'something', 'tool_coursemigration');
+        set_config('saveto', $CFG->tempdir . 'something', 'tool_coursemigration');
+
+        $task = new course_backup();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Error in copying file to destination directory', $output);
     }
 }

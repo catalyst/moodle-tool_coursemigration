@@ -175,7 +175,13 @@ class helper_test extends advanced_testcase {
      * Test the selected storage class.
      */
     public function test_get_selected() {
+        global $CFG;
         $this->resetAfterTest();
+
+        // Configure backup and restore directories.
+        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
+        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+
         // Tests default storage class.
         $selectedclass = helper::get_selected();
         $expected = 'tool_coursemigration\\local\\storage\\storage_interface';
