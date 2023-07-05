@@ -77,21 +77,21 @@ class course_restore extends adhoc_task {
         $backupdir = "restore_" . uniqid();
         $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $backupdir;
 
-        // Retrieve stored_file.
-        $storage = helper::get_selected();
-        // Check that the storage class has been configured.
-        if (!$storage) {
-            throw new coding_exception('error:storagenotconfig', 'tool_coursemigration');
-        }
-        $restorefile = $storage->pull_file($coursemigration->get('filename'));
-
         try {
+            // Retrieve stored_file.
+            $storage = helper::get_selected();
+            // Check that the storage class has been configured.
+            if (!$storage) {
+                throw new moodle_exception('error:storagenotconfig', 'tool_coursemigration');
+            }
+            $restorefile = $storage->pull_file($coursemigration->get('filename'));
+
             if (!$restorefile) {
                 throw new moodle_exception('error:pullfile', 'tool_coursemigration', '', $storage->get_error());
             }
             $fp = get_file_packer('application/vnd.moodle.backup');
             $fp->extract_to_pathname($restorefile, $path);
-            // stored_file is temporary and is no longer needed.
+            // This stored_file is temporary and is no longer needed.
             $restorefile->delete();
 
             list($fullname, $shortname) = restore_dbops::calculate_course_names(0, get_string('restoringcourse', 'backup'),
