@@ -202,9 +202,7 @@ class course_restore_test extends advanced_testcase {
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
 
-        // Create a course with some availability data set.
         $generator = $this->getDataGenerator();
-        $course = $generator->create_course(['fullname' => 'Test restore course']);
         $category = $generator->create_category();
 
         // Create coursemigration record.
@@ -240,5 +238,49 @@ class course_restore_test extends advanced_testcase {
         $event = reset($events);
         $this->assertStringContainsString("file does not exist", $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
+    }
+
+    /**
+     * Test restore with not configured storage.
+     *
+     * @covers ::restore
+     */
+    public function test_restore_not_configured_storage() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
+
+        $category = $this->getDataGenerator()->create_category();
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => $category->id,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => 'testfilename',
+        ]);
+        $coursemigration->save();
+
+        // Break config for a storage.
+        set_config('storagetype', '', 'tool_coursemigration');
+
+        $task = new course_restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        $task->execute();
+
+        // Check exception was thrown.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $expected = 'Cannot restore the course. A storage class has not been configured';
+        $this->assertEquals($expected, $currentcoursemigration->get('error'));
+
+        $eventclass = restore_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertStringContainsString("A storage class has not been configured", $event->get_description());
     }
 }
