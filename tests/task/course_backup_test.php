@@ -54,7 +54,7 @@ class course_backup_test extends advanced_testcase {
         $course = $generator->create_course(['fullname' => 'Test restore course']);
 
         // Mock restore api.
-        $mockedrestoreapi = $this->createStub(restore_api::class);
+        $mockedrestoreapi = $this->createMock(restore_api::class);
         $mockedrestoreapi->method('request_restore')->willReturn(true);
         restore_api_factory::set_restore_api($mockedrestoreapi);
 
@@ -97,7 +97,7 @@ class course_backup_test extends advanced_testcase {
         $course = $generator->create_course(['fullname' => 'Test restore course']);
 
         // Mock restore api.
-        $mockedrestoreapi = $this->createStub(restore_api::class);
+        $mockedrestoreapi = $this->createMock(restore_api::class);
         $mockedrestoreapi->method('request_restore')->willReturn(false);
         restore_api_factory::set_restore_api($mockedrestoreapi);
 
