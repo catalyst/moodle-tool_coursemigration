@@ -28,7 +28,6 @@ namespace tool_coursemigration\task;
 use backup;
 use backup_controller;
 use backup_plan_dbops;
-use coding_exception;
 use core\task\adhoc_task;
 use file_exception;
 use invalid_parameter_exception;
@@ -99,7 +98,7 @@ class course_backup extends adhoc_task {
                 $storage = helper::get_selected();
                 // Check that the storage class has been configured.
                 if (!$storage) {
-                    throw new coding_exception('error:storagenotconfig', 'tool_coursemigration');
+                    throw new moodle_exception('error:storagenotconfig', 'tool_coursemigration');
                 }
                 mtrace("Writing " . $filename);
                 if ($storage->push_file($filename, $file)) {

@@ -216,4 +216,39 @@ class course_backup_test extends advanced_testcase {
 
         $this->assertStringContainsString('Error in copying file to destination directory', $output);
     }
+
+    /**
+     * Test not_configured_storage.
+     */
+    public function test_not_configured_storage() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course with some availability data set.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test restore course']);
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+        ]);
+        $coursemigration->save();
+        $this->assertEmpty($coursemigration->get('filename'));
+
+        // Break config for a storage.
+        set_config('storagetype', '', 'tool_coursemigration');
+
+        $task = new course_backup();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('A storage class has not been configured', $output);
+    }
 }
