@@ -107,7 +107,7 @@ class shared_disk_storage_test extends advanced_testcase {
 
         // Test delete a file.
         $storage->delete_file(self::TEST_PULL_FILE);
-        $this->assertFileNotExists (self::TEST_PULL_FILE);
+        $this->assertFalse(file_exists(self::TEST_PULL_FILE));
         $storage->clear_error();
 
         // Test delete a file that does not exist.
