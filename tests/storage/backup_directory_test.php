@@ -27,7 +27,6 @@ use tool_coursemigration\local\storage\backup_directory;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * @covers     \tool_coursemigration\local\storage\backup_directory
-
  */
 class backup_directory_test extends advanced_testcase {
 

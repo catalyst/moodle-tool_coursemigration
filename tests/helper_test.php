@@ -17,6 +17,7 @@
 namespace tool_coursemigration;
 
 use advanced_testcase;
+use coding_exception;
 use context_user;
 use invalid_parameter_exception;
 use storage\type\mock_storage_class;
@@ -186,5 +187,11 @@ class helper_test extends advanced_testcase {
         unset_config('storagetype', 'tool_coursemigration');
         $selectedclass = helper::get_selected();
         $this->assertNull($selectedclass);
+
+        // Test selected Storage class does not implement the storage_interface.
+        set_config('storagetype','tool_coursemigration\helper', 'tool_coursemigration');
+        $this->expectException(coding_exception::class);
+        $this->expectExceptionMessage('The selected Storage class does not implement the storage_interface.');
+        $selectedclass = helper::get_selected();
     }
 }
