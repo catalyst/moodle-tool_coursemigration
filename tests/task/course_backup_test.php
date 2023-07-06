@@ -91,6 +91,7 @@ class course_backup_test extends advanced_testcase {
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
         $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
         $this->assertNotEmpty($currentcoursemigration->get('filename'));
+        $this->assertStringStartsWith($coursemigration->get('id'), $currentcoursemigration->get('filename'));
         restore_api_factory::reset_restore_api();
 
         $eventclass = backup_completed::class;
