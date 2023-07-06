@@ -27,6 +27,7 @@ use stdClass;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\helper;
 use renderable;
+use core_course_category;
 
 /**
  * Renderable table for coursemigration.
@@ -184,17 +185,20 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_destinationcategory(stdClass $row): string {
+        $includelinks = !$this->is_downloading();
+
         switch ($row->action) {
             case coursemigration::ACTION_BACKUP:
                 $categoryname = $row->destinationcategoryid ?? '';
                 break;
             case coursemigration::ACTION_RESTORE:
-                $categoryname = $row->coursecategoryname ?? '';
+                $categoryname = core_course_category::get($row->destinationcategoryid)->get_nested_name($includelinks);
                 break;
             default:
                 $categoryname = '';
                 break;
         }
+
         return $categoryname;
     }
 
