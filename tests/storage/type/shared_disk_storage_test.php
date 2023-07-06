@@ -83,6 +83,11 @@ class shared_disk_storage_test extends advanced_testcase {
         $this->setup_test_file();
 
         $storage = new shared_disk_storage;
+
+        // Check that backup and restore directories are configured.
+        $this->assertTrue($storage->ready_for_pull());
+        $this->assertTrue($storage->ready_for_push());
+
         $expected = 'tool_coursemigration\\local\\storage\\storage_interface';
         $classimplements = class_implements($storage);
         // Test that the class implements the storage interface.
@@ -120,22 +125,12 @@ class shared_disk_storage_test extends advanced_testcase {
     }
 
     /**
-     * Test construct without directories configured.
+     * Test without directories configured.
      */
-    public function test_construct_without_directories_configured() {
-        $raised = false;
-        try {
-            $storage = new shared_disk_storage;
-        } catch (moodle_exception $e) {
-            $raised = true;
-            $this->assertInstanceOf('moodle_exception', $e);
-            $this->assertStringContainsString('directories have not been configured', $e->getMessage());
-        }
-
-        if (!$raised) {
-            $this->fail('New instance should not be allowed if directories are not configured.');
-        }
-
+    public function test_without_directories_configured() {
+        $storage = new shared_disk_storage;
+        $this->assertFalse($storage->ready_for_pull());
+        $this->assertFalse($storage->ready_for_push());
     }
 
 }

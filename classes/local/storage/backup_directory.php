@@ -50,7 +50,8 @@ class backup_directory extends admin_setting_configdirectory {
     public function write_setting($data): string {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         if ($configselectedstorage == __NAMESPACE__ . '\type\shared_disk_storage') {
-            if (empty($data) || !file_exists($data) || !is_dir($data) || !is_writable($data)) {
+            // Allow empty, otherwise must exist and be writable.
+            if (!empty($data) && (!file_exists($data) || !is_dir($data) || !is_writable($data))) {
                 // The directory must exist and be writable.
                 return get_string('backuperrorinvaliddestination');
             }

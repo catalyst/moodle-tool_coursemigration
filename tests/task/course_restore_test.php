@@ -349,4 +349,48 @@ class course_restore_test extends advanced_testcase {
         $event = reset($events);
         $this->assertStringContainsString("A storage class has not been configured", $event->get_description());
     }
+
+    /**
+     * Test restore without configured restore directory.
+     *
+     * @covers ::restore
+     */
+    public function test_restore_not_configured_restore_directory() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
+
+        $category = $this->getDataGenerator()->create_category();
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => $category->id,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => 'testfilename',
+        ]);
+        $coursemigration->save();
+
+        // Break config for a restore from directory.
+        set_config('restorefrom', '', 'tool_coursemigration');
+
+        $task = new course_restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        $task->execute();
+
+        // Check exception was thrown.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $expected = 'Cannot restore the course. Unable to restore course. The [restore from] directory has not been configured';
+        $this->assertEquals($expected, $currentcoursemigration->get('error'));
+
+        $eventclass = restore_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertStringContainsString("directory has not been configured", $event->get_description());
+    }
 }

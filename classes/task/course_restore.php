@@ -84,7 +84,11 @@ class course_restore extends adhoc_task {
             if (!$storage) {
                 throw new moodle_exception('error:storagenotconfig', 'tool_coursemigration');
             }
-            $restorefile = $storage->pull_file($coursemigration->get('filename'));
+            if ($storage->ready_for_pull()) {
+                $restorefile = $storage->pull_file($coursemigration->get('filename'));
+            } else {
+                throw new moodle_exception('error:selectedstoragenotreadyforpull', 'tool_coursemigration');
+            }
 
             if (!$restorefile) {
                 throw new moodle_exception('error:pullfile', 'tool_coursemigration', '', $storage->get_error());
