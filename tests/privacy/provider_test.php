@@ -132,7 +132,7 @@ class provider_test extends provider_testcase {
         $this->assertCount(2, $userlist);
         $expected = [$this->user->id, $this->user2->id];
         $actual = $userlist->get_userids();
-        $this->assertEquals($expected, $actual);
+        $this->assertEqualsCanonicalizing($expected, $actual);
 
         // The list of users for user context should not return any users.
         $usercontext = context_user::instance($this->user->id);
