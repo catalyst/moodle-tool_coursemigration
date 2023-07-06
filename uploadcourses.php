@@ -57,10 +57,22 @@ echo $OUTPUT->heading(get_string('coursemigrationupload', 'tool_coursemigration'
 if (!get_config('tool_coursemigration', 'destinationwsurl') || !get_config('tool_coursemigration', 'wstoken')) {
     $settingsurl = new moodle_url('/admin/settings.php', ['section' => 'tool_coursemigration_settings']);
     $link = html_writer::link($settingsurl, get_string('settings_link_text', 'tool_coursemigration'));
-    echo $OUTPUT->error_text(get_string('error:pluginnotsetup', 'tool_coursemigration', $link));
+    echo $OUTPUT->notification(get_string('error:pluginnotsetup', 'tool_coursemigration'));
+    echo $OUTPUT->error_text(get_string('error:updatesettings', 'tool_coursemigration', $link));
     echo $OUTPUT->footer();
     die();
 };
+
+// Check if selected storage type has been configured.
+$storage = helper::get_selected();
+if (!$storage->ready_for_push()) {
+    $settingsurl = new moodle_url('/admin/settings.php', ['section' => 'tool_coursemigration_settings']);
+    $link = html_writer::link($settingsurl, get_string('settings_link_text', 'tool_coursemigration'));
+    echo $OUTPUT->notification(get_string('error:selectedstoragenotreadyforpush', 'tool_coursemigration'));
+    echo $OUTPUT->error_text(get_string('error:updatesettings', 'tool_coursemigration', $link));
+    echo $OUTPUT->footer();
+    die();
+}
 
 if ($data = $form->get_data()) {
     $datefrom = time();

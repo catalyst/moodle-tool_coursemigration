@@ -42,12 +42,9 @@ class shared_disk_storage implements storage_interface {
             // Initialise directory paths.
             $saveto = get_config('tool_coursemigration', 'saveto');
             $restorefrom = get_config('tool_coursemigration', 'restorefrom');
-            // Check that directories have been configured.
-            if (!$saveto || !$restorefrom) {
-                throw new moodle_exception('error:dirnotconfig', 'tool_coursemigration');
-            }
-            $this->savetodirectory = rtrim($saveto, '/') . '/';
-            $this->restorefromdirectory = rtrim($restorefrom, '/') . '/';
+            // Only add trailing '/' to a valid directory.
+            $this->savetodirectory = ($saveto) ? rtrim($saveto, '/') . '/' : null;
+            $this->restorefromdirectory = ($restorefrom) ? rtrim($restorefrom, '/') . '/' : null;
         }
     }
 
@@ -152,5 +149,21 @@ class shared_disk_storage implements storage_interface {
             $filerecord['filename'])) {
             $existing->delete();
         }
+    }
+
+    /**
+     * Verifies that storage is configured for restore.
+     * @return boolean true if configuration is valid.
+     */
+    public function ready_for_pull(): bool {
+        return !empty($this->restorefromdirectory);
+    }
+
+    /**
+     * Verifies that storage is configured for backup.
+     * @return boolean true if configuration is valid.
+     */
+    public function ready_for_push(): bool {
+        return !empty($this->savetodirectory);
     }
 }

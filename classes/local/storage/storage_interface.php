@@ -54,4 +54,16 @@ interface storage_interface {
      * @return string error message.
      */
     public function get_error(): string;
+
+    /**
+     * Verifies that storage is configured for restore.
+     * @return boolean true if configuration is valid.
+     */
+    public function ready_for_pull(): bool;
+
+    /**
+     * Verifies that storage is configured for backup.
+     * @return boolean true if configuration is valid.
+     */
+    public function ready_for_push(): bool;
 }
