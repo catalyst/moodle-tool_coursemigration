@@ -55,7 +55,11 @@ class restore_failed extends base {
      * @return string
      */
     public function get_description(): string {
-        return "Restoring course is failed. Error: {$this->other['error']}";
+        $errormsg = "Restoring course is failed";
+        if (!empty($this->other['filename'])) {
+            $errormsg .= " from file '{$this->other['filename']}'";
+        }
+        return $errormsg . ". Error: {$this->other['error']}";
     }
 
     /**

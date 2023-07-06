@@ -310,6 +310,7 @@ class course_restore_test extends advanced_testcase {
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
         $this->assertEquals($coursemigration->get('filename'), $event->other['filename']);
         $this->assertStringContainsString("file does not exist", $event->get_description());
+        $this->assertStringContainsString($event->other['filename'], $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
     }
 
@@ -356,6 +357,7 @@ class course_restore_test extends advanced_testcase {
         $event = reset($events);
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
         $this->assertEquals($coursemigration->get('filename'), $event->other['filename']);
+        $this->assertStringContainsString($event->other['filename'], $event->get_description());
         $this->assertStringContainsString("A storage class has not been configured", $event->get_description());
     }
 }
