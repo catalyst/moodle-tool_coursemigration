@@ -155,7 +155,7 @@ class shared_disk_storage implements storage_interface {
      * Verifies that storage is configured for restore.
      * @return boolean true if configuration is valid.
      */
-    public function  ready_for_pull(): bool {
+    public function ready_for_pull(): bool {
         return !empty($this->restorefromdirectory);
     }
 
@@ -163,7 +163,7 @@ class shared_disk_storage implements storage_interface {
      * Verifies that storage is configured for backup.
      * @return boolean true if configuration is valid.
      */
-    public function  ready_for_push(): bool {
+    public function ready_for_push(): bool {
         return !empty($this->savetodirectory);
     }
 }

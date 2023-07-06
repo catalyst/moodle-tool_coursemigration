@@ -117,6 +117,10 @@ class course_backup extends adhoc_task {
                     throw new moodle_exception('error:storagenotconfig', 'tool_coursemigration');
                 }
                 mtrace("Writing " . $filename);
+                if (!$storage->ready_for_push()) {
+                    throw new moodle_exception('error:selectedstoragenotreadyforpush', 'tool_coursemigration');
+                }
+
                 if ($storage->push_file($filename, $file)) {
                     $coursemigration->set('filename', $filename);
 

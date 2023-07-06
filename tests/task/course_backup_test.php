@@ -65,7 +65,7 @@ class course_backup_test extends advanced_testcase {
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
-            'action' => coursemigration::ACTION_RESTORE,
+            'action' => coursemigration::ACTION_BACKUP,
             'courseid' => $course->id,
             'destinationcategoryid' => 1,
             'status' => coursemigration::STATUS_NOT_STARTED,
@@ -134,7 +134,7 @@ class course_backup_test extends advanced_testcase {
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
-            'action' => coursemigration::ACTION_RESTORE,
+            'action' => coursemigration::ACTION_BACKUP,
             'courseid' => $course->id,
             'destinationcategoryid' => 1,
             'status' => coursemigration::STATUS_NOT_STARTED,
@@ -329,6 +329,52 @@ class course_backup_test extends advanced_testcase {
         $event = reset($events);
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
         $this->assertStringContainsString('A storage class has not been configured', $event->get_description());
+        $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
+    }
+
+    /**
+     * Test restore without configured backup directory.
+     */
+    public function test_restore_not_configured_backup_directory() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
+
+        // Create a course with some availability data set.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test restore course']);
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+        ]);
+        $coursemigration->save();
+        $this->assertEmpty($coursemigration->get('filename'));
+
+        // Break config for a save to directory.
+        set_config('saveto', '', 'tool_coursemigration');
+
+        $task = new course_backup();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('directory has not been configured', $output);
+
+        $eventclass = backup_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals($coursemigration->get('id'), $event->objectid);
+        $this->assertStringContainsString('directory has not been configured', $event->get_description());
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 }
