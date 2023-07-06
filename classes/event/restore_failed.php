@@ -55,7 +55,11 @@ class restore_failed extends base {
      * @return string
      */
     public function get_description(): string {
-        return "Restoring course is failed. Error: {$this->other['error']}";
+        $errormsg = "Restoring course is failed";
+        if (!empty($this->other['filename'])) {
+            $errormsg .= " from file '{$this->other['filename']}'";
+        }
+        return $errormsg . ". Error: {$this->other['error']}";
     }
 
     /**
@@ -72,6 +76,10 @@ class restore_failed extends base {
 
         if (!isset($this->other['error'])) {
             throw new coding_exception("The 'error' value must be set in other.");
+        }
+
+        if (!isset($this->other['filename'])) {
+            throw new coding_exception("The 'filename' value must be set in other.");
         }
     }
 }

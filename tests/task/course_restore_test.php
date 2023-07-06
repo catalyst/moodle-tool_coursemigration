@@ -114,13 +114,16 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
+        $this->assertEquals($currentcoursemigration->get('id'), $event->objectid);
         $this->assertEquals($newcourse->id, $event->other['courseid']);
         $this->assertEquals($newcourse->fullname, $event->other['coursename']);
         $this->assertEquals($category->id, $event->other['destinationcategoryid']);
         $this->assertEquals($category->name, $event->other['destinationcategoryname']);
+        $this->assertEquals($backupfile->get_filename(), $event->other['filename']);
 
         $expectdescription = "Restoring course '{$newcourse->fullname}' (id: {$newcourse->id})" .
-            " is successfully completed into category '{$category->name}' (id: {$category->id}).";
+            " is successfully completed into category '{$category->name}' (id: {$category->id})" .
+            " from file '{$backupfile->get_filename()}'.";
         $this->assertEquals($expectdescription, $event->get_description());
         $this->assertEquals(get_string('event:restore_completed', 'tool_coursemigration'), $event->get_name());
     }
@@ -217,6 +220,7 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
+        $this->assertEquals(0, $event->objectid);
         $expectdescription = "Restoring course is failed. Error: Invalid data. Error: missing one of the required parameters.";
         $this->assertEquals($expectdescription, $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
@@ -251,6 +255,7 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
+        $this->assertEquals(0, $event->objectid);
         $expectdescription = "Restoring course is failed. Error: Invalid id. Error: could not find record for restore.";
         $this->assertEquals($expectdescription, $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
@@ -302,7 +307,10 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
+        $this->assertEquals($coursemigration->get('id'), $event->objectid);
+        $this->assertEquals($coursemigration->get('filename'), $event->other['filename']);
         $this->assertStringContainsString("file does not exist", $event->get_description());
+        $this->assertStringContainsString($event->other['filename'], $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
     }
 
@@ -347,6 +355,9 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
+        $this->assertEquals($coursemigration->get('id'), $event->objectid);
+        $this->assertEquals($coursemigration->get('filename'), $event->other['filename']);
+        $this->assertStringContainsString($event->other['filename'], $event->get_description());
         $this->assertStringContainsString("A storage class has not been configured", $event->get_description());
     }
 }

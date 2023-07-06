@@ -56,6 +56,7 @@ class course_restore extends adhoc_task {
                 'objectid' => 0,
                 'other' => [
                     'error' => $errormsg,
+                    'filename' => '',
                 ]
             ])->trigger();
             throw new invalid_parameter_exception($errormsg);
@@ -69,6 +70,7 @@ class course_restore extends adhoc_task {
                 'objectid' => 0,
                 'other' => [
                     'error' => $errormsg,
+                    'filename' => '',
                 ]
             ])->trigger();
             throw new invalid_parameter_exception($errormsg);
@@ -127,6 +129,7 @@ class course_restore extends adhoc_task {
                     'coursename' => $course->fullname,
                     'destinationcategoryid' => $coursemigration->get('destinationcategoryid'),
                     'destinationcategoryname' => $category->name,
+                    'filename' => $coursemigration->get('filename'),
                 ]
             ])->trigger();
 
@@ -143,6 +146,7 @@ class course_restore extends adhoc_task {
                 'objectid' => $coursemigration->get('id'),
                 'other' => [
                     'error' => $errormsg,
+                    'filename' => $coursemigration->get('filename'),
                 ]
             ])->trigger();
             fulldelete($path);

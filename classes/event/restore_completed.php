@@ -57,7 +57,8 @@ class restore_completed extends base {
     public function get_description(): string {
         return "Restoring course '{$this->other['coursename']}' (id: {$this->other['courseid']})" .
          " is successfully completed into category '{$this->other['destinationcategoryname']}'" .
-         " (id: {$this->other['destinationcategoryid']}).";
+         " (id: {$this->other['destinationcategoryid']})" .
+         " from file '{$this->other['filename']}'.";
     }
 
     /**
@@ -72,7 +73,7 @@ class restore_completed extends base {
             throw new coding_exception("The 'objectid' must be set.");
         }
 
-        $otherfields = ['courseid', 'coursename', 'destinationcategoryid', 'destinationcategoryname'];
+        $otherfields = ['courseid', 'coursename', 'destinationcategoryid', 'destinationcategoryname', 'filename'];
         foreach ($otherfields as $otherfield) {
             if (!isset($this->other[$otherfield])) {
                 throw new coding_exception("The '{$otherfield}' value must be set in other.");
