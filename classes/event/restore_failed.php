@@ -73,5 +73,9 @@ class restore_failed extends base {
         if (!isset($this->other['error'])) {
             throw new coding_exception("The 'error' value must be set in other.");
         }
+
+        if (!isset($this->other['filename'])) {
+            throw new coding_exception("The 'filename' value must be set in other.");
+        }
     }
 }
