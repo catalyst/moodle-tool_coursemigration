@@ -21,6 +21,8 @@ use core\task\manager;
 use Exception;
 use invalid_parameter_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\event\backup_completed;
+use tool_coursemigration\event\backup_failed;
 use tool_coursemigration\restore_api;
 use tool_coursemigration\restore_api_factory;
 
@@ -50,6 +52,7 @@ class course_backup_test extends advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         // Create a course with some availability data set.
         $generator = $this->getDataGenerator();
@@ -89,6 +92,24 @@ class course_backup_test extends advanced_testcase {
         $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
         $this->assertNotEmpty($currentcoursemigration->get('filename'));
         restore_api_factory::reset_restore_api();
+
+        $eventclass = backup_completed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals($currentcoursemigration->get('id'), $event->objectid);
+        $this->assertEquals($course->id, $event->other['courseid']);
+        $this->assertEquals($course->fullname, $event->other['coursename']);
+        $this->assertEquals(1, $event->other['destinationcategoryid']);
+        $this->assertEquals($currentcoursemigration->get('filename'), $event->other['filename']);
+
+        $expectdescription = "Backup course '{$course->fullname}' (id: {$course->id})" .
+            " is successfully completed to file '{$currentcoursemigration->get('filename')}'" .
+            " for category id: 1.";
+        $this->assertEquals($expectdescription, $event->get_description());
+        $this->assertEquals(get_string('event:backup_completed', 'tool_coursemigration'), $event->get_name());
     }
 
     /**
@@ -99,6 +120,7 @@ class course_backup_test extends advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         // Create a course with some availability data set.
         $generator = $this->getDataGenerator();
@@ -137,6 +159,17 @@ class course_backup_test extends advanced_testcase {
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
         $this->assertEquals(coursemigration::STATUS_FAILED, $currentcoursemigration->get('status'));
         restore_api_factory::reset_restore_api();
+
+        $eventclass = backup_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $expectdescription = "Backup course is failed. Error: Restore request WS call failed.";
+        $this->assertEquals($currentcoursemigration->get('id'), $event->objectid);
+        $this->assertEquals($expectdescription, $event->get_description());
+        $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 
     /**
@@ -145,6 +178,7 @@ class course_backup_test extends advanced_testcase {
     public function test_backup_invalid_param() {
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         $task = new course_backup();
         manager::queue_adhoc_task($task);
@@ -156,6 +190,17 @@ class course_backup_test extends advanced_testcase {
             $this->assertTrue($e instanceof $exceptionclassname);
             $this->assertStringContainsString('Invalid data. Error: missing one of the required parameters.', $e->getMessage());
         }
+
+        $eventclass = backup_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $expectdescription = "Backup course is failed. Error: Invalid data. Error: missing one of the required parameters.";
+        $this->assertEquals(0, $event->objectid);
+        $this->assertEquals($expectdescription, $event->get_description());
+        $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 
     /**
@@ -164,6 +209,7 @@ class course_backup_test extends advanced_testcase {
     public function test_backup_invalid_coursemigrationid() {
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => 12345];
@@ -177,6 +223,17 @@ class course_backup_test extends advanced_testcase {
             $this->assertTrue($e instanceof $exceptionclassname);
             $this->assertStringContainsString('No match for Course migration id: 12345', $e->getMessage());
         }
+
+        $eventclass = backup_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $expectdescription = "Backup course is failed. Error: No match for Course migration id: 12345";
+        $this->assertEquals(0, $event->objectid);
+        $this->assertEquals($expectdescription, $event->get_description());
+        $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 
     /**
@@ -187,6 +244,7 @@ class course_backup_test extends advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         // Create a course with some availability data set.
         $generator = $this->getDataGenerator();
@@ -215,6 +273,16 @@ class course_backup_test extends advanced_testcase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString('Error in copying file to destination directory', $output);
+
+        $eventclass = backup_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals($coursemigration->get('id'), $event->objectid);
+        $this->assertStringContainsString('Error in copying file to destination directory', $event->get_description());
+        $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 
     /**
@@ -223,6 +291,7 @@ class course_backup_test extends advanced_testcase {
     public function test_not_configured_storage() {
         $this->resetAfterTest();
         $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
 
         // Create a course with some availability data set.
         $generator = $this->getDataGenerator();
@@ -250,5 +319,15 @@ class course_backup_test extends advanced_testcase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString('A storage class has not been configured', $output);
+
+        $eventclass = backup_failed::class;
+        $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
+            return $event instanceof $eventclass;
+        });
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertEquals($coursemigration->get('id'), $event->objectid);
+        $this->assertStringContainsString('A storage class has not been configured', $event->get_description());
+        $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 }
