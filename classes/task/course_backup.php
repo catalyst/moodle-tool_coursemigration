@@ -103,7 +103,8 @@ class course_backup extends adhoc_task {
             $id = $bc->get_id();
             $users = $bc->get_plan()->get_setting('users')->get_value();
             $anonymised = $bc->get_plan()->get_setting('anonymize')->get_value();
-            $filename = backup_plan_dbops::get_default_backup_filename($format, $type, $id, $users, $anonymised);
+            $filename = $coursemigration->get('id') . '-' .
+                backup_plan_dbops::get_default_backup_filename($format, $type, $id, $users, $anonymised);
             $bc->get_plan()->get_setting('filename')->set_value($filename);
             $bc->execute_plan();
             $results = $bc->get_results();
