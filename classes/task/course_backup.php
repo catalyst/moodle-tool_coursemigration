@@ -33,6 +33,8 @@ use file_exception;
 use invalid_parameter_exception;
 use moodle_exception;
 use tool_coursemigration\coursemigration;
+use tool_coursemigration\event\backup_completed;
+use tool_coursemigration\event\backup_failed;
 use tool_coursemigration\helper;
 use tool_coursemigration\restore_api_factory;
 
@@ -60,12 +62,25 @@ class course_backup extends adhoc_task {
         $data = (array) $this->get_custom_data();
         if (!$this->is_custom_data_valid($data)) {
             $errormsg = 'Invalid data. Error: missing one of the required parameters.';
+            backup_failed::create([
+                'objectid' => 0,
+                'other' => [
+                    'error' => $errormsg,
+                ]
+            ])->trigger();
             throw new invalid_parameter_exception($errormsg);
         }
 
         $coursemigration = coursemigration::get_record(['id' => $data['coursemigrationid']]);
         if (empty($coursemigration)) {
-            throw new invalid_parameter_exception('No match for Course migration id: ' . $data['coursemigrationid']);
+            $errormsg = 'No match for Course migration id: ' . $data['coursemigrationid'];
+            backup_failed::create([
+                'objectid' => 0,
+                'other' => [
+                    'error' => $errormsg,
+                ]
+            ])->trigger();
+            throw new invalid_parameter_exception($errormsg);
         }
 
         $backupdir = "backup_" . uniqid();
@@ -114,6 +129,16 @@ class course_backup extends adhoc_task {
                     }
 
                     mtrace("Backup completed.");
+
+                    backup_completed::create([
+                        'objectid' => $coursemigration->get('id'),
+                        'other' => [
+                            'courseid' => $course->id,
+                            'coursename' => $course->fullname,
+                            'destinationcategoryid' => $coursemigration->get('destinationcategoryid'),
+                            'filename' => $filename,
+                        ]
+                    ])->trigger();
                 } else {
                     throw new file_exception(get_string(
                         'error:copydestination',
@@ -128,6 +153,12 @@ class course_backup extends adhoc_task {
                 ->set('error', $message)
                 ->save();
             mtrace($message);
+            backup_failed::create([
+                'objectid' => $coursemigration->get('id'),
+                'other' => [
+                    'error' => $message,
+                ]
+            ])->trigger();
         } finally {
             // Delete backup file from course.
             if (isset($file) && $file) {
