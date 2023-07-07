@@ -94,11 +94,13 @@ Alternatively, you can run
 
 to complete the installation from the command line.
 
-## License ##
+# Warm thanks #
 
-2023 This plugin was developed by [Catalyst IT Australia](https://www.catalyst-au.net/).
+Thanks to Monash University (https://www.monash.edu) for funding the development of this plugin.
 
-<img alt="Catalyst IT" src="https://cdn.rawgit.com/CatalystIT-AU/moodle-auth_saml2/MOODLE_39_STABLE/pix/catalyst-logo.svg" width="400">
+# License #
+
+2023 Catalyst IT
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
