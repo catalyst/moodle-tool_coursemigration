@@ -298,7 +298,7 @@ class course_restore_test extends advanced_testcase {
         // Check exception was thrown.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
         $expected = 'Cannot restore the course. File can not be pulled from the storage. Error: Cannot read file. ' .
-            'Either the file does not exist or there is a permission problem. (/var/lib/phpunitdata/temp/invalid file name)';
+            'Either the file does not exist or there is a permission problem. (' . $backuppath . 'invalid file name)';
         $this->assertEquals($expected, $currentcoursemigration->get('error'));
 
         $eventclass = restore_failed::class;
