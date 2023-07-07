@@ -1,8 +1,75 @@
 # Course migration #
 
-TODO Describe the plugin shortly here.
+The Course Migration Tool provides the capability to backup courses in a source
+Moodle site and restore them in target Moodle site.
 
-TODO Provide more detailed description here.
+This is achieved by uploading a csv file containing a list of courses to be
+migated from the source site and the category in the target Moodle site.
+
+Backups are created as a scheduled/adhoc task combination on the source site. These
+backups are placed in a configurable storage location. Currently, only a shared disk
+is supported.
+
+The source site communicates the availability of courses to migrate to the target
+site via a web service end point.  A web service token from the target site is added
+to the configuration on the source site.
+
+The target site has a similar scheduled/adhoc task combination to consume the backup
+files and restore them to the required category.
+
+Activity, progress and results are logged with events and any processing errors. These
+can be viewed via an included repots section.
+
+## Branches
+
+| Moodle version    | Branch |
+| ----------------- |--------|
+| Moodle 3.9+       | `main` |
+
+## Configuration ##
+_Site administration > Plugins > Admin tools > Course migration_
+
+**Backup**
+* Destination URL - URL for web service end point on the target site
+* Web service token - Authentication token created by the target site, used
+for accessing the web service end point.
+
+**Restore**
+* Restore root category - Default/root category for restoring courses.
+* Restore as a hidden course - Option for the restored course visibility.
+* Delete successfully restored backups - Option for backup files in the storage
+location to be deleted after a successful restore.
+* Delete failed backups - Option for backup files in the storage location to be
+deleted after a failed restore.
+
+**Storage**
+* Backup storage - Select one of a list of available storage types. Currently only
+`Shared disk storage` is supported.
+* Shared disk storage
+  * Save to - the full path to the directory on the local file system where you want
+  to save the backup files.
+  * Restore from - the full path to the directory on the local file system where
+  the backup files are restored from.
+
+
+**Scheduled Tasks**
+
+_Site administration > Server > Tasks > Scheduled tasks_
+
+These two scheduled tasks are created and run every 1 minute by default.
+* Create backup adhoc tasks for course migration
+* Create restore adhoc tasks for course migration
+
+## Quick start ##
+* Install plugin on source and taget sites.
+* Create a shared folder/disk accessible to both sites in their local file system.
+* Create a web service _Site administration > Plugins > Web services > External services_
+* Add function `tool_coursemigration_request_restore:Request a restore` to the service.
+* Create a web service token _Site administration > Plugins > Web services > Manage tokens_
+* Add the web service token to the source site configuration.
+* Create a CSV file with course id and category id of courses to migrate.
+  * An example csv file is available on the `Upload course list` page.
+* Upload the csv file at _Site administration > Plugins > Admin tools > Course migration > Upload course list_
 
 ## Installing via uploaded ZIP file ##
 
@@ -27,7 +94,11 @@ Alternatively, you can run
 
 to complete the installation from the command line.
 
-## License ##
+# Warm thanks #
+
+Thanks to Monash University (https://www.monash.edu) for funding the development of this plugin.
+
+# License #
 
 2023 Catalyst IT
 
