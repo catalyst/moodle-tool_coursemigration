@@ -50,7 +50,7 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_configcheckbox('tool_coursemigration/failbackupdelete',
             get_string('settings:failbackupdelete', 'tool_coursemigration'),
             get_string('settings:failbackupdeletedesc', 'tool_coursemigration'),
-            0));
+            1));
 
         $settings->add(new admin_setting_heading('tool_coursemigration/restore',
             new lang_string('settings:restore', 'tool_coursemigration'), ''));
