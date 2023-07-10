@@ -409,7 +409,7 @@ class course_restore_test extends advanced_testcase {
      * Test delete after fail.
      */
     public function test_delete_after_fail() {
-        global $CFG, $USER;
+        global $CFG;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -420,7 +420,6 @@ class course_restore_test extends advanced_testcase {
         $file = fopen($backuppath . $filename, 'w');
         fwrite($file, 'sometestdata');
         fclose($file);
-
 
         // Create coursemigration record.
         $coursemigration = new coursemigration(0, (object)[
