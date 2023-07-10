@@ -377,4 +377,56 @@ class course_backup_test extends advanced_testcase {
         $this->assertStringContainsString('directory has not been configured', $event->get_description());
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
+
+    /**
+     * Test delete after fail.
+     */
+    public function test_delete_after_fail() {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $eventsink = $this->redirectEvents();
+
+        // Create a course with some availability data set.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test restore course']);
+
+        // Mock restore api.
+        $mockedrestoreapi = $this->createMock(restore_api::class);
+        $mockedrestoreapi->method('request_restore')->willReturn(false);
+        restore_api_factory::set_restore_api($mockedrestoreapi);
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+        ]);
+        $coursemigration->save();
+        $this->assertEmpty($coursemigration->get('filename'));
+
+        // Configure backup and restore directories.
+        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
+        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+
+        // Set to delete backup after failed restore.
+        set_config('failbackupdelete', 1, 'tool_coursemigration');
+
+        $task = new course_backup();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        // Confirm the status is now failed.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_FAILED, $currentcoursemigration->get('status'));
+
+        // Confirm the backup file has been deleted.
+        $this->assertFalse(file_exists($CFG->tempdir . DIRECTORY_SEPARATOR . $currentcoursemigration->get('filename')));
+    }
 }

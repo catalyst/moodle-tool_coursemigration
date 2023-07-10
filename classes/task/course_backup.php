@@ -158,6 +158,10 @@ class course_backup extends adhoc_task {
                 ->set('error', $message)
                 ->save();
             mtrace($message);
+            $deleteafterfail = get_config('tool_coursemigration', 'failbackupdelete');
+            if ($deleteafterfail && $coursemigration->get('filename')) {
+                $storage->delete_file($coursemigration->get('filename'));
+            }
             backup_failed::create([
                 'objectid' => $coursemigration->get('id'),
                 'other' => [

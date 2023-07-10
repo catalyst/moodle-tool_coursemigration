@@ -142,8 +142,8 @@ class course_restore extends adhoc_task {
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $errormsg)
                 ->save();
-            $deleteafterfail = get_config('tool_coursemigration', 'faildelete');
-            if ($deleteafterfail) {
+            $deleteafterfail = get_config('tool_coursemigration', 'failrestoredelete');
+            if ($deleteafterfail && $coursemigration->get('filename')) {
                 $storage->delete_file($coursemigration->get('filename'));
             }
             restore_failed::create([
