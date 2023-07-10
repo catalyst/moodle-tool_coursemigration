@@ -47,6 +47,11 @@ if ($hassiteconfig) {
             get_string('settings:wstokendesc', 'tool_coursemigration'),
             ''));
 
+        $settings->add(new admin_setting_configcheckbox('tool_coursemigration/failbackupdelete',
+            get_string('settings:failbackupdelete', 'tool_coursemigration'),
+            get_string('settings:failbackupdeletedesc', 'tool_coursemigration'),
+            1));
+
         $settings->add(new admin_setting_heading('tool_coursemigration/restore',
             new lang_string('settings:restore', 'tool_coursemigration'), ''));
 
@@ -64,9 +69,9 @@ if ($hassiteconfig) {
             get_string('settings:successfuldeletedesc', 'tool_coursemigration'),
             0));
 
-        $settings->add(new admin_setting_configcheckbox('tool_coursemigration/faildelete',
-            get_string('settings:faildelete', 'tool_coursemigration'),
-            get_string('settings:faildeletedesc', 'tool_coursemigration'),
+        $settings->add(new admin_setting_configcheckbox('tool_coursemigration/failrestoredelete',
+            get_string('settings:failrestoredelete', 'tool_coursemigration'),
+            get_string('settings:failrestoredeletedesc', 'tool_coursemigration'),
             0));
 
         $settings->add(new admin_setting_heading('tool_coursemigration/storage',

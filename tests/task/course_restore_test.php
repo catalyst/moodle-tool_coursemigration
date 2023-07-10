@@ -404,4 +404,51 @@ class course_restore_test extends advanced_testcase {
         $event = reset($events);
         $this->assertStringContainsString("directory has not been configured", $event->get_description());
     }
+
+    /**
+     * Test delete after fail.
+     */
+    public function test_delete_after_fail() {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create bad format backup file.
+        $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
+        $filename = 'badfile.txt';
+        $file = fopen($backuppath . $filename, 'w');
+        fwrite($file, 'sometestdata');
+        fclose($file);
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => $filename,
+        ]);
+
+        $coursemigration->save();
+
+        set_config('restorefrom', $backuppath, 'tool_coursemigration');
+        set_config('saveto', $backuppath, 'tool_coursemigration');
+
+        // Set to delete backup after failed restore.
+        set_config('failrestoredelete', 1, 'tool_coursemigration');
+
+        $task = new course_restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        $task->execute();
+
+        // Confirm the status is now failed.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_FAILED, $currentcoursemigration->get('status'));
+
+        // Confirm the backup file has been deleted.
+        $this->assertFalse(file_exists($backuppath . $filename));
+        $this->assertDebuggingCalledCount(1);
+    }
 }
