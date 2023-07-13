@@ -76,7 +76,14 @@ class coursemigration_table extends table_sql implements renderable {
         ]);
 
         $this->collapsible(false);
-        $this->sortable(false);
+
+        $this->sortable(true, 'timecreated', SORT_DESC);
+        $this->no_sorting('action');
+        $this->no_sorting('course');
+        $this->no_sorting('destinationcategory');
+        $this->no_sorting('status');
+        $this->no_sorting('filename');
+        $this->no_sorting('error');
 
         $this->pageable(!empty($pagesize));
         $this->pagesize = $pagesize;
@@ -127,6 +134,8 @@ class coursemigration_table extends table_sql implements renderable {
         if (!empty($where)) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
+
+        $sql .= ' ORDER BY ' . $this->get_sql_sort();
 
         if ($this->is_downloading()) {
             $pagesize = 0;
