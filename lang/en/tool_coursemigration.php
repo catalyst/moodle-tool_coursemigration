@@ -114,3 +114,4 @@ $string['restorefrom_help'] = 'Full path to the directory where the backup files
 $string['storagetype'] = 'Backup storage';
 $string['storagetype_help'] = 'Choose the location where you want backups to be stored.';
 $string['storage:shared_disk_storage'] = 'Shared disk storage';
+$string['coursedeleted'] = '{$a} (course is missing)';

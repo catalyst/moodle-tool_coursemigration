@@ -178,13 +178,19 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_course(stdClass $row): string {
-        $coursename = $row->coursename ?? '';
-        if ($this->is_downloading()) {
-            return $coursename;
+        if (!empty($row->coursename)) {
+            $coursename = $row->coursename;
+            if (!$this->is_downloading()) {
+                $url = new moodle_url('/course/view.php', ['id' => $row->courseid]);
+                $coursename = html_writer::link($url, $coursename);
+            }
+        } else if (!empty($row->courseid)) {
+            $coursename = get_string('coursedeleted', 'tool_coursemigration', $row->courseid);
         } else {
-            $url = new moodle_url('/course/view.php', ['id' => $row->courseid]);
-            return html_writer::link($url, $coursename);
+            $coursename = '';
         }
+
+        return $coursename;
     }
 
     /**
