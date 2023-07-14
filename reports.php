@@ -93,6 +93,13 @@ $PAGE->set_heading($title);
 
 echo $output->header();
 echo $output->heading($title);
+
+echo html_writer::link(
+    new moodle_url('/admin/tool/coursemigration/uploadcourses.php'),
+    get_string('coursemigrationupload', 'tool_coursemigration'),
+    ['class' => 'btn btn-primary mb-5']
+);
+
 echo $mform->render();
 echo $output->render_coursemigration_table($table);
 echo $output->footer();
