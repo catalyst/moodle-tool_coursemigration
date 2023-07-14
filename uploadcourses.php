@@ -122,6 +122,11 @@ if ($data = $form->get_data()) {
     }
     echo $OUTPUT->continue_button($returnurl);
 } else {
+    echo html_writer::link(
+        new moodle_url('/admin/tool/coursemigration/reports.php'),
+        get_string('reports'),
+        ['class' => 'btn btn-primary mb-5']
+    );
     $form->display();
 }
 echo $OUTPUT->footer();
