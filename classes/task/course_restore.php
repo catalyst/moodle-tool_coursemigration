@@ -51,7 +51,7 @@ class course_restore extends adhoc_task {
 
         $data = (array) $this->get_custom_data();
         if (!$this->is_custom_data_valid($data)) {
-            $errormsg = 'Invalid data. Error: missing one of the required parameters.';
+            $errormsg = get_string('error:invaliddata', 'tool_coursemigration');
             restore_failed::create([
                 'objectid' => 0,
                 'other' => [
@@ -65,7 +65,7 @@ class course_restore extends adhoc_task {
         $coursemigrationid = $data['coursemigrationid'];
         $coursemigration = coursemigration::get_record(['id' => $coursemigrationid]);
         if (empty($coursemigration)) {
-            $errormsg = 'Invalid id. Error: could not find record for restore.';
+            $errormsg = get_string('error:invalidid', 'tool_coursemigration');
             restore_failed::create([
                 'objectid' => 0,
                 'other' => [
@@ -74,6 +74,15 @@ class course_restore extends adhoc_task {
                 ]
             ])->trigger();
             throw new invalid_parameter_exception($errormsg);
+        }
+
+        // If course already set for some reason, delete it, record that error and start over restore process.
+        if (!empty($coursemigration->get('courseid'))) {
+            delete_course($coursemigration->get('courseid'), false);
+            $error = get_string('error:taskrestarted', 'tool_coursemigration', $coursemigration->get('courseid'));
+            $coursemigration->set('courseid', 0)
+                ->set('error', $error)
+                ->save();
         }
 
         $backupdir = "restore_" . uniqid();
@@ -142,8 +151,9 @@ class course_restore extends adhoc_task {
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $errormsg)
                 ->save();
+
             $deleteafterfail = get_config('tool_coursemigration', 'failrestoredelete');
-            if ($deleteafterfail && $coursemigration->get('filename')) {
+            if (!empty($storage) && $deleteafterfail && $coursemigration->get('filename')) {
                 $storage->delete_file($coursemigration->get('filename'));
             }
             restore_failed::create([
