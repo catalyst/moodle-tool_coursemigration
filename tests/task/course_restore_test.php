@@ -451,4 +451,74 @@ class course_restore_test extends advanced_testcase {
         $this->assertFalse(file_exists($backuppath . $filename));
         $this->assertDebuggingCalledCount(1);
     }
+
+    /**
+     * Test restore when a course is set to course migration item.
+     */
+    public function test_restore_when_course_is_already_set() {
+        global $CFG, $USER, $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course with some availability data set.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test restore course']);
+        $category = $generator->create_category();
+
+        // Backup the course.
+        $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_YES, backup::MODE_GENERAL, $USER->id);
+        $bc->finish_ui();
+        $bc->execute_plan();
+        $bc->destroy();
+
+        // Get the backup file.
+        $coursecontext = context_course::instance($course->id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($coursecontext->id, 'backup', 'course', false, 'id ASC');
+        /** @var \stored_file $backupfile */
+        $backupfile = reset($files);
+        $filename = $backupfile->get_filename();
+        $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
+        $backupfile->copy_content_to($backuppath . $filename);
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => $category->id,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => $filename,
+            'courseid' => $course->id,
+        ]);
+
+        set_config('restorefrom', $backuppath, 'tool_coursemigration');
+        set_config('saveto', $backuppath, 'tool_coursemigration');
+
+        $coursemigration->save();
+
+        $task = new course_restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        $task->execute();
+
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        // Confirm the status is now completed.
+        $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
+        // Course should be deleted.
+        $this->assertFalse($DB->get_record('course', array('id' => $course->id)));
+        // Course id should be updated to a new course.
+        $this->assertNotEquals($course->id, $currentcoursemigration->get('courseid'));
+        // Error should be set.
+        $this->assertEquals(
+            get_string('error:taskrestarted', 'tool_coursemigration', $course->id),
+            $currentcoursemigration->get('error')
+        );
+        // Confirm the course is restored.
+        $newcourse = get_course($currentcoursemigration->get('courseid'));
+        $this->assertNotEquals($course->id, $newcourse->id);
+        $this->assertEquals($category->id, $newcourse->category);
+        $this->assertStringContainsString('Test restore course', $newcourse->fullname);
+    }
 }
