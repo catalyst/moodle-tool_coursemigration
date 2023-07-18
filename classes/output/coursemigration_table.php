@@ -62,6 +62,7 @@ class coursemigration_table extends table_sql implements renderable {
             'status',
             'filename',
             'timecreated',
+            'timemodified',
             'error',
         ]);
 
@@ -72,6 +73,7 @@ class coursemigration_table extends table_sql implements renderable {
             get_string('status'),
             get_string('filename', 'tool_coursemigration'),
             get_string('timecreated', 'tool_coursemigration'),
+            get_string('timemodified', 'tool_coursemigration'),
             get_string('error'),
         ]);
 
@@ -256,4 +258,15 @@ class coursemigration_table extends table_sql implements renderable {
     public function col_timecreated(stdClass $row): string {
         return userdate($row->timecreated);
     }
+
+    /**
+     * Time modified column.
+     *
+     * @param stdClass $row
+     * @return string
+     */
+    public function col_timemodified(stdClass $row): string {
+        return userdate($row->timemodified);
+    }
 }
+
