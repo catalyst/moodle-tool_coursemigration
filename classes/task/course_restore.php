@@ -152,6 +152,8 @@ class course_restore extends adhoc_task {
 
         } catch (Exception $e) {
             $errormsg = 'Cannot restore the course. ' . $e->getMessage();
+            mtrace($errormsg . $e->getTraceAsString());
+
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $errormsg)
                 ->save();
