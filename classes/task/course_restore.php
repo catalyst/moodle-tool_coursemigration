@@ -85,8 +85,12 @@ class course_restore extends adhoc_task {
                 ->save();
         }
 
-        $backupdir = "restore_" . uniqid();
-        $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $backupdir;
+        $restoredir = "restore_" . uniqid();
+        $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $restoredir;
+
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
 
         try {
             // Retrieve stored_file.
@@ -116,7 +120,7 @@ class course_restore extends adhoc_task {
             $coursemigration->set('courseid', $courseid)->save();
             $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
 
-            $rc = new restore_controller($backupdir, $courseid, backup::INTERACTIVE_NO,
+            $rc = new restore_controller($restoredir, $courseid, backup::INTERACTIVE_NO,
                 backup::MODE_GENERAL, $USER->id, backup::TARGET_NEW_COURSE);
             $rc->execute_precheck();
             $rc->execute_plan();
