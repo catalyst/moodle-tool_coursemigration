@@ -23,7 +23,6 @@ use context_course;
 use core\task\manager;
 use Exception;
 use invalid_parameter_exception;
-use moodle_exception;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
 use tool_coursemigration\event\restore_failed;
@@ -293,12 +292,16 @@ class course_restore_test extends advanced_testcase {
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
+
+        $this->expectOutputRegex('/Cannot restore the course. File can not be pulled from the storage. Error: Cannot read file/');
+
         $task->execute();
 
         // Check exception was thrown.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
         $expected = 'Cannot restore the course. File can not be pulled from the storage. Error: Cannot read file. ' .
             'Either the file does not exist or there is a permission problem. (' . $backuppath . 'invalid file name)';
+
         $this->assertEquals($expected, $currentcoursemigration->get('error'));
 
         $eventclass = restore_failed::class;
@@ -342,11 +345,14 @@ class course_restore_test extends advanced_testcase {
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
+
+        $expected = 'Cannot restore the course. A storage class has not been configured';
+        $this->expectOutputRegex('/' . $expected  . '/');
+
         $task->execute();
 
         // Check exception was thrown.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
-        $expected = 'Cannot restore the course. A storage class has not been configured';
         $this->assertEquals($expected, $currentcoursemigration->get('error'));
 
         $eventclass = restore_failed::class;
@@ -389,6 +395,8 @@ class course_restore_test extends advanced_testcase {
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
+
+        $this->expectOutputRegex('/Cannot restore the course. Unable to restore course. The \[restore from\] directory has not been configured/');
         $task->execute();
 
         // Check exception was thrown.
@@ -441,6 +449,9 @@ class course_restore_test extends advanced_testcase {
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
+
+        $this->expectOutputRegex('/Cannot restore the course. error\/cannot_precheck_wrong_status/');
+
         $task->execute();
 
         // Confirm the status is now failed.
