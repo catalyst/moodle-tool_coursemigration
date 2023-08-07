@@ -86,7 +86,7 @@ class course_backup extends adhoc_task {
         $backupdir = "backup_" . uniqid();
         $destination = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $backupdir;
         if (!is_dir($destination)) {
-            mkdir($destination);
+            mkdir($destination, 0777, true);
         }
 
         try {
