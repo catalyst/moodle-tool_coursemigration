@@ -66,7 +66,7 @@ class shared_disk_storage implements storage_interface {
     /**
      * @var string Any error message from exception.
      */
-    protected $errormessage;
+    protected $errormessage = '';
 
     /**
      * Download (pull) file.
@@ -122,6 +122,20 @@ class shared_disk_storage implements storage_interface {
     }
 
     /**
+     * Check if the file exist.
+     * @param $filename string Name of file .
+     * @return boolean true if file exists.
+     */
+    public function file_exists(string $filename): bool {
+        $destinationfullpath = $this->savetodirectory . $filename;
+        $sourcefullpath = $this->restorefromdirectory . $filename;
+
+        // TODO: This is  wrong. Really savetodirectory and restorefromdirectory should be merged.
+        // See https://git.catalyst-au.net/monash/EnterpriseMoodle/moodle-tool_coursemigration/-/issues/56.
+        return file_exists($sourcefullpath) || file_exists($destinationfullpath);
+    }
+
+    /**
      * Any error message from exception.
      * @return string error message.
      */
@@ -133,7 +147,7 @@ class shared_disk_storage implements storage_interface {
      * Clear error message from exception.
      */
     public function clear_error() {
-        $this->errormessage = null;
+        $this->errormessage = '';
     }
 
     /**

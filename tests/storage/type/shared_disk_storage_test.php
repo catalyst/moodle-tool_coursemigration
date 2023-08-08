@@ -103,12 +103,16 @@ class shared_disk_storage_test extends advanced_testcase {
         $storage->clear_error();
 
         // Test pull a file that exists.
+        $this->assertTrue($storage->file_exists(self::TEST_PULL_FILE));
         $filerecord = $storage->pull_file(self::TEST_PULL_FILE);
         $this->assertNotNull($filerecord);
 
+
         // Test push a file.
         $storage->push_file(self::TEST_PUSH_FILE, $filerecord);
+        $this->assertEmpty($storage->get_error());
         $this->assertFileExists(self::SAVE_TO . self::TEST_PUSH_FILE);
+        $this->assertTrue($storage->file_exists(self::TEST_PUSH_FILE));
 
         // Test delete a file.
         $storage->delete_file(self::TEST_PULL_FILE);
@@ -117,6 +121,7 @@ class shared_disk_storage_test extends advanced_testcase {
 
         // Test delete a file that does not exist.
         $result = $storage->delete_file(self::TEST_PULL_FILE);
+        $this->assertFalse($storage->file_exists(self::TEST_PULL_FILE));
         $expected = 'unlink(/tmp/restorefrom/testpull.txt): No such file or directory';
         $this->assertFalse($result);
         $this->assertEquals($expected, $storage->get_error());

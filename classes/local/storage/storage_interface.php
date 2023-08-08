@@ -50,6 +50,13 @@ interface storage_interface {
     public function delete_file(string $filename): bool;
 
     /**
+     * Check if the file exist.
+     * @param $filename string Name of file .
+     * @return boolean true if file exists.
+     */
+    public function file_exists(string $filename): bool;
+
+    /**
      * Any error message from exception.
      * @return string error message.
      */
