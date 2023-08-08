@@ -154,7 +154,7 @@ class shared_disk_storage implements storage_interface {
      * @return boolean true if configuration is valid.
      */
     public function ready_for_pull(): bool {
-        return !empty($this->directory);
+        return !empty($this->directory) && is_dir($this->directory) && is_readable($this->directory);
     }
 
     /**
@@ -162,6 +162,6 @@ class shared_disk_storage implements storage_interface {
      * @return boolean true if configuration is valid.
      */
     public function ready_for_push(): bool {
-        return !empty($this->directory);
+        return !empty($this->directory) && is_dir($this->directory) && is_writable($this->directory);
     }
 }

@@ -270,7 +270,10 @@ class course_backup_test extends advanced_testcase {
         $task->execute();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('Error in copying file to destination directory', $output);
+        $this->assertStringContainsString(
+            'Unable to upload a course. The shared directory has not been configured properly.',
+            $output
+        );
 
         $eventclass = backup_failed::class;
         $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
@@ -279,7 +282,10 @@ class course_backup_test extends advanced_testcase {
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
-        $this->assertStringContainsString('Error in copying file to destination directory', $event->get_description());
+        $this->assertStringContainsString(
+            'Unable to upload a course. The shared directory has not been configured properly.',
+            $event->get_description()
+        );
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 

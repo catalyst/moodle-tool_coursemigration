@@ -17,6 +17,7 @@
 namespace tool_coursemigration;
 
 use advanced_testcase;
+use org\bovigo\vfs\vfsStream;
 use tool_coursemigration\local\storage\type\shared_disk_storage;
 
 /**
@@ -39,6 +40,14 @@ class shared_disk_storage_test extends advanced_testcase {
     const TEST_DELETE_FILE = 'testdelete.txt';
 
     /**
+     * Clean up after each test.
+     */
+    protected function tearDown(): void {
+        fulldelete(self::TEST_DIRECTORY);
+        parent::tearDown();
+    }
+
+    /**
      * Sets up the test file for pull, push and delete tests.
      */
     private function setup_test_file() {
@@ -56,13 +65,6 @@ class shared_disk_storage_test extends advanced_testcase {
 
         // Add a file to test the delete of a ready only file.
         copy(self::TEST_DIRECTORY . self::TEST_PULL_FILE, self::TEST_DIRECTORY . self::TEST_DELETE_FILE);
-    }
-
-    /**
-     * Removes test files and directories..
-     */
-    private function cleanup() {
-        fulldelete(self::TEST_DIRECTORY);
     }
 
     /**
@@ -114,8 +116,6 @@ class shared_disk_storage_test extends advanced_testcase {
         $expected = 'unlink(/tmp/directory/testpull.txt): No such file or directory';
         $this->assertFalse($result);
         $this->assertEquals($expected, $storage->get_error());
-
-        $this->cleanup();
     }
 
     /**
@@ -127,4 +127,63 @@ class shared_disk_storage_test extends advanced_testcase {
         $this->assertFalse($storage->ready_for_push());
     }
 
+    /**
+     * Test file configured as directory.
+     */
+    public function test_file_configured_as_directory() {
+        $this->resetAfterTest();
+        $this->setup_test_file();
+
+        // Set config to a file.
+        set_config('directory', self::TEST_DIRECTORY . self::TEST_PULL_FILE, 'tool_coursemigration');
+
+        $storage = new shared_disk_storage;
+        $this->assertFalse($storage->ready_for_pull());
+        $this->assertFalse($storage->ready_for_push());
+    }
+
+    /**
+     * Test with not readable directory configured.
+     */
+    public function test_configured_directory_is_not_readable() {
+        $this->resetAfterTest();
+
+        $vfileroot = vfsStream::setup();
+        $vfsdir = vfsStream::newDirectory('unreadable', 0222);
+        $vfileroot->addChild($vfsdir);
+
+        $dir = $vfsdir->url();
+
+        $this->assertTrue(is_dir($dir));
+        $this->assertTrue(is_writable($dir));
+        $this->assertFalse(is_readable($dir));
+
+        set_config('directory', $dir, 'tool_coursemigration');
+
+        $storage = new shared_disk_storage;
+        $this->assertFalse($storage->ready_for_pull());
+        $this->assertTrue($storage->ready_for_push());
+    }
+
+    /**
+     * Test with not writable directory configured.
+     */
+    public function test_configured_directory_is_not_writable() {
+        $this->resetAfterTest();
+
+        $vfileroot = vfsStream::setup();
+        $vfsdir = vfsStream::newDirectory('notwritable', 0444);
+        $vfileroot->addChild($vfsdir);
+
+        $dir = $vfsdir->url();
+
+        $this->assertTrue(is_dir($dir));
+        $this->assertFalse(is_writable($dir));
+        $this->assertTrue(is_readable($dir));
+        set_config('directory', $dir, 'tool_coursemigration');
+
+        $storage = new shared_disk_storage;
+        $this->assertTrue($storage->ready_for_pull());
+        $this->assertFalse($storage->ready_for_push());
+    }
 }
