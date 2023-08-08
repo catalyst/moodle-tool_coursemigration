@@ -97,6 +97,9 @@ class helper {
             case coursemigration::STATUS_FAILED:
                 $string = get_string('status:failed', 'tool_coursemigration');
                 break;
+            case coursemigration::STATUS_RETRYING:
+                $string = get_string('status:retrying', 'tool_coursemigration');
+                break;
             default:
                 $string = get_string('status:invalid', 'tool_coursemigration');
                 break;

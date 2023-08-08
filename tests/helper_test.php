@@ -49,11 +49,12 @@ class helper_test extends advanced_testcase {
      */
     public function test_get_status_list() {
         $list = helper::get_status_list();
-        $this->assertCount(4, $list);
+        $this->assertCount(5, $list);
         $this->assertSame(get_string('status:notstarted', 'tool_coursemigration'), $list[coursemigration::STATUS_NOT_STARTED]);
         $this->assertSame(get_string('status:inprogress', 'tool_coursemigration'), $list[coursemigration::STATUS_IN_PROGRESS]);
         $this->assertSame(get_string('status:completed', 'tool_coursemigration'), $list[coursemigration::STATUS_COMPLETED]);
         $this->assertSame(get_string('status:failed', 'tool_coursemigration'), $list[coursemigration::STATUS_FAILED]);
+        $this->assertSame(get_string('status:retrying', 'tool_coursemigration'), $list[coursemigration::STATUS_RETRYING]);
     }
 
     /**
@@ -98,6 +99,11 @@ class helper_test extends advanced_testcase {
         $this->assertSame(
             get_string('status:failed', 'tool_coursemigration'),
             helper::get_status_string(coursemigration::STATUS_FAILED)
+        );
+
+        $this->assertSame(
+            get_string('status:retrying', 'tool_coursemigration'),
+            helper::get_status_string(coursemigration::STATUS_RETRYING)
         );
 
         $this->assertSame(

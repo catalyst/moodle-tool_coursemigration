@@ -49,6 +49,11 @@ class coursemigration extends persistent {
     const STATUS_COMPLETED = 3;
 
     /**
+     * Status completed.
+     */
+    const STATUS_RETRYING = 4;
+
+    /**
      * Status failed.
      */
     const STATUS_FAILED = 0;
@@ -66,7 +71,9 @@ class coursemigration extends persistent {
     /**
      * A list of all statuses.
      */
-    const STATUSES = [self::STATUS_NOT_STARTED, self::STATUS_IN_PROGRESS, self::STATUS_COMPLETED, self::STATUS_FAILED];
+    const STATUSES = [
+        self::STATUS_NOT_STARTED, self::STATUS_IN_PROGRESS, self::STATUS_COMPLETED, self::STATUS_RETRYING, self::STATUS_FAILED
+    ];
 
     /**
      * A list of all actions.

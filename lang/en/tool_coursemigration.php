@@ -94,6 +94,7 @@ $string['status:inprogress'] = 'In progress';
 $string['status:completed'] = 'Completed';
 $string['status:failed'] = 'Failed';
 $string['status:invalid'] = 'Invalid';
+$string['status:retrying'] = 'Retrying';
 $string['task:createbackuptasks'] = 'Create backup adhoc tasks for course migration';
 $string['task:createrestoretasks'] = 'Create restore adhoc tasks for course migration';
 $string['timecreated'] = 'Time created';

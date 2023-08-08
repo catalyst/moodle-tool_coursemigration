@@ -76,11 +76,6 @@ class course_restore extends adhoc_task {
             throw new invalid_parameter_exception($errormsg);
         }
 
-        // Reset status to "In Progress" if required.
-        if ($coursemigration->get('status') !== coursemigration::STATUS_IN_PROGRESS) {
-            $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS)->save();
-        }
-
         // If course already set for some reason, delete it, record that error and start over restore process.
         if (!empty($coursemigration->get('courseid'))) {
             $courseid = $coursemigration->get('courseid');
@@ -93,6 +88,10 @@ class course_restore extends adhoc_task {
             // Because we are going to restart this task on exception, delete course after we reset a course
             // in case deletion will explode, so we don't end up with an infinitive loop for this adhoc task.
             delete_course($courseid, false);
+        }
+
+        if ($coursemigration->get('status') !== coursemigration::STATUS_IN_PROGRESS) {
+            $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS)->save();
         }
 
         $restoredir = "restore_" . uniqid();
@@ -189,8 +188,7 @@ class course_restore extends adhoc_task {
             // Let's try to restart the task if the file is still there.
             // So throw an exception which will restart the task later.
             if (!empty($storage) && $coursemigration->get('filename') && $storage->file_exists($coursemigration->get('filename'))) {
-                // Set status back "In Progress" as we are retying.
-                $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS)->save();
+                $coursemigration->set('status', coursemigration::STATUS_RETRYING)->save();
                 throw $exception;
             }
         }
