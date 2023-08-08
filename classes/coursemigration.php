@@ -49,7 +49,7 @@ class coursemigration extends persistent {
     const STATUS_COMPLETED = 3;
 
     /**
-     * Status completed.
+     * Status retrying.
      */
     const STATUS_RETRYING = 4;
 
