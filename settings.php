@@ -78,10 +78,7 @@ if ($hassiteconfig) {
             new lang_string('settings:storage', 'tool_coursemigration'), ''));
 
         $settings->add(new storage_setting_configselect());
-
-        $settings->add(new backup_directory('saveto'));
-        $settings->add(new backup_directory('restorefrom'));
-
+        $settings->add(new backup_directory('directory'));
     }
 
     $ADMIN->add('tools', new admin_category('coursemigration', get_string('pluginname', 'tool_coursemigration')));

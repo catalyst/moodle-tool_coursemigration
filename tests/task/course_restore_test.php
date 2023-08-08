@@ -85,8 +85,7 @@ class course_restore_test extends advanced_testcase {
             'filename' => $filename,
         ]);
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $coursemigration->save();
 
@@ -169,8 +168,7 @@ class course_restore_test extends advanced_testcase {
             'filename' => $filename,
         ]);
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $coursemigration->save();
 
@@ -285,8 +283,7 @@ class course_restore_test extends advanced_testcase {
         $coursemigration->save();
 
         $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $task = new course_restore();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -439,8 +436,7 @@ class course_restore_test extends advanced_testcase {
 
         $coursemigration->save();
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         // Set to delete backup after failed restore.
         set_config('failrestoredelete', 1, 'tool_coursemigration');
@@ -503,8 +499,7 @@ class course_restore_test extends advanced_testcase {
             'courseid' => $course->id,
         ]);
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $coursemigration->save();
 
@@ -559,8 +554,7 @@ class course_restore_test extends advanced_testcase {
 
         $coursemigration->save();
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         // Set to keep backup after failed restore.
         set_config('failrestoredelete', 0, 'tool_coursemigration');

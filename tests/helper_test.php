@@ -185,8 +185,7 @@ class helper_test extends advanced_testcase {
         $this->resetAfterTest();
 
         // Configure backup and restore directories.
-        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
 
         // Tests default storage class.
         $selectedclass = helper::get_selected_storage();
@@ -201,7 +200,7 @@ class helper_test extends advanced_testcase {
         $this->assertNull($selectedclass);
 
         // Test selected Storage class does not implement the storage_interface.
-        set_config('storagetype','tool_coursemigration\helper', 'tool_coursemigration');
+        set_config('storagetype', 'tool_coursemigration\helper', 'tool_coursemigration');
         $this->expectException(coding_exception::class);
         $this->expectExceptionMessage('The selected Storage class does not implement the storage_interface.');
         $selectedclass = helper::get_selected_storage();

@@ -74,8 +74,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure backup and restore directories.
-        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -143,8 +142,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure backup and restore directories.
-        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -262,8 +260,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure INVALID backup and restore directories to force exception.
-        set_config('restorefrom', $CFG->tempdir . 'something', 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir . 'something', 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir . 'something', 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -354,8 +351,8 @@ class course_backup_test extends advanced_testcase {
         $coursemigration->save();
         $this->assertEmpty($coursemigration->get('filename'));
 
-        // Break config for a save to directory.
-        set_config('saveto', '', 'tool_coursemigration');
+        // Break config to directory.
+        set_config('directory', '', 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -408,8 +405,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure backup and restore directories.
-        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
 
         // Set to delete backup after failed restore.
         set_config('failbackupdelete', 1, 'tool_coursemigration');

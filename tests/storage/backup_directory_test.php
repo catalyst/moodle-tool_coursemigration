@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 namespace tool_coursemigration;
 
 use advanced_testcase;
@@ -37,18 +38,18 @@ class backup_directory_test extends advanced_testcase {
         $this->resetAfterTest();
 
         // Tests the constructor.
-        $backupdirectory = new backup_directory('saveto');
+        $backupdirectory = new backup_directory('directory');
         self::assertNotNull($backupdirectory);
 
         // Test writing a change to a folder that exists.
         $this->assertEmpty($backupdirectory->write_setting('/tmp'));
-        $this->assertEquals('/tmp', get_config('tool_coursemigration', 'saveto'));
+        $this->assertEquals('/tmp', get_config('tool_coursemigration', 'directory'));
 
         // Test writing a change to a folder that does not exist.
         // Error message should be returned.
         $expected = 'The backup destination folder does not exist or is not writable.';
         $this->assertEquals($expected, $backupdirectory->write_setting('/something'));
         // Value should remain unchanged.
-        $this->assertEquals('/tmp', get_config('tool_coursemigration', 'saveto'));
+        $this->assertEquals('/tmp', get_config('tool_coursemigration', 'directory'));
     }
 }

@@ -17,7 +17,6 @@
 namespace tool_coursemigration;
 
 use advanced_testcase;
-use moodle_exception;
 use tool_coursemigration\local\storage\type\shared_disk_storage;
 
 /**
@@ -30,10 +29,8 @@ use tool_coursemigration\local\storage\type\shared_disk_storage;
  * @covers     \tool_coursemigration\local\storage\type\shared_disk_storage
  */
 class shared_disk_storage_test extends advanced_testcase {
-    /** @var string Test directory name for where files are saved to */
-    const SAVE_TO = '/tmp/saveto/';
-    /** @var string Test directory name for where files are restored from */
-    const RESTORE_FROM = '/tmp/restorefrom/';
+    /** @var string Test directory name for where files are stored */
+    const TEST_DIRECTORY = '/tmp/directory/';
     /** @var string File name of test pull */
     const TEST_PULL_FILE = 'testpull.txt';
     /** @var string File name of test push */
@@ -41,38 +38,31 @@ class shared_disk_storage_test extends advanced_testcase {
     /** @var string File name of test push */
     const TEST_DELETE_FILE = 'testdelete.txt';
 
-
     /**
      * Sets up the test file for pull, push and delete tests.
      */
     private function setup_test_file() {
 
-        if (!is_dir(self::SAVE_TO)) {
-            mkdir(self::SAVE_TO);
+        if (!is_dir(self::TEST_DIRECTORY)) {
+            mkdir(self::TEST_DIRECTORY);
         }
 
-        if (!is_dir(self::RESTORE_FROM)) {
-            mkdir(self::RESTORE_FROM);
-        }
-
-        set_config('saveto', self::SAVE_TO, 'tool_coursemigration');
-        set_config('restorefrom', self::RESTORE_FROM, 'tool_coursemigration');
+        set_config('directory', self::TEST_DIRECTORY, 'tool_coursemigration');
 
         // Add a test file to the temp dir.
-        $file = fopen(self::RESTORE_FROM . self::TEST_PULL_FILE, 'w');
+        $file = fopen(self::TEST_DIRECTORY . self::TEST_PULL_FILE, 'w');
         fwrite($file, 'sometestdata');
         fclose($file);
 
         // Add a file to test the delete of a ready only file.
-        copy(self::RESTORE_FROM . self::TEST_PULL_FILE, self::RESTORE_FROM . self::TEST_DELETE_FILE);
+        copy(self::TEST_DIRECTORY . self::TEST_PULL_FILE, self::TEST_DIRECTORY . self::TEST_DELETE_FILE);
     }
 
     /**
      * Removes test files and directories..
      */
     private function cleanup() {
-        fulldelete(self::SAVE_TO);
-        fulldelete(self::RESTORE_FROM);
+        fulldelete(self::TEST_DIRECTORY);
     }
 
     /**
@@ -98,7 +88,7 @@ class shared_disk_storage_test extends advanced_testcase {
         $filerecord = $storage->pull_file('notexist.txt');
         $this->assertNull($filerecord);
         $expected = 'Cannot read file. Either the file does not exist or there is a permission problem.'
-            . ' (/tmp/restorefrom/notexist.txt)';
+            . ' (/tmp/directory/notexist.txt)';
         $this->assertEquals($expected, $storage->get_error());
         $storage->clear_error();
 
@@ -107,11 +97,10 @@ class shared_disk_storage_test extends advanced_testcase {
         $filerecord = $storage->pull_file(self::TEST_PULL_FILE);
         $this->assertNotNull($filerecord);
 
-
         // Test push a file.
         $storage->push_file(self::TEST_PUSH_FILE, $filerecord);
         $this->assertEmpty($storage->get_error());
-        $this->assertFileExists(self::SAVE_TO . self::TEST_PUSH_FILE);
+        $this->assertFileExists(self::TEST_DIRECTORY . self::TEST_PUSH_FILE);
         $this->assertTrue($storage->file_exists(self::TEST_PUSH_FILE));
 
         // Test delete a file.
@@ -122,7 +111,7 @@ class shared_disk_storage_test extends advanced_testcase {
         // Test delete a file that does not exist.
         $result = $storage->delete_file(self::TEST_PULL_FILE);
         $this->assertFalse($storage->file_exists(self::TEST_PULL_FILE));
-        $expected = 'unlink(/tmp/restorefrom/testpull.txt): No such file or directory';
+        $expected = 'unlink(/tmp/directory/testpull.txt): No such file or directory';
         $this->assertFalse($result);
         $this->assertEquals($expected, $storage->get_error());
 

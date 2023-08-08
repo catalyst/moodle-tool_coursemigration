@@ -18,7 +18,6 @@ namespace tool_coursemigration\local\storage\type;
 use context_system;
 use Exception;
 use file_storage;
-use moodle_exception;
 use stored_file;
 use tool_coursemigration\local\storage\storage_interface;
 
@@ -31,6 +30,17 @@ use tool_coursemigration\local\storage\storage_interface;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class shared_disk_storage implements storage_interface {
+
+    /**
+     * @var string Full path to the directory where you want to store the backup files.
+     */
+    protected $directory;
+
+    /**
+     * @var string Any error message from exception.
+     */
+    protected $errormessage = '';
+
     /**
      * Construct the shared disk storage.
      */
@@ -40,33 +50,10 @@ class shared_disk_storage implements storage_interface {
 
         if ($configselectedstorage == $thisclass) {
             // Initialise directory paths.
-            $saveto = get_config('tool_coursemigration', 'saveto');
-            $restorefrom = get_config('tool_coursemigration', 'restorefrom');
-            // Only add trailing '/' to a valid directory.
-            $this->savetodirectory = ($saveto) ? rtrim($saveto, '/') . '/' : null;
-            $this->restorefromdirectory = ($restorefrom) ? rtrim($restorefrom, '/') . '/' : null;
+            $directory = get_config('tool_coursemigration', 'directory');
+            $this->directory = ($directory) ? rtrim($directory, '/') . '/' : null;
         }
     }
-
-    /**
-     * @var string Full path to the directory where you want to save the backup files.
-     */
-    protected $savetodirectory;
-
-    /**
-     * @var string Full path to the directory where the backup files are restored from.
-     */
-    protected $restorefromdirectory;
-
-    /**
-     * @var object The settings from this class.
-     */
-    protected $settings;
-
-    /**
-     * @var string Any error message from exception.
-     */
-    protected $errormessage = '';
 
     /**
      * Download (pull) file.
@@ -76,7 +63,7 @@ class shared_disk_storage implements storage_interface {
     public function pull_file(string $filename): ?stored_file {
         try {
             $context = context_system::instance();
-            $sourcefullpath = $this->restorefromdirectory . $filename;
+            $sourcefullpath = $this->directory . $filename;
             $fs = get_file_storage();
             $filerecord = array('contextid' => $context->id, 'component' => 'tool_coursemigration', 'filearea' => 'backup',
                 'itemid' => 0, 'filepath' => '/', 'filename' => $filename,
@@ -98,7 +85,7 @@ class shared_disk_storage implements storage_interface {
      */
     public function push_file(string $filename, stored_file $filerecord): bool {
         try {
-            $destinationfullpath = $this->savetodirectory . $filename;
+            $destinationfullpath = $this->directory . $filename;
             return $filerecord->copy_content_to($destinationfullpath);
         } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
@@ -113,7 +100,7 @@ class shared_disk_storage implements storage_interface {
      */
     public function delete_file(string $filename): bool {
         try {
-            $sourcefullpath = $this->restorefromdirectory . $filename;
+            $sourcefullpath = $this->directory . $filename;
             return unlink($sourcefullpath);
         } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
@@ -127,12 +114,9 @@ class shared_disk_storage implements storage_interface {
      * @return boolean true if file exists.
      */
     public function file_exists(string $filename): bool {
-        $destinationfullpath = $this->savetodirectory . $filename;
-        $sourcefullpath = $this->restorefromdirectory . $filename;
+        $fullpath = $this->directory . $filename;
 
-        // TODO: This is  wrong. Really savetodirectory and restorefromdirectory should be merged.
-        // See https://git.catalyst-au.net/monash/EnterpriseMoodle/moodle-tool_coursemigration/-/issues/56.
-        return file_exists($sourcefullpath) || file_exists($destinationfullpath);
+        return file_exists($fullpath);
     }
 
     /**
@@ -170,7 +154,7 @@ class shared_disk_storage implements storage_interface {
      * @return boolean true if configuration is valid.
      */
     public function ready_for_pull(): bool {
-        return !empty($this->restorefromdirectory);
+        return !empty($this->directory);
     }
 
     /**
@@ -178,6 +162,6 @@ class shared_disk_storage implements storage_interface {
      * @return boolean true if configuration is valid.
      */
     public function ready_for_push(): bool {
-        return !empty($this->savetodirectory);
+        return !empty($this->directory);
     }
 }
