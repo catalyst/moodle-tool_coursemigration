@@ -270,10 +270,7 @@ class course_backup_test extends advanced_testcase {
         $task->execute();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString(
-            'Unable to upload a course. The shared directory has not been configured properly.',
-            $output
-        );
+        $this->assertStringContainsString('The selected backup storage has not been configured to push backups', $output);
 
         $eventclass = backup_failed::class;
         $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
@@ -283,7 +280,7 @@ class course_backup_test extends advanced_testcase {
         $event = reset($events);
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
         $this->assertStringContainsString(
-            'Unable to upload a course. The shared directory has not been configured properly.',
+            'The selected backup storage has not been configured to push backups',
             $event->get_description()
         );
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
@@ -368,7 +365,7 @@ class course_backup_test extends advanced_testcase {
         $task->execute();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('directory has not been configured', $output);
+        $this->assertStringContainsString('backup storage has not been configured', $output);
 
         $eventclass = backup_failed::class;
         $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
@@ -377,7 +374,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
-        $this->assertStringContainsString('directory has not been configured', $event->get_description());
+        $this->assertStringContainsString('backup storage has not been configured ', $event->get_description());
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 

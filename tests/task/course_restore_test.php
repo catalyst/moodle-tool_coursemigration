@@ -393,12 +393,14 @@ class course_restore_test extends advanced_testcase {
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
 
-        $this->expectOutputRegex('/Cannot restore the course. Unable to restore course. The \[restore from\] directory has not been configured/');
+        $this->expectOutputRegex(
+            '/Cannot restore the course. The selected backup storage has not been configured to pull backup/'
+        );
         $task->execute();
 
         // Check exception was thrown.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
-        $expected = 'Cannot restore the course. Unable to restore course. The [restore from] directory has not been configured';
+        $expected = 'Cannot restore the course. The selected backup storage has not been configured to pull backups';
         $this->assertEquals($expected, $currentcoursemigration->get('error'));
 
         $eventclass = restore_failed::class;
@@ -407,7 +409,10 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
-        $this->assertStringContainsString("directory has not been configured", $event->get_description());
+        $this->assertStringContainsString(
+            "The selected backup storage has not been configured to pull backup",
+            $event->get_description()
+        );
     }
 
     /**
