@@ -189,7 +189,7 @@ class helper_test extends advanced_testcase {
         set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
 
         // Tests default storage class.
-        $selectedclass = helper::get_selected();
+        $selectedclass = helper::get_selected_storage();
         $expected = 'tool_coursemigration\\local\\storage\\storage_interface';
         $classimplements = class_implements($selectedclass);
         $this->assertCount(1, $classimplements);
@@ -197,13 +197,13 @@ class helper_test extends advanced_testcase {
 
         // Tests for plugin not setup - no storage class has been chosen.
         unset_config('storagetype', 'tool_coursemigration');
-        $selectedclass = helper::get_selected();
+        $selectedclass = helper::get_selected_storage();
         $this->assertNull($selectedclass);
 
         // Test selected Storage class does not implement the storage_interface.
         set_config('storagetype','tool_coursemigration\helper', 'tool_coursemigration');
         $this->expectException(coding_exception::class);
         $this->expectExceptionMessage('The selected Storage class does not implement the storage_interface.');
-        $selectedclass = helper::get_selected();
+        $selectedclass = helper::get_selected_storage();
     }
 }

@@ -103,7 +103,7 @@ class course_restore extends adhoc_task {
 
         try {
             // Retrieve stored_file.
-            $storage = helper::get_selected();
+            $storage = helper::get_selected_storage();
             // Check that the storage class has been configured.
             if (!$storage) {
                 throw new moodle_exception('error:storagenotconfig', 'tool_coursemigration');

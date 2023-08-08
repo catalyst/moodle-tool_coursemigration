@@ -64,7 +64,7 @@ if (!get_config('tool_coursemigration', 'destinationwsurl') || !get_config('tool
 };
 
 // Check if selected storage type has been configured.
-$storage = helper::get_selected();
+$storage = helper::get_selected_storage();
 if (!$storage->ready_for_push()) {
     $settingsurl = new moodle_url('/admin/settings.php', ['section' => 'tool_coursemigration_settings']);
     $link = html_writer::link($settingsurl, get_string('settings_link_text', 'tool_coursemigration'));

@@ -111,7 +111,7 @@ class course_backup extends adhoc_task {
             $file = $results['backup_destination'];
 
             if ($file) {
-                $storage = helper::get_selected();
+                $storage = helper::get_selected_storage();
                 // Check that the storage class has been configured.
                 if (!$storage) {
                     throw new moodle_exception('error:storagenotconfig', 'tool_coursemigration');

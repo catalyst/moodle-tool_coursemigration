@@ -162,7 +162,7 @@ class helper {
      * Returns a storage class object as selected in configuration.
      * @return storage_interface|null storage class object
      */
-    public static function get_selected(): ?storage_interface {
+    public static function get_selected_storage(): ?storage_interface {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         if ($configselectedstorage) {
             $storage = new $configselectedstorage;
