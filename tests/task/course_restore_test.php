@@ -532,4 +532,58 @@ class course_restore_test extends advanced_testcase {
         $this->assertEquals($category->id, $newcourse->category);
         $this->assertStringContainsString('Test restore course', $newcourse->fullname);
     }
+
+    /**
+     * Test that we set retry status if failed task, but file is there, so we can retry.
+     */
+    public function test_set_retry_status_if_failed_but_file_is_there() {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create bad format backup file.
+        $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
+        $filename = 'badfile.txt';
+        $file = fopen($backuppath . $filename, 'w');
+        fwrite($file, 'sometestdata');
+        fclose($file);
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => $filename,
+        ]);
+
+        $coursemigration->save();
+
+        set_config('restorefrom', $backuppath, 'tool_coursemigration');
+        set_config('saveto', $backuppath, 'tool_coursemigration');
+
+        // Set to keep backup after failed restore.
+        set_config('failrestoredelete', 0, 'tool_coursemigration');
+
+        $task = new course_restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+
+        $this->expectOutputRegex('/Cannot restore the course. error\/cannot_precheck_wrong_status/');
+
+        // We need to catch as we will fail the task by throwing an exception.
+        try {
+            $task->execute();
+        } catch (Exception $exception) {
+            // Confirm the status is now retrying.
+            $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+            $this->assertEquals(coursemigration::STATUS_RETRYING, $currentcoursemigration->get('status'));
+            $this->assertStringContainsString(
+                'Cannot restore the course. error/cannot_precheck_wrong_status',
+                $currentcoursemigration->get('error')
+            );
+            $this->assertDebuggingCalledCount(1);
+        }
+    }
 }

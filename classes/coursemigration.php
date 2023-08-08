@@ -49,6 +49,11 @@ class coursemigration extends persistent {
     const STATUS_COMPLETED = 3;
 
     /**
+     * Status retrying.
+     */
+    const STATUS_RETRYING = 4;
+
+    /**
      * Status failed.
      */
     const STATUS_FAILED = 0;
@@ -66,12 +71,19 @@ class coursemigration extends persistent {
     /**
      * A list of all statuses.
      */
-    const STATUSES = [self::STATUS_NOT_STARTED, self::STATUS_IN_PROGRESS, self::STATUS_COMPLETED, self::STATUS_FAILED];
+    const STATUSES = [
+        self::STATUS_NOT_STARTED, self::STATUS_IN_PROGRESS, self::STATUS_COMPLETED, self::STATUS_RETRYING, self::STATUS_FAILED
+    ];
 
     /**
      * A list of all actions.
      */
     const ACTIONS = [self::ACTION_BACKUP, self::ACTION_RESTORE];
+
+    /**
+     * Delimiter of error messages is there are few.
+     */
+    const ERROR_DELIMITER = '||##||';
 
     /**
      * Return the definition of the properties.
@@ -110,5 +122,23 @@ class coursemigration extends persistent {
                 'default' => null,
             ],
         ];
+    }
+
+    /**
+     * Custom function to deal with multiple errors.
+     *
+     * @param mixed $value Error value.
+     *
+     * @return \tool_coursemigration\coursemigration
+     */
+    protected function set_error(string $value) {
+        if (!empty($this->get('error'))) {
+            $errors = explode (self::ERROR_DELIMITER, $this->get('error'));
+            $errors[] = $value;
+
+            $value = implode(self::ERROR_DELIMITER, $errors);
+        }
+
+        return $this->raw_set('error', $value);
     }
 }

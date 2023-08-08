@@ -78,11 +78,20 @@ class course_restore extends adhoc_task {
 
         // If course already set for some reason, delete it, record that error and start over restore process.
         if (!empty($coursemigration->get('courseid'))) {
-            delete_course($coursemigration->get('courseid'), false);
-            $error = get_string('error:taskrestarted', 'tool_coursemigration', $coursemigration->get('courseid'));
+            $courseid = $coursemigration->get('courseid');
+            $error = get_string('error:taskrestarted', 'tool_coursemigration', $courseid);
+
             $coursemigration->set('courseid', 0)
                 ->set('error', $error)
                 ->save();
+
+            // Because we are going to restart this task on exception, delete course after we reset a course
+            // in case deletion will explode, so we don't end up with an infinitive loop for this adhoc task.
+            delete_course($courseid, false);
+        }
+
+        if ($coursemigration->get('status') !== coursemigration::STATUS_IN_PROGRESS) {
+            $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS)->save();
         }
 
         $restoredir = "restore_" . uniqid();
@@ -118,6 +127,7 @@ class course_restore extends adhoc_task {
 
             $courseid = restore_dbops::create_new_course($fullname, $shortname, $coursemigration->get('destinationcategoryid'));
             $coursemigration->set('courseid', $courseid)->save();
+
             $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
 
             $rc = new restore_controller($restoredir, $courseid, backup::INTERACTIVE_NO,
@@ -125,6 +135,7 @@ class course_restore extends adhoc_task {
             $rc->execute_precheck();
             $rc->execute_plan();
             $rc->destroy();
+
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
                 ->set('courseid', $courseid)
                 ->save();
@@ -150,18 +161,14 @@ class course_restore extends adhoc_task {
                 ]
             ])->trigger();
 
-        } catch (Exception $e) {
-            $errormsg = 'Cannot restore the course. ' . $e->getMessage();
-            mtrace($errormsg . $e->getTraceAsString());
+        } catch (Exception $exception) {
+            $errormsg = 'Cannot restore the course. ' . $exception->getMessage();
+            mtrace($errormsg . $exception->getTraceAsString());
 
             $coursemigration->set('status', coursemigration::STATUS_FAILED)
                 ->set('error', $errormsg)
                 ->save();
 
-            $deleteafterfail = get_config('tool_coursemigration', 'failrestoredelete');
-            if (!empty($storage) && $deleteafterfail && $coursemigration->get('filename')) {
-                $storage->delete_file($coursemigration->get('filename'));
-            }
             restore_failed::create([
                 'objectid' => $coursemigration->get('id'),
                 'other' => [
@@ -169,7 +176,21 @@ class course_restore extends adhoc_task {
                     'filename' => $coursemigration->get('filename'),
                 ]
             ])->trigger();
+
+            // Do some clean up.
+            $deleteafterfail = get_config('tool_coursemigration', 'failrestoredelete');
+            if (!empty($storage) && $deleteafterfail && $coursemigration->get('filename')) {
+                $storage->delete_file($coursemigration->get('filename'));
+            }
+
             fulldelete($path);
+
+            // Let's try to restart the task if the file is still there.
+            // So throw an exception which will restart the task later.
+            if (!empty($storage) && $coursemigration->get('filename') && $storage->file_exists($coursemigration->get('filename'))) {
+                $coursemigration->set('status', coursemigration::STATUS_RETRYING)->save();
+                throw $exception;
+            }
         }
     }
 

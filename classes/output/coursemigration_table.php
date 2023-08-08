@@ -246,7 +246,14 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_error(stdClass $row): string {
-        return $row->error ?? '';
+        $error = $row->error ?? '';
+
+        if (!empty($error)) {
+            $errors = explode(coursemigration::ERROR_DELIMITER, $error);
+            $error = implode(html_writer::tag('br', ''), $errors);
+        }
+
+        return $error;
     }
 
     /**
