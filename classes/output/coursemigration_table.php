@@ -209,7 +209,12 @@ class coursemigration_table extends table_sql implements renderable {
                 $categoryname = $row->destinationcategoryid ?? '';
                 break;
             case coursemigration::ACTION_RESTORE:
-                $categoryname = core_course_category::get($row->destinationcategoryid)->get_nested_name($includelinks);
+                $category = core_course_category::get($row->destinationcategoryid, IGNORE_MISSING);
+                if ($category) {
+                    $categoryname = $category->get_nested_name($includelinks);
+                } else {
+                    $categoryname = get_string('categorydeleted', 'tool_coursemigration', $row->destinationcategoryid);
+                }
                 break;
             default:
                 $categoryname = '';
