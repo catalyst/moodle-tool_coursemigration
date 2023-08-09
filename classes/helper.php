@@ -174,4 +174,18 @@ class helper {
         }
         return null;
     }
+
+    /**
+     * Gets retry number from task fail delay,
+     *
+     * @param int $faildelay Fail delay value.
+     * @return int
+     */
+    public static function get_retry_number_from_fail_delay(int $faildelay): int {
+        if ($faildelay <= 0) {
+            return 0;
+        }
+
+        return log($faildelay / 60, 2) + 1;
+    }
 }
