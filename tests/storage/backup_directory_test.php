@@ -47,7 +47,7 @@ class backup_directory_test extends advanced_testcase {
 
         // Test writing a change to a folder that does not exist.
         // Error message should be returned.
-        $expected = 'The backup destination folder does not exist or is not writable.';
+        $expected = 'Shared directory must be readable and writable.';
         $this->assertEquals($expected, $backupdirectory->write_setting('/something'));
         // Value should remain unchanged.
         $this->assertEquals('/tmp', get_config('tool_coursemigration', 'directory'));
