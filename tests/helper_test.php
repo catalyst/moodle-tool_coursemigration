@@ -205,4 +205,36 @@ class helper_test extends advanced_testcase {
         $this->expectExceptionMessage('The selected Storage class does not implement the storage_interface.');
         $selectedclass = helper::get_selected_storage();
     }
+
+    /**
+     * Data provider for test_get_retry_number_from_fail_delay.
+     *
+     * @return \int[][]
+     */
+    public function get_retry_number_from_fail_delay_data_provider(): array {
+        return [
+            [-1, 0],
+            [0, 0],
+            [60, 1],
+            [120, 2],
+            [240, 3],
+            [480, 4],
+            [960, 5],
+            [86400, 11],
+        ];
+    }
+
+    /**
+     * Test getting retry number from fail delay.
+     *
+     * @dataProvider get_retry_number_from_fail_delay_data_provider
+     * @param int $faildelay Given fail delay,
+     * @param int $expected Expected retry number.
+     *
+     * @return void
+     */
+    public function test_get_retry_number_from_fail_delay(int $faildelay, int $expected) {
+        $this->assertSame($expected, helper::get_retry_number_from_fail_delay($faildelay));
+    }
+
 }

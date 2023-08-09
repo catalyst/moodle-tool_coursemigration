@@ -74,6 +74,11 @@ if ($hassiteconfig) {
             get_string('settings:failrestoredeletedesc', 'tool_coursemigration'),
             0));
 
+        $settings->add(new admin_setting_configtext('tool_coursemigration/restoremaxretires',
+            get_string('settings:restoremaxretires', 'tool_coursemigration'),
+            get_string('settings:restoremaxretiresdesc', 'tool_coursemigration'),
+            2, PARAM_INT));
+
         $settings->add(new admin_setting_heading('tool_coursemigration/storage',
             new lang_string('settings:storage', 'tool_coursemigration'), ''));
 

@@ -185,11 +185,19 @@ class course_restore extends adhoc_task {
 
             fulldelete($path);
 
-            // Let's try to restart the task if the file is still there.
-            // So throw an exception which will restart the task later.
-            if (!empty($storage) && $coursemigration->get('filename') && $storage->file_exists($coursemigration->get('filename'))) {
-                $coursemigration->set('status', coursemigration::STATUS_RETRYING)->save();
-                throw $exception;
+            $maxretries = get_config('tool_coursemigration', 'restoremaxretires');
+            $retrynumber = helper::get_retry_number_from_fail_delay($this->get_fail_delay());
+
+            // Let's try to restart the task if we can.
+            // Make sure we are not exceeding a max retries.
+            if ($maxretries > 0 && $retrynumber <= $maxretries) {
+                // We need to make sure the file is still there.
+                $filename = $coursemigration->get('filename');
+                if (!empty($storage) && !empty($filename) && $storage->file_exists($filename)) {
+                    $coursemigration->set('status', coursemigration::STATUS_RETRYING)->save();
+                    // Throw an exception which will restart the task later.
+                    throw $exception;
+                }
             }
         }
     }
