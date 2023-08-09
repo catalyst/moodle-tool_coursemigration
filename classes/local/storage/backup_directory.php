@@ -51,11 +51,56 @@ class backup_directory extends admin_setting_configdirectory {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         if ($configselectedstorage == __NAMESPACE__ . '\type\shared_disk_storage') {
             // Allow empty, otherwise must exist and be writable.
-            if (!empty($data) && (!file_exists($data) || !is_dir($data) || !is_writable($data))) {
-                // The directory must exist and be writable.
-                return get_string('backuperrorinvaliddestination');
+            if (!empty($data) && !$this->is_directory_path_valid($data)) {
+                return get_string('directory:error', 'tool_coursemigration');
             }
         }
         return parent::write_setting($data);
+    }
+
+    /**
+     * Returns an XHTML field.
+     *
+     * @param string $data This is the value for the field
+     * @param string $query
+     * @return string XHTML
+     */
+    public function output_html($data, $query='') {
+        global $CFG, $OUTPUT;
+        $default = $this->get_defaultsetting();
+
+        $context = (object) [
+            'id' => $this->get_id(),
+            'name' => $this->get_full_name(),
+            'size' => $this->size,
+            'value' => $data,
+            'showvalidity' => !empty($data),
+            'valid' => $data && file_exists($data) && is_dir($data),
+            'readonly' => !empty($CFG->preventexecpath),
+            'forceltr' => $this->get_force_ltr()
+        ];
+
+        // Allow empty, otherwise must exist and be writable.
+        if (!empty($data) && !$this->is_directory_path_valid($data)) {
+            $this->visiblename .= '<div class="alert alert-danger">'.get_string('directory:error', 'tool_coursemigration').'</div>';
+        }
+
+        if (!empty($CFG->preventexecpath)) {
+            $this->visiblename .= '<div class="alert alert-info">'.get_string('execpathnotallowed', 'admin').'</div>';
+        }
+
+        $element = $OUTPUT->render_from_template('core_admin/setting_configdirectory', $context);
+
+        return format_admin_setting($this, $this->visiblename, $element, $this->description, true, '', $default, $query);
+    }
+
+    /**
+     * Check if provided directory path is valid.
+     *
+     * @param string $dirpath Provided directory path.
+     * @return bool
+     */
+    protected function is_directory_path_valid(string $dirpath) {
+        return file_exists($dirpath) && is_dir($dirpath) && is_writable($dirpath) && is_readable($dirpath);
     }
 }

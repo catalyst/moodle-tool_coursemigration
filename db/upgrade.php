@@ -27,7 +27,7 @@ function xmldb_tool_coursemigration_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    if($oldversion < 2023063000)  {
+    if ($oldversion < 2023063000) {
         // Change field 'error' into a text field.
         $table = new xmldb_table('tool_coursemigration');
         $field = new xmldb_field('error', XMLDB_TYPE_TEXT);
@@ -38,6 +38,17 @@ function xmldb_tool_coursemigration_upgrade($oldversion) {
 
         // Coursemigration savepoint reached.
         upgrade_plugin_savepoint(true, 2023063000, 'tool', 'coursemigration');
+    }
+
+    if ($oldversion < 2023080800) {
+        $saveto = get_config('tool_coursemigration', 'saveto');
+        set_config('directory', $saveto, 'tool_coursemigration');
+
+        unset_config('saveto', 'tool_coursemigration');
+        unset_config('restorefrom', 'tool_coursemigration');
+
+        // Coursemigration savepoint reached.
+        upgrade_plugin_savepoint(true, 2023080800, 'tool', 'coursemigration');
     }
 
     return true;

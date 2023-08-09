@@ -85,8 +85,7 @@ class course_restore_test extends advanced_testcase {
             'filename' => $filename,
         ]);
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $coursemigration->save();
 
@@ -169,8 +168,7 @@ class course_restore_test extends advanced_testcase {
             'filename' => $filename,
         ]);
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $coursemigration->save();
 
@@ -285,8 +283,7 @@ class course_restore_test extends advanced_testcase {
         $coursemigration->save();
 
         $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $task = new course_restore();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -396,12 +393,14 @@ class course_restore_test extends advanced_testcase {
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
 
-        $this->expectOutputRegex('/Cannot restore the course. Unable to restore course. The \[restore from\] directory has not been configured/');
+        $this->expectOutputRegex(
+            '/Cannot restore the course. The selected backup storage has not been configured to pull backup/'
+        );
         $task->execute();
 
         // Check exception was thrown.
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
-        $expected = 'Cannot restore the course. Unable to restore course. The [restore from] directory has not been configured';
+        $expected = 'Cannot restore the course. The selected backup storage has not been configured to pull backups';
         $this->assertEquals($expected, $currentcoursemigration->get('error'));
 
         $eventclass = restore_failed::class;
@@ -410,7 +409,10 @@ class course_restore_test extends advanced_testcase {
         });
         $this->assertCount(1, $events);
         $event = reset($events);
-        $this->assertStringContainsString("directory has not been configured", $event->get_description());
+        $this->assertStringContainsString(
+            "The selected backup storage has not been configured to pull backup",
+            $event->get_description()
+        );
     }
 
     /**
@@ -439,8 +441,7 @@ class course_restore_test extends advanced_testcase {
 
         $coursemigration->save();
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         // Set to delete backup after failed restore.
         set_config('failrestoredelete', 1, 'tool_coursemigration');
@@ -503,8 +504,7 @@ class course_restore_test extends advanced_testcase {
             'courseid' => $course->id,
         ]);
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         $coursemigration->save();
 
@@ -559,8 +559,7 @@ class course_restore_test extends advanced_testcase {
 
         $coursemigration->save();
 
-        set_config('restorefrom', $backuppath, 'tool_coursemigration');
-        set_config('saveto', $backuppath, 'tool_coursemigration');
+        set_config('directory', $backuppath, 'tool_coursemigration');
 
         // Set to keep backup after failed restore.
         set_config('failrestoredelete', 0, 'tool_coursemigration');

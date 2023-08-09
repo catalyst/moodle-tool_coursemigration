@@ -74,8 +74,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure backup and restore directories.
-        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -143,8 +142,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure backup and restore directories.
-        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -262,8 +260,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure INVALID backup and restore directories to force exception.
-        set_config('restorefrom', $CFG->tempdir . 'something', 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir . 'something', 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir . 'something', 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -273,7 +270,7 @@ class course_backup_test extends advanced_testcase {
         $task->execute();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('Error in copying file to destination directory', $output);
+        $this->assertStringContainsString('The selected backup storage has not been configured to push backups', $output);
 
         $eventclass = backup_failed::class;
         $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
@@ -282,7 +279,10 @@ class course_backup_test extends advanced_testcase {
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
-        $this->assertStringContainsString('Error in copying file to destination directory', $event->get_description());
+        $this->assertStringContainsString(
+            'The selected backup storage has not been configured to push backups',
+            $event->get_description()
+        );
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 
@@ -354,8 +354,8 @@ class course_backup_test extends advanced_testcase {
         $coursemigration->save();
         $this->assertEmpty($coursemigration->get('filename'));
 
-        // Break config for a save to directory.
-        set_config('saveto', '', 'tool_coursemigration');
+        // Break config to directory.
+        set_config('directory', '', 'tool_coursemigration');
 
         $task = new course_backup();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
@@ -365,7 +365,7 @@ class course_backup_test extends advanced_testcase {
         $task->execute();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('directory has not been configured', $output);
+        $this->assertStringContainsString('backup storage has not been configured', $output);
 
         $eventclass = backup_failed::class;
         $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
@@ -374,7 +374,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertCount(1, $events);
         $event = reset($events);
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
-        $this->assertStringContainsString('directory has not been configured', $event->get_description());
+        $this->assertStringContainsString('backup storage has not been configured ', $event->get_description());
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
     }
 
@@ -408,8 +408,7 @@ class course_backup_test extends advanced_testcase {
         $this->assertEmpty($coursemigration->get('filename'));
 
         // Configure backup and restore directories.
-        set_config('restorefrom', $CFG->tempdir, 'tool_coursemigration');
-        set_config('saveto', $CFG->tempdir, 'tool_coursemigration');
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
 
         // Set to delete backup after failed restore.
         set_config('failbackupdelete', 1, 'tool_coursemigration');
