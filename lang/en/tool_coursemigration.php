@@ -117,6 +117,7 @@ $string['storagetype'] = 'Backup storage';
 $string['storagetype_help'] = 'Choose the location where you want backups to be stored.';
 $string['storage:shared_disk_storage'] = 'Shared disk storage';
 $string['coursedeleted'] = '{$a} (course is missing)';
+$string['categorydeleted'] = '{$a} (category is missing)';
 $string['error:invaliddata'] = 'Invalid data. Error: missing one of the required parameters.';
 $string['error:invalidid'] = 'Invalid id. Error: could not find record for restore.';
 $string['error:taskrestarted'] = 'Migration task was restarted. Previous course ID {$a}.';
