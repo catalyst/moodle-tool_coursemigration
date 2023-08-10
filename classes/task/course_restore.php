@@ -102,6 +102,8 @@ class course_restore extends adhoc_task {
         }
 
         try {
+            $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
+
             // Retrieve stored_file.
             $storage = helper::get_selected_storage();
             // Check that the storage class has been configured.
@@ -127,8 +129,6 @@ class course_restore extends adhoc_task {
 
             $courseid = restore_dbops::create_new_course($fullname, $shortname, $coursemigration->get('destinationcategoryid'));
             $coursemigration->set('courseid', $courseid)->save();
-
-            $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
 
             $rc = new restore_controller($restoredir, $courseid, backup::INTERACTIVE_NO,
                 backup::MODE_GENERAL, $USER->id, backup::TARGET_NEW_COURSE);

@@ -585,4 +585,46 @@ class course_restore_test extends advanced_testcase {
             $this->assertDebuggingCalledCount(1);
         }
     }
+
+    /**
+     * Test restore to a broken category.
+     */
+    public function test_restore_broken_category() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Set broken default category.
+        set_config('defaultcategory', 12345, 'tool_coursemigration');
+
+        // Create a destination category and then delete it later.
+        $generator = $this->getDataGenerator();
+        $category = $generator->create_category();
+
+        // Create coursemigration record.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => $category->id,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => 'test.mbz',
+        ]);
+
+        $coursemigration->save();
+        $category = \core_course_category::get($category->id);
+        $category->delete_full(false);
+
+        $task = new course_restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+
+        $this->expectOutputRegex('/Cannot restore the course. Invalid parameter value detected \(Invalid category\)/');
+        $task->execute();
+
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_FAILED, $currentcoursemigration->get('status'));
+        $this->assertEquals(
+            'Cannot restore the course. Invalid parameter value detected (Invalid category)',
+            $currentcoursemigration->get('error')
+        );
+    }
 }
