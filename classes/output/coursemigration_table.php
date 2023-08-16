@@ -56,6 +56,7 @@ class coursemigration_table extends table_sql implements renderable {
         parent::__construct('coursemigration_table');
 
         $this->define_columns([
+            'id',
             'action',
             'course',
             'destinationcategory',
@@ -67,6 +68,7 @@ class coursemigration_table extends table_sql implements renderable {
         ]);
 
         $this->define_headers([
+            get_string('migrationid', 'tool_coursemigration'),
             get_string('action'),
             get_string('course'),
             get_string('destinationcategory', 'tool_coursemigration'),
@@ -80,6 +82,7 @@ class coursemigration_table extends table_sql implements renderable {
         $this->collapsible(false);
 
         $this->sortable(true, 'timecreated', SORT_DESC);
+        $this->no_sorting('id');
         $this->no_sorting('action');
         $this->no_sorting('course');
         $this->no_sorting('destinationcategory');
@@ -161,6 +164,16 @@ class coursemigration_table extends table_sql implements renderable {
         }
 
         $this->rawdata = $records;
+    }
+
+    /**
+     * Action column.
+     *
+     * @param stdClass $row
+     * @return string
+     */
+    public function col_id(stdClass $row): string {
+        return $row->id;
     }
 
     /**
