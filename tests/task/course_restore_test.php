@@ -106,6 +106,10 @@ class course_restore_test extends advanced_testcase {
         $this->assertStringContainsString('Test restore course', $newcourse->fullname);
         $this->assertEquals(1, $newcourse->visible);
 
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
+
         $eventclass = restore_completed::class;
         $events = array_filter($eventsink->get_events(), function ($event) use ($eventclass) {
             return $event instanceof $eventclass;
@@ -188,6 +192,10 @@ class course_restore_test extends advanced_testcase {
         $this->assertEquals($category->id, $newcourse->category);
         $this->assertStringContainsString('Test restore course', $newcourse->fullname);
         $this->assertEquals(0, $newcourse->visible);
+
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
     }
 
     /**
@@ -221,6 +229,10 @@ class course_restore_test extends advanced_testcase {
         $expectdescription = "Restoring course is failed. Error: Invalid data. Error: missing one of the required parameters.";
         $this->assertEquals($expectdescription, $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
+
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
     }
 
     /**
@@ -256,6 +268,10 @@ class course_restore_test extends advanced_testcase {
         $expectdescription = "Restoring course is failed. Error: Invalid id. Error: could not find record for restore.";
         $this->assertEquals($expectdescription, $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
+
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
     }
 
     /**
@@ -312,6 +328,10 @@ class course_restore_test extends advanced_testcase {
         $this->assertStringContainsString("file does not exist", $event->get_description());
         $this->assertStringContainsString($event->other['filename'], $event->get_description());
         $this->assertEquals(get_string('event:restore_failed', 'tool_coursemigration'), $event->get_name());
+
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
     }
 
     /**
@@ -362,6 +382,10 @@ class course_restore_test extends advanced_testcase {
         $this->assertEquals($coursemigration->get('filename'), $event->other['filename']);
         $this->assertStringContainsString($event->other['filename'], $event->get_description());
         $this->assertStringContainsString("A storage class has not been configured", $event->get_description());
+
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
     }
 
     /**
@@ -413,6 +437,10 @@ class course_restore_test extends advanced_testcase {
             "The selected backup storage has not been configured to pull backup",
             $event->get_description()
         );
+
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
     }
 
     /**
@@ -452,7 +480,6 @@ class course_restore_test extends advanced_testcase {
         manager::queue_adhoc_task($task);
 
         $this->expectOutputRegex('/Cannot restore the course. error\/cannot_precheck_wrong_status/');
-
         $task->execute();
 
         // Confirm the status is now failed.
@@ -462,13 +489,18 @@ class course_restore_test extends advanced_testcase {
         // Confirm the backup file has been deleted.
         $this->assertFalse(file_exists($backuppath . $filename));
         $this->assertDebuggingCalledCount(1);
+
+        // Confirm clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(1, $tasks);
+        $this->assertEquals(['courseid' => $currentcoursemigration->get('courseid')], (array)reset($tasks)->get_custom_data());
     }
 
     /**
      * Test restore when a course is set to course migration item.
      */
     public function test_restore_when_course_is_already_set() {
-        global $CFG, $USER, $DB;
+        global $CFG, $USER;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -508,6 +540,10 @@ class course_restore_test extends advanced_testcase {
 
         $coursemigration->save();
 
+        // Course shouldn't be scheduled for a cleanup.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
+
         $task = new course_restore();
         $customdata = ['coursemigrationid' => $coursemigration->get('id')];
         $task->set_custom_data($customdata);
@@ -517,8 +553,12 @@ class course_restore_test extends advanced_testcase {
         $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
         // Confirm the status is now completed.
         $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
-        // Course should be deleted.
-        $this->assertFalse($DB->get_record('course', array('id' => $course->id)));
+
+        // Course should be scheduled for a cleanup.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(1, $tasks);
+        $this->assertEquals(['courseid' => $course->id], (array)reset($tasks)->get_custom_data());
+
         // Course id should be updated to a new course.
         $this->assertNotEquals($course->id, $currentcoursemigration->get('courseid'));
         // Error should be set.
@@ -583,6 +623,11 @@ class course_restore_test extends advanced_testcase {
                 $currentcoursemigration->get('error')
             );
             $this->assertDebuggingCalledCount(1);
+
+            // Confirm clean up tasks are scheduled.
+            $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+            $this->assertCount(1, $tasks);
+            $this->assertEquals(['courseid' => $currentcoursemigration->get('courseid')], (array)reset($tasks)->get_custom_data());
         }
     }
 
@@ -626,5 +671,9 @@ class course_restore_test extends advanced_testcase {
             'Cannot restore the course. Invalid parameter value detected (Invalid category)',
             $currentcoursemigration->get('error')
         );
+
+        // Confirm no clean up tasks are scheduled.
+        $tasks = manager::get_adhoc_tasks(course_cleanup::class);
+        $this->assertCount(0, $tasks);
     }
 }

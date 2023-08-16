@@ -27,6 +27,8 @@ use tool_coursemigration\event\restore_failed;
 use tool_coursemigration\helper;
 use restore_controller;
 use restore_dbops;
+use core\task\manager;
+
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -76,7 +78,7 @@ class course_restore extends adhoc_task {
             throw new invalid_parameter_exception($errormsg);
         }
 
-        // If course already set for some reason, delete it, record that error and start over restore process.
+        // If a course is already set for some reason, record that and start over restore process.
         if (!empty($coursemigration->get('courseid'))) {
             $courseid = $coursemigration->get('courseid');
             $error = get_string('error:taskrestarted', 'tool_coursemigration', $courseid);
@@ -85,9 +87,8 @@ class course_restore extends adhoc_task {
                 ->set('error', $error)
                 ->save();
 
-            // Because we are going to restart this task on exception, delete course after we reset a course
-            // in case deletion will explode, so we don't end up with an infinitive loop for this adhoc task.
-            delete_course($courseid, false);
+            // Fire up a cleanup task.
+            $this->schedule_course_cleanup_task($courseid);
         }
 
         if ($coursemigration->get('status') !== coursemigration::STATUS_IN_PROGRESS) {
@@ -128,7 +129,8 @@ class course_restore extends adhoc_task {
                 get_string('restoringcourseshortname', 'backup'));
 
             $courseid = restore_dbops::create_new_course($fullname, $shortname, $coursemigration->get('destinationcategoryid'));
-            $coursemigration->set('courseid', $courseid)->save();
+            $coursemigration->set('courseid', $courseid)
+                ->save();
 
             $rc = new restore_controller($restoredir, $courseid, backup::INTERACTIVE_NO,
                 backup::MODE_GENERAL, $USER->id, backup::TARGET_NEW_COURSE);
@@ -137,17 +139,13 @@ class course_restore extends adhoc_task {
             $rc->destroy();
 
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
-                ->set('courseid', $courseid)
                 ->save();
+
             $course = get_course($courseid);
 
             if (get_config('tool_coursemigration', 'hiddencourse')) {
                 $course->visible = false;
                 update_course($course);
-            }
-
-            if (get_config('tool_coursemigration', 'successfuldelete')) {
-                $storage->delete_file($coursemigration->get('filename'));
             }
 
             restore_completed::create([
@@ -161,6 +159,9 @@ class course_restore extends adhoc_task {
                 ]
             ])->trigger();
 
+            if (get_config('tool_coursemigration', 'successfuldelete')) {
+                $storage->delete_file($coursemigration->get('filename'));
+            }
         } catch (Exception $exception) {
             $errormsg = 'Cannot restore the course. ' . $exception->getMessage();
             mtrace($errormsg . $exception->getTraceAsString());
@@ -176,6 +177,11 @@ class course_restore extends adhoc_task {
                     'filename' => $coursemigration->get('filename'),
                 ]
             ])->trigger();
+
+            // Fire up a cleanup task.
+            if (!empty($coursemigration->get('courseid'))) {
+                $this->schedule_course_cleanup_task($coursemigration->get('courseid'));
+            }
 
             // Do some clean up.
             $deleteafterfail = get_config('tool_coursemigration', 'failrestoredelete');
@@ -218,5 +224,17 @@ class course_restore extends adhoc_task {
             }
         }
         return true;
+    }
+
+    /**
+     * Schedule a course clean up task.
+     *
+     * @param int $courseid Course id to be deleted.
+     * @return void
+     */
+    protected function schedule_course_cleanup_task(int $courseid): void {
+        $cleanuptask = new course_cleanup();
+        $cleanuptask->set_custom_data(['courseid' => $courseid]);
+        manager::queue_adhoc_task($cleanuptask , true);
     }
 }
