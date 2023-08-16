@@ -29,6 +29,7 @@ $string['coursemigration:restorecourse'] = 'Restore courses';
 $string['destinationcategory'] = 'Destination category';
 $string['filename'] = 'Filename';
 $string['filters'] = 'Filters';
+$string['migrationid'] = 'ID';
 $string['pluginname'] = 'Course migration';
 $string['privacy:metadata:tool_coursemigration'] = 'Data relating users for the tool coursemigration plugin';
 $string['privacy:metadata:tool_coursemigration:action'] = 'The action type for course migration';
