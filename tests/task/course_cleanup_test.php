@@ -55,7 +55,7 @@ class course_cleanup_test extends advanced_testcase {
     }
 
     /**
-     * Test clean up when no fail delay.
+     * Test clean up when with fail delay.
      */
     public function test_cleanup_with_fail_delay() {
         global $DB;
