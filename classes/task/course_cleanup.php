@@ -43,56 +43,60 @@ class course_cleanup extends adhoc_task {
         $data = $this->get_custom_data();
         $courseid = !empty($data->courseid) ? $data->courseid : 0;
 
-        if (!empty($courseid)) {
-            // Check if the course is still exist.
-            $course = $DB->get_record('course', ['id' => $courseid]);
-            if ($course) {
-                // Disable recycle bin as we really want to clean up everything.
-                $CFG->forced_plugin_settings['tool_recyclebin']['coursebinenable'] = false;
-                $CFG->forced_plugin_settings['tool_recyclebin']['categorybinenable'] = false;
+        if (empty($courseid)) {
+            return;
+        }
 
-                if ($this->get_fail_delay() == 0) {
-                    // Running first time. Let's attempt to delete whole course.
-                    delete_course($courseid, false);
-                } else {
-                    // Because a deletion of that course failed before, we are not going to delete whole course again.
-                    // Instead, we will delete activities one by one first and then attempt to delete a course again.
-                    $exceptionsthrown = [];
-                    $coursemodules = $DB->get_records('course_modules', ['course' => $courseid]);
+        $course = $DB->get_record('course', ['id' => $courseid]);
 
-                    foreach ($coursemodules as $cm) {
-                        $attempt = 0;
-                        $maxattampts = 2;
+        if (empty($course)) {
+            return;
+        }
 
-                        // Try deleting few times as it helps in some cases (e.g. when activity not in a section->sequence).
-                        do {
-                            try {
-                                $exception = false;
-                                course_delete_module(intval($cm->id));
-                                break;
-                            } catch (Exception $exception) {
-                                $attempt++;
-                                continue;
-                            }
-                        } while ($attempt < $maxattampts);
+        // Disable recycle bin as we really want to clean up everything.
+        $CFG->forced_plugin_settings['tool_recyclebin']['coursebinenable'] = false;
+        $CFG->forced_plugin_settings['tool_recyclebin']['categorybinenable'] = false;
 
-                        // We tried to delete two times, but failed.
-                        // Log it, save it. we will throw it once finished with all activities.
-                        if (!empty($exception)) {
-                            mtrace($exception->getMessage());
-                            $exceptionsthrown[] = $exception;
-                        }
+        if ($this->get_fail_delay() > 0) {
+            // Because a deletion of that course failed before, we are not going to delete whole course again.
+            // Instead, we will delete activities one by one first and then attempt to delete a course again.
+            $exceptionsthrown = [];
+            $coursemodules = $DB->get_records('course_modules', ['course' => $courseid]);
+
+            foreach ($coursemodules as $cm) {
+                $attempt = 0;
+                $maxattampts = 2;
+
+                // Try deleting few times as it helps in some cases (e.g. when activity not in a section->sequence).
+                do {
+                    try {
+                        $exception = false;
+                        course_delete_module(intval($cm->id));
+                        break;
+                    } catch (Exception $exception) {
+                        $attempt++;
+                        continue;
                     }
+                } while ($attempt < $maxattampts);
 
-                    if (!empty($exceptionsthrown)) {
-                        // Fail the task by throwing the first exception and let it rerun later and try again.
-                        throw $exceptionsthrown[0];
-                    } else {
-                        // Finally all activities deleted we can delete a course.
-                        delete_course($courseid, false);
-                    }
+                // We tried to delete two times, but failed.
+                // Log it, save it. we will throw it once finished with all activities.
+                if (!empty($exception)) {
+                    mtrace($exception->getMessage());
+                    $exceptionsthrown[] = $exception;
                 }
             }
+
+            if (!empty($exceptionsthrown)) {
+                // Fail the task by throwing the first exception and let it rerun later and try again.
+                throw $exceptionsthrown[0];
+            } else {
+                // Finally all activities deleted we can delete a course.
+                delete_course($courseid, false);
+            }
+        } else {
+            // Running first time. Let's attempt to delete whole course.
+            delete_course($courseid, false);
         }
     }
 }
