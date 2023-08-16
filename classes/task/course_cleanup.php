@@ -93,10 +93,12 @@ class course_cleanup extends adhoc_task {
             } else {
                 // Finally all activities deleted we can delete a course.
                 delete_course($courseid, false);
+                fix_course_sortorder();
             }
         } else {
             // Running first time. Let's attempt to delete whole course.
             delete_course($courseid, false);
+            fix_course_sortorder();
         }
     }
 }
