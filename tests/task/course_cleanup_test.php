@@ -14,11 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace task;
+namespace tool_coursemigration\task;
 
 use advanced_testcase;
 use core\task\manager;
-use tool_coursemigration\task\course_cleanup;
 use moodle_exception;
 
 /**
