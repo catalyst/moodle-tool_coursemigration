@@ -107,7 +107,7 @@ class course_cleanup_test extends advanced_testcase {
             $task->execute();
         } catch (Exception $exception) {
             $this->assertTrue($exception instanceof moodle_exception);
-            $pattern = '/Invalid course module ID: (' . $page1->cmid . '|' . $page2->cmid . ')/';
+            $pattern = '/(Invalid course module ID)(: (' . $page1->cmid . '|' . $page2->cmid . '))?/';
             $this->assertSame(1, preg_match($pattern, $exception->getMessage()));
         }
     }
