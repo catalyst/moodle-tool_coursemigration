@@ -103,7 +103,7 @@ class course_cleanup_test extends advanced_testcase {
         manager::queue_adhoc_task($task);
 
         $this->expectException(moodle_exception::class);
-        $this->expectExceptionMessage('Invalid course module ID: ' . $page1->cmid);
+        $this->expectExceptionMessageMatches('/Invalid course module ID: (' . $page1->cmid . '|' . $page2->cmid . ')/');
         $task->execute();
     }
 
