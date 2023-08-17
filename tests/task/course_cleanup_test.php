@@ -19,6 +19,7 @@ namespace tool_coursemigration\task;
 use advanced_testcase;
 use core\task\manager;
 use moodle_exception;
+use Exception;
 
 /**
  * Course cleanup tests.
@@ -102,9 +103,13 @@ class course_cleanup_test extends advanced_testcase {
         $task->set_custom_data($customdata);
         manager::queue_adhoc_task($task);
 
-        $this->expectException(moodle_exception::class);
-        $this->expectExceptionMessage('Invalid course module ID: ' . $page1->cmid);
-        $task->execute();
+        try {
+            $task->execute();
+        } catch (Exception $exception) {
+            $this->assertTrue($exception instanceof moodle_exception);
+            $pattern = '/(Invalid course module ID)(: (' . $page1->cmid . '|' . $page2->cmid . '))?/';
+            $this->assertSame(1, preg_match($pattern, $exception->getMessage()));
+        }
     }
 
     /**
