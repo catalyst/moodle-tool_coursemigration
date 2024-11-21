@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 $tasks = [
     [
         'classname' => 'tool_coursemigration\task\create_backup_tasks',
-        'blocking'  => 0,
         'minute'    => '*',
         'hour'      => '*',
         'day'       => '*',
@@ -37,7 +36,6 @@ $tasks = [
     ],
     [
         'classname' => 'tool_coursemigration\task\create_restore_tasks',
-        'blocking'  => 0,
         'minute'    => '*',
         'hour'      => '*',
         'day'       => '*',

@@ -186,6 +186,6 @@ class helper {
             return 0;
         }
 
-        return log($faildelay / 60, 2) + 1;
+        return intval(log($faildelay / 60, 2) + 1);
     }
 }

@@ -19,7 +19,6 @@ namespace tool_coursemigration\task;
 use advanced_testcase;
 use core\task\manager;
 use tool_coursemigration\coursemigration;
-use tool_coursemigration\task\restore;
 
 /**
  * Create backup tasks tests.

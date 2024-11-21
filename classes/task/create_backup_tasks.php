@@ -61,7 +61,6 @@ class create_backup_tasks extends scheduled_task {
                 $course = get_course($courseid);
 
                 $asynctask = new course_backup();
-                $asynctask->set_blocking(false);
                 $asynctask->set_custom_data([
                     'coursemigrationid' => $coursemigration->get('id')
                 ]);
