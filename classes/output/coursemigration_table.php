@@ -32,6 +32,7 @@ use core_course_category;
 /**
  * Renderable table for coursemigration.
  *
+ * @package     tool_coursemigration
  * @author      Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
  * @copyright   2023 Catalyst IT
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

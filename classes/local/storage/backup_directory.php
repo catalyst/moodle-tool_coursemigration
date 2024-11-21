@@ -33,8 +33,10 @@ require_once($CFG->libdir.'/adminlib.php');
 class backup_directory extends admin_setting_configdirectory {
     /**
      * Calls parent::__construct with specific arguments.
+     *
+     * @param string $identifier Identifier.
      */
-    public function __construct($identifier) {
+    public function __construct(string $identifier) {
         parent::__construct(
             'tool_coursemigration/' . $identifier,
             new \lang_string($identifier, 'tool_coursemigration'),

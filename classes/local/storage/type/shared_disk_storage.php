@@ -57,7 +57,7 @@ class shared_disk_storage implements storage_interface {
 
     /**
      * Download (pull) file.
-     * @param $filename string Name of file to be restored.
+     * @param string $filename Name of file to be restored.
      * @return stored_file|null A file record object of the retrieved file.
      */
     public function pull_file(string $filename): ?stored_file {
@@ -79,8 +79,8 @@ class shared_disk_storage implements storage_interface {
 
     /**
      * Upload (push) file.
-     * @param $filename string Name of file to be backed up.
-     * @param $filerecord stored_file A file record object of the fle to be backed up.
+     * @param string $filename Name of file to be backed up.
+     * @param stored_file $filerecord A file record object of the fle to be backed up.
      * @return boolean true if successfully cretaed.
      */
     public function push_file(string $filename, stored_file $filerecord): bool {
@@ -95,7 +95,7 @@ class shared_disk_storage implements storage_interface {
 
     /**
      * Delete file.
-     * @param $filename string Name of file to be backed up.
+     * @param string $filename Name of file to be backed up.
      * @return boolean true if successfully deleted.
      */
     public function delete_file(string $filename): bool {
@@ -110,7 +110,7 @@ class shared_disk_storage implements storage_interface {
 
     /**
      * Check if the file exist.
-     * @param $filename string Name of file .
+     * @param string $filename Name of file .
      * @return boolean true if file exists.
      */
     public function file_exists(string $filename): bool {

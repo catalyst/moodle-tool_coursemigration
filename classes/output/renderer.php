@@ -20,7 +20,7 @@ use plugin_renderer_base;
 
 /**
  * Implements the report renderer
- *
+ * @package     tool_coursemigration
  * @author      Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
  * @copyright   2023 Catalyst IT
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

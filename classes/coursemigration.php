@@ -127,7 +127,7 @@ class coursemigration extends persistent {
     /**
      * Custom function to deal with multiple errors.
      *
-     * @param mixed $value Error value.
+     * @param string $value Error value.
      *
      * @return \tool_coursemigration\coursemigration
      */
