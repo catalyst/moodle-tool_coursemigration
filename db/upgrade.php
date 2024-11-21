@@ -15,12 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Coursemigration plugin upgrade code.
+ * Upgrade hook.
  *
  * @package    tool_coursemigration
  * @author     Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
  * @copyright  2023 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/**
+ * Upgrade hook.
+ *
+ * @param int $oldversion Old version.
+ *
+ * @return true
  */
 function xmldb_tool_coursemigration_upgrade($oldversion) {
     global $DB;

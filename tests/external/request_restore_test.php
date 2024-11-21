@@ -19,15 +19,14 @@ namespace tool_coursemigration\external;
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
-require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 
 use externallib_advanced_testcase;
-use external_api;
+use core_external\external_api;
 use tool_coursemigration\coursemigration;
 
 /**
- * The get_bentoboxes test class.
+ * The request_restore test class.
  *
  * @package     tool_coursemigration
  * @copyright   2023 Catalyst IT

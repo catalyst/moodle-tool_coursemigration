@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Upload and store CSV file for migrating courses.
- *
- * @package    tool_coursemigration
- * @author     Glenn Poder <glennpoder@catalyst-au.net>
- * @copyright  2023 Catalyst IT
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_coursemigration;
 
 use csv_import_reader;
@@ -113,7 +104,7 @@ class upload_course_list {
      *
      * @param array $row Record from CSV file.
      * @param array $fields Column indexes to be processed.
-     * @param integer $rownumber Current row in CSV file, used for reporting errors.
+     * @param int $rownumber Current row in CSV file, used for reporting errors.
      * @return array [$status, (object) $data, $message]
      *
      * Structure of $fields:
@@ -191,8 +182,8 @@ class upload_course_list {
     /**
      * Function to validate CSV field.
      *
-     * @param integer|string $datavalue Field value from CSV file.
-     * @param boolean $status By ref to update pass or fail of the row.
+     * @param int|string $datavalue Field value from CSV file.
+     * @param bool $status By ref to update pass or fail of the row.
      * @param array $message By ref to add error messages.
      * @param array $params Information to be included in processing and error messages.
      * @return int|null $value

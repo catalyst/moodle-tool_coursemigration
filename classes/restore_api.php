@@ -23,10 +23,6 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use tool_coursemigration\event\http_request_failed;
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
-
 /**
  * Class for calling restore API.
  *

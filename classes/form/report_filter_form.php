@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * A form for filtering Callista Access Start and End Dates report.
- *
- * @package     tool_coursemigration
- * @author      Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
- * @copyright   2023 Catalyst IT
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_coursemigration\form;
 
 use moodleform;
@@ -32,6 +23,14 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir.'/formslib.php');
 
+/**
+ * A form for filtering Callista Access Start and End Dates report.
+ *
+ * @package     tool_coursemigration
+ * @author      Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
+ * @copyright   2023 Catalyst IT
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class report_filter_form extends moodleform {
 
     /**

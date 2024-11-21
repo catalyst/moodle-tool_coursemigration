@@ -26,8 +26,6 @@ use tool_coursemigration\event\http_request_failed;
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
 
 /**
  * Tests for restore_api_test class.

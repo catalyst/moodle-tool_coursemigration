@@ -16,10 +16,9 @@
 
 namespace tool_coursemigration\external;
 
-use external_api;
-use external_function_parameters;
-use external_value;
-use invalid_parameter_exception;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_value;
 use context_coursecat;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\helper;

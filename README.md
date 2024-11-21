@@ -22,9 +22,10 @@ can be viewed via an included repots section.
 
 ## Branches
 
-| Moodle version    | Branch |
-| ----------------- |--------|
-| Moodle 3.9+       | `main` |
+| Moodle version   | Branch            |
+|------------------|-------------------|
+| Moodle 4.4+      | MOODLE_404_STABLE |
+| Moodle 3.9 - 4.1 | main              |
 
 ## Configuration ##
 _Site administration > Plugins > Admin tools > Course migration_
