@@ -28,16 +28,20 @@ use \admin_setting_configselect;
  */
 class storage_setting_configselect extends admin_setting_configselect {
     /**
+     * Default storagetype used for course migration config when none is set.
+     */
+    private const DEFAULT_STORAGE_TYPE = 'tool_coursemigration\local\storage\type\shared_disk_storage';
+
+    /**
      * Calls parent::__construct with specific arguments.
      */
     public function __construct() {
         $options = $this->get_storage_names();
-        $default = array_key_first($options);
         parent::__construct(
             'tool_coursemigration/storagetype',
             new \lang_string('storagetype', 'tool_coursemigration'),
             new \lang_string('storagetype_help', 'tool_coursemigration'),
-            $default,
+            self::DEFAULT_STORAGE_TYPE,
             $options
         );
     }

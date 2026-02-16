@@ -24,6 +24,7 @@
  */
 
 use tool_coursemigration\local\storage\backup_directory;
+use tool_coursemigration\local\storage\storage_interface;
 use tool_coursemigration\local\storage\storage_setting_configselect;
 
 defined('MOODLE_INTERNAL') || die();
@@ -83,7 +84,20 @@ if ($hassiteconfig) {
             new lang_string('settings:storage', 'tool_coursemigration'), ''));
 
         $settings->add(new storage_setting_configselect());
-        $settings->add(new backup_directory('directory'));
+
+        // Get the selected storage type and add its specific settings dynamically.
+        $storagetype = get_config('tool_coursemigration', 'storagetype');
+        if (!empty($storagetype) && class_exists($storagetype)) {
+            try {
+                $storage = new $storagetype();
+                if ($storage instanceof storage_interface) {
+                    $settings = $storage->define_storage_section($settings);
+                }
+            } catch (\Exception $e) {
+                // If storage instantiation fails, show error but continue.
+                debugging('Failed to instantiate storage type: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
     }
 
     $ADMIN->add('tools', new admin_category('coursemigration', get_string('pluginname', 'tool_coursemigration')));
