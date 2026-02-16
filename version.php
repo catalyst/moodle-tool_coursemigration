@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_coursemigration';
 $plugin->release = '0.1.0';
-$plugin->version = 2024112100;
+$plugin->version = 2024112101;
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->supported = [404, 405];

@@ -19,6 +19,7 @@ use context_system;
 use Exception;
 use file_storage;
 use stored_file;
+use tool_coursemigration\local\storage\backup_directory;
 use tool_coursemigration\local\storage\storage_interface;
 
 /**
@@ -163,5 +164,80 @@ class shared_disk_storage implements storage_interface {
      */
     public function ready_for_push(): bool {
         return !empty($this->directory) && is_dir($this->directory) && is_writable($this->directory);
+    }
+
+    /**
+     * Define storage-specific settings section.
+     *
+     * @param \admin_settingpage $settings The settings page object
+     * @return \admin_settingpage Modified settings page
+     */
+    public function define_storage_section($settings) {
+        // Add shared disk settings header with connection check.
+        $settings->add(new \admin_setting_heading(
+            'tool_coursemigration/shareddisk',
+            get_string('settings:shareddisk', 'tool_coursemigration'),
+            $this->define_storage_check()
+        ));
+
+        $settings->add(new backup_directory('directory'));
+
+        return $settings;
+    }
+
+    /**
+     * Display connection and permission check status.
+     * Backup directory admin_setting_configdirectory should have already checked the new directory value,
+     * this check applies to existing value.
+     *
+     * @return string HTML notification output
+     */
+    private function define_storage_check() {
+        global $OUTPUT;
+        $output = '';
+
+        if (!empty($this->directory)) {
+            // Check if directory exists.
+            if (!is_dir($this->directory)) {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_notexist', 'tool_coursemigration'),
+                    'notifyproblem'
+                );
+                return $output;
+            }
+
+            // Test read permissions (for restore/pull).
+            if ($this->ready_for_pull()) {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_readablesuccess', 'tool_coursemigration'),
+                    'notifysuccess'
+                );
+            } else {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_readablefailure', 'tool_coursemigration'),
+                    'notifyproblem'
+                );
+            }
+
+            // Test write permissions (for backup/push).
+            if ($this->ready_for_push()) {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_writablesuccess', 'tool_coursemigration'),
+                    'notifysuccess'
+                );
+            } else {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_writablefailure', 'tool_coursemigration'),
+                    'notifyproblem'
+                );
+            }
+        } else {
+            $output .= $OUTPUT->notification(
+                get_string('settings:shareddisk_notconfigured', 'tool_coursemigration'),
+                'notifywarning'
+            );
+        }
+
+        return $output;
     }
 }
