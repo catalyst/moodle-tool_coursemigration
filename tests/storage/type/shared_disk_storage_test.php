@@ -74,7 +74,7 @@ class shared_disk_storage_test extends advanced_testcase {
         $this->resetAfterTest();
         $this->setup_test_file();
 
-        $storage = new shared_disk_storage;
+        $storage = new shared_disk_storage();
 
         // Check that backup and restore directories are configured.
         $this->assertTrue($storage->ready_for_pull());
@@ -122,7 +122,7 @@ class shared_disk_storage_test extends advanced_testcase {
      * Test without directories configured.
      */
     public function test_without_directories_configured() {
-        $storage = new shared_disk_storage;
+        $storage = new shared_disk_storage();
         $this->assertFalse($storage->ready_for_pull());
         $this->assertFalse($storage->ready_for_push());
     }
@@ -137,7 +137,7 @@ class shared_disk_storage_test extends advanced_testcase {
         // Set config to a file.
         set_config('directory', self::TEST_DIRECTORY . self::TEST_PULL_FILE, 'tool_coursemigration');
 
-        $storage = new shared_disk_storage;
+        $storage = new shared_disk_storage();
         $this->assertFalse($storage->ready_for_pull());
         $this->assertFalse($storage->ready_for_push());
     }
@@ -160,7 +160,7 @@ class shared_disk_storage_test extends advanced_testcase {
 
         set_config('directory', $dir, 'tool_coursemigration');
 
-        $storage = new shared_disk_storage;
+        $storage = new shared_disk_storage();
         $this->assertFalse($storage->ready_for_pull());
         $this->assertTrue($storage->ready_for_push());
     }
@@ -182,7 +182,7 @@ class shared_disk_storage_test extends advanced_testcase {
         $this->assertTrue(is_readable($dir));
         set_config('directory', $dir, 'tool_coursemigration');
 
-        $storage = new shared_disk_storage;
+        $storage = new shared_disk_storage();
         $this->assertTrue($storage->ready_for_pull());
         $this->assertFalse($storage->ready_for_push());
     }

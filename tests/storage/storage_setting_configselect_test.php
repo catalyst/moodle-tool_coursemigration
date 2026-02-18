@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 namespace tool_coursemigration;
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -32,12 +33,11 @@ require_once($CFG->libdir . '/adminlib.php');
  * @covers     \tool_coursemigration\local\storage\storage_setting_configselect
  */
 class storage_setting_configselect_test extends advanced_testcase {
-
     /**
      * Tests the constructor.
      */
     public function test_constructor() {
-        $class = new storage_setting_configselect;
+        $class = new storage_setting_configselect();
         self::assertNotNull($class);
     }
 }

@@ -36,7 +36,6 @@ use tool_coursemigration\coursemigration;
  * @covers     \tool_coursemigration\external\request_restore
  */
 class request_restore_test extends externallib_advanced_testcase {
-
     /**
      * A helper method to verify web service error.
      *

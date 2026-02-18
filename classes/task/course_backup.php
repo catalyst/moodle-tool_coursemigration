@@ -52,7 +52,6 @@ require_once($CFG->dirroot . '/backup/util/helper/backup_cron_helper.class.php')
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_backup extends adhoc_task {
-
     /**
      * Run the adhoc task and preform the backup.
      */
@@ -66,7 +65,7 @@ class course_backup extends adhoc_task {
                 'objectid' => 0,
                 'other' => [
                     'error' => $errormsg,
-                ]
+                ],
             ])->trigger();
             throw new invalid_parameter_exception($errormsg);
         }
@@ -78,7 +77,7 @@ class course_backup extends adhoc_task {
                 'objectid' => 0,
                 'other' => [
                     'error' => $errormsg,
-                ]
+                ],
             ])->trigger();
             throw new invalid_parameter_exception($errormsg);
         }
@@ -91,8 +90,14 @@ class course_backup extends adhoc_task {
 
         try {
             $course = get_course($coursemigration->get('courseid'));
-            $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
-                backup::INTERACTIVE_NO, backup::MODE_GENERAL, $USER->id);
+            $bc = new backup_controller(
+                backup::TYPE_1COURSE,
+                $course->id,
+                backup::FORMAT_MOODLE,
+                backup::INTERACTIVE_NO,
+                backup::MODE_GENERAL,
+                $USER->id
+            );
 
             // Override setting to not include users.
             $bc->get_plan()->get_setting('users')->set_value(0);
@@ -142,7 +147,7 @@ class course_backup extends adhoc_task {
                             'coursename' => $course->fullname,
                             'destinationcategoryid' => $coursemigration->get('destinationcategoryid'),
                             'filename' => $filename,
-                        ]
+                        ],
                     ])->trigger();
                 } else {
                     throw new file_exception(get_string(
@@ -167,7 +172,7 @@ class course_backup extends adhoc_task {
                 'objectid' => $coursemigration->get('id'),
                 'other' => [
                     'error' => $message,
-                ]
+                ],
             ])->trigger();
         } finally {
             // Delete backup file from course.

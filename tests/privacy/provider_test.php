@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Privacy test for the tool_coursemigration.
  *
@@ -44,7 +45,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider_test extends provider_testcase {
-
     /**
      * @var object Moodle user object.
      */
@@ -160,7 +160,7 @@ class provider_test extends provider_testcase {
         );
         provider::export_user_data($approvedcontextlist);
         $data = $writer->get_data([
-            get_string('pluginname', 'tool_coursemigration')
+            get_string('pluginname', 'tool_coursemigration'),
         ]);
         $this->assertNotEmpty($data->coursemigrations);
         $this->assertIsArray($data->coursemigrations);
@@ -179,7 +179,7 @@ class provider_test extends provider_testcase {
         );
         provider::export_user_data($approvedcontextlist);
         $data = $writer->get_data([
-            get_string('pluginname', 'tool_coursemigration')
+            get_string('pluginname', 'tool_coursemigration'),
         ]);
         $this->assertNotEmpty($data->coursemigrations);
         $this->assertIsArray($data->coursemigrations);

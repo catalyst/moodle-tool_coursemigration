@@ -30,7 +30,6 @@ use tool_coursemigration\task\restore;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class create_backup_tasks_test extends advanced_testcase {
-
     /**
      * Test create_backup_tasks.
      *

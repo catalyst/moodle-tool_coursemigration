@@ -24,8 +24,8 @@
  */
 
 require_once(__DIR__ . '/../../../config.php');
-require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/tablelib.php');
+require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->libdir . '/tablelib.php');
 
 use tool_coursemigration\form\report_filter_form;
 use tool_coursemigration\output\coursemigration_table;

@@ -39,7 +39,6 @@ require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
  * @covers     \tool_coursemigration\restore_api
  */
 class restore_api_test extends advanced_testcase {
-
     /**
      * Sent requests.
      * @var array
@@ -104,7 +103,7 @@ class restore_api_test extends advanced_testcase {
 
         $expectederror = 'Client error: `GET https://test.com?wstoken=XXX&wsfunction='
             . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json`'
-            .' resulted in a `403 Forbidden` response';
+            . ' resulted in a `403 Forbidden` response';
 
         $expectedurl = 'https://test.com?wstoken=XXX&wsfunction='
             . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json';

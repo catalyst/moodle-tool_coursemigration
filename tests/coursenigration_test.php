@@ -28,8 +28,6 @@ use advanced_testcase;
  * @covers     \tool_coursemigration\coursemigration
  */
 class coursenigration_test extends advanced_testcase {
-
-
     /**
      * Test setting errors.
      */

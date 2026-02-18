@@ -33,7 +33,6 @@ use storage\type\mock_storage_class;
  * @covers     \tool_coursemigration\helper
  */
 class helper_test extends advanced_testcase {
-
     /**
      * Test can get action list.
      */
@@ -236,5 +235,4 @@ class helper_test extends advanced_testcase {
     public function test_get_retry_number_from_fail_delay(int $faildelay, int $expected) {
         $this->assertSame($expected, helper::get_retry_number_from_fail_delay($faildelay));
     }
-
 }

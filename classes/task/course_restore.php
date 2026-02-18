@@ -44,7 +44,6 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_restore extends adhoc_task {
-
     /**
      * Run the task to restore the course.
      */
@@ -59,7 +58,7 @@ class course_restore extends adhoc_task {
                 'other' => [
                     'error' => $errormsg,
                     'filename' => '',
-                ]
+                ],
             ])->trigger();
             throw new invalid_parameter_exception($errormsg);
         }
@@ -73,7 +72,7 @@ class course_restore extends adhoc_task {
                 'other' => [
                     'error' => $errormsg,
                     'filename' => '',
-                ]
+                ],
             ])->trigger();
             throw new invalid_parameter_exception($errormsg);
         }
@@ -125,15 +124,24 @@ class course_restore extends adhoc_task {
             // This stored_file is temporary and is no longer needed.
             $restorefile->delete();
 
-            list($fullname, $shortname) = restore_dbops::calculate_course_names(0, get_string('restoringcourse', 'backup'),
-                get_string('restoringcourseshortname', 'backup'));
+            [$fullname, $shortname] = restore_dbops::calculate_course_names(
+                0,
+                get_string('restoringcourse', 'backup'),
+                get_string('restoringcourseshortname', 'backup')
+            );
 
             $courseid = restore_dbops::create_new_course($fullname, $shortname, $coursemigration->get('destinationcategoryid'));
             $coursemigration->set('courseid', $courseid)
                 ->save();
 
-            $rc = new restore_controller($restoredir, $courseid, backup::INTERACTIVE_NO,
-                backup::MODE_GENERAL, $USER->id, backup::TARGET_NEW_COURSE);
+            $rc = new restore_controller(
+                $restoredir,
+                $courseid,
+                backup::INTERACTIVE_NO,
+                backup::MODE_GENERAL,
+                $USER->id,
+                backup::TARGET_NEW_COURSE
+            );
             $rc->execute_precheck();
             $rc->execute_plan();
             $rc->destroy();
@@ -156,7 +164,7 @@ class course_restore extends adhoc_task {
                     'destinationcategoryid' => $coursemigration->get('destinationcategoryid'),
                     'destinationcategoryname' => $category->name,
                     'filename' => $coursemigration->get('filename'),
-                ]
+                ],
             ])->trigger();
 
             if (get_config('tool_coursemigration', 'successfuldelete')) {
@@ -175,7 +183,7 @@ class course_restore extends adhoc_task {
                 'other' => [
                     'error' => $errormsg,
                     'filename' => $coursemigration->get('filename'),
-                ]
+                ],
             ])->trigger();
 
             // Fire up a cleanup task.
@@ -235,6 +243,6 @@ class course_restore extends adhoc_task {
     protected function schedule_course_cleanup_task(int $courseid): void {
         $cleanuptask = new course_cleanup();
         $cleanuptask->set_custom_data(['courseid' => $courseid]);
-        manager::queue_adhoc_task($cleanuptask , true);
+        manager::queue_adhoc_task($cleanuptask, true);
     }
 }

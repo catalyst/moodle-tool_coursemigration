@@ -24,9 +24,9 @@ use plugin_renderer_base;
  * @author      Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
  * @copyright   2023 Catalyst IT
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package tool_coursemigration
  */
 class renderer extends plugin_renderer_base {
-
     /**
      * Render coursemigration table.
      *

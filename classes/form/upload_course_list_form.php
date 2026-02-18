@@ -29,7 +29,7 @@ use html_writer;
 use moodle_url;
 
 defined('MOODLE_INTERNAL') || die;
-require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
 
 /**
@@ -39,7 +39,6 @@ require_once($CFG->libdir . '/csvlib.class.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class upload_course_list_form extends \moodleform {
-
     /**
      * Define the form.
      */
@@ -47,7 +46,7 @@ class upload_course_list_form extends \moodleform {
         $mform = $this->_form;
 
         // Heading.
-        $mform->addElement('html', '<p>'.get_string('pluginname_help', 'tool_coursemigration').'</p>');
+        $mform->addElement('html', '<p>' . get_string('pluginname_help', 'tool_coursemigration') . '</p>');
         $url = new moodle_url('example.csv');
         $link = html_writer::link($url, 'example.csv');
         $mform->addElement('static', 'examplecsv', get_string('examplecsv', 'tool_coursemigration'), $link);

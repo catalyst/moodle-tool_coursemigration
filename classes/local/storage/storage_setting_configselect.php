@@ -16,7 +16,7 @@
 
 namespace tool_coursemigration\local\storage;
 
-use \admin_setting_configselect;
+use admin_setting_configselect;
 
 /**
  * Autoloads course migration storage config select.

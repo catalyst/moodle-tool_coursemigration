@@ -31,7 +31,6 @@ use tool_coursemigration\coursemigration;
  *
  */
 class create_backup_tasks extends scheduled_task {
-
     /**
      * Returns the task name.
      *
@@ -50,7 +49,7 @@ class create_backup_tasks extends scheduled_task {
 
         $coursemigrations = coursemigration::get_records([
             'action' => coursemigration::ACTION_BACKUP,
-            'status' => coursemigration::STATUS_NOT_STARTED
+            'status' => coursemigration::STATUS_NOT_STARTED,
         ]);
 
         mtrace('  Found ' . count($coursemigrations) . ' courses to backup');
@@ -63,7 +62,7 @@ class create_backup_tasks extends scheduled_task {
                 $asynctask = new course_backup();
                 $asynctask->set_blocking(false);
                 $asynctask->set_custom_data([
-                    'coursemigrationid' => $coursemigration->get('id')
+                    'coursemigrationid' => $coursemigration->get('id'),
                 ]);
                 manager::queue_adhoc_task($asynctask);
                 $coursemigration->set('status', coursemigration::STATUS_IN_PROGRESS)
@@ -74,7 +73,7 @@ class create_backup_tasks extends scheduled_task {
             } catch (moodle_exception $e) {
                 $message = get_string('error:createbackuptask', 'tool_coursemigration', [
                     'coursemigrationid' => $coursemigration->get('id'),
-                    'errormessage' => $e->getMessage()
+                    'errormessage' => $e->getMessage(),
                 ]);
                 $coursemigration->set('status', coursemigration::STATUS_FAILED)
                     ->set('error', $message)
@@ -84,5 +83,4 @@ class create_backup_tasks extends scheduled_task {
             }
         }
     }
-
 }

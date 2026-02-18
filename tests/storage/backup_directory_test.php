@@ -30,7 +30,6 @@ use tool_coursemigration\local\storage\backup_directory;
  * @covers     \tool_coursemigration\local\storage\backup_directory
  */
 class backup_directory_test extends advanced_testcase {
-
     /**
      * Tests the backup_directory element can be created and the data (path) is validated.
      */

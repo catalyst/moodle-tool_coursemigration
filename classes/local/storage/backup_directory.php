@@ -20,7 +20,7 @@ use admin_setting_configdirectory;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 /**
  * Setting for backup directory.
@@ -38,7 +38,8 @@ class backup_directory extends admin_setting_configdirectory {
         parent::__construct(
             'tool_coursemigration/' . $identifier,
             new \lang_string($identifier, 'tool_coursemigration'),
-            new \lang_string($identifier . '_help', 'tool_coursemigration'), ''
+            new \lang_string($identifier . '_help', 'tool_coursemigration'),
+            ''
         );
     }
 
@@ -65,7 +66,7 @@ class backup_directory extends admin_setting_configdirectory {
      * @param string $query
      * @return string XHTML
      */
-    public function output_html($data, $query='') {
+    public function output_html($data, $query = '') {
         global $CFG, $OUTPUT;
         $default = $this->get_defaultsetting();
 
@@ -77,16 +78,16 @@ class backup_directory extends admin_setting_configdirectory {
             'showvalidity' => !empty($data),
             'valid' => $data && file_exists($data) && is_dir($data),
             'readonly' => !empty($CFG->preventexecpath),
-            'forceltr' => $this->get_force_ltr()
+            'forceltr' => $this->get_force_ltr(),
         ];
 
         // Allow empty, otherwise must exist and be writable.
         if (!empty($data) && !$this->is_directory_path_valid($data)) {
-            $this->visiblename .= '<div class="alert alert-danger">'.get_string('directory:error', 'tool_coursemigration').'</div>';
+            $this->visiblename .= '<div class="alert alert-danger">' . get_string('directory:error', 'tool_coursemigration') . '</div>';
         }
 
         if (!empty($CFG->preventexecpath)) {
-            $this->visiblename .= '<div class="alert alert-info">'.get_string('execpathnotallowed', 'admin').'</div>';
+            $this->visiblename .= '<div class="alert alert-info">' . get_string('execpathnotallowed', 'admin') . '</div>';
         }
 
         $element = $OUTPUT->render_from_template('core_admin/setting_configdirectory', $context);

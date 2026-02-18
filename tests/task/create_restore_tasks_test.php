@@ -30,7 +30,6 @@ use tool_coursemigration\coursemigration;
  * @covers     \tool_coursemigration\task\create_restore_tasks
  */
 class create_restore_tasks_test extends advanced_testcase {
-
     /**
      * Test create_restore_tasks.
      */

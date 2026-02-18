@@ -31,7 +31,6 @@ use tool_coursemigration\local\storage\storage_interface;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class helper {
-
     /**
      * Get all actions with string by associative array.
      * @return array
@@ -165,7 +164,7 @@ class helper {
     public static function get_selected_storage(): ?storage_interface {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         if ($configselectedstorage) {
-            $storage = new $configselectedstorage;
+            $storage = new $configselectedstorage();
             $classimplements = class_implements($storage);
             if (!isset($classimplements['tool_coursemigration\local\storage\storage_interface'])) {
                 throw new coding_exception('The selected Storage class does not implement the storage_interface.');

@@ -43,7 +43,6 @@ require_once($CFG->libdir . '/completionlib.php');
  * @covers     \tool_coursemigration\task\course_backup
  */
 class course_backup_test extends advanced_testcase {
-
     /**
      * Test backup.
      */
