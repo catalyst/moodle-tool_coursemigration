@@ -31,25 +31,24 @@ use core_privacy\local\request\writer;
  * @copyright   2023 Catalyst IT
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider,
-    \core_privacy\local\request\core_userlist_provider {
-
+class provider implements \core_privacy\local\metadata\provider, \core_privacy\local\request\core_userlist_provider, \core_privacy\local\request\plugin\provider {
     /**
      * Return the fields which contain personal data.
      *
      * @param  collection $collection An object for storing metadata.
      * @return collection The metadata.
      */
-    public static function get_metadata(collection $collection) : collection {
-        $collection->add_database_table('tool_coursemigration',
+    public static function get_metadata(collection $collection): collection {
+        $collection->add_database_table(
+            'tool_coursemigration',
             [
                 'action' => 'privacy:metadata:tool_coursemigration:action',
                 'courseid' => 'privacy:metadata:tool_coursemigration:courseid',
                 'destinationcategoryid' => 'privacy:metadata:tool_coursemigration:destinationcategoryid',
-                'usermodified' => 'privacy:metadata:tool_coursemigration:usermodified'
+                'usermodified' => 'privacy:metadata:tool_coursemigration:usermodified',
             ],
-            'privacy:metadata:tool_coursemigration');
+            'privacy:metadata:tool_coursemigration'
+        );
         return $collection;
     }
 
@@ -59,7 +58,7 @@ class provider implements \core_privacy\local\metadata\provider,
      * @param  int $userid The user ID.
      * @return contextlist The list of context IDs.
      */
-    public static function get_contexts_for_userid(int $userid) : contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
         global $DB;
         $contextlist = new contextlist();
 
@@ -97,14 +96,18 @@ class provider implements \core_privacy\local\metadata\provider,
         $user = $contextlist->get_user();
 
         $coursemigrations = [];
-        $recordset = $DB->get_recordset('tool_coursemigration',
-            ['usermodified' => $user->id], '', 'action,courseid,destinationcategoryid');
+        $recordset = $DB->get_recordset(
+            'tool_coursemigration',
+            ['usermodified' => $user->id],
+            '',
+            'action,courseid,destinationcategoryid'
+        );
 
         foreach ($recordset as $record) {
             $coursemigrations[] = [
                 'action' => $record->action,
                 'courseid' => $record->courseid,
-                'destinationcategoryid' => $record->destinationcategoryid
+                'destinationcategoryid' => $record->destinationcategoryid,
             ];
         }
         $recordset->close();
@@ -165,7 +168,7 @@ class provider implements \core_privacy\local\metadata\provider,
         if (!$context instanceof \context_system) {
             return;
         }
-        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
 
         $DB->set_field_select('tool_coursemigration', 'usermodified', 0, ' usermodified ' . $userinsql, $userinparams);
     }

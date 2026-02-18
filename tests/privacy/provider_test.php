@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Privacy test for the tool_coursemigration.
  *
@@ -43,8 +44,7 @@ use stdClass;
  * @copyright  2023 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider_test extends provider_testcase {
-
+final class provider_test extends provider_testcase {
     /**
      * @var object Moodle user object.
      */
@@ -86,7 +86,7 @@ class provider_test extends provider_testcase {
      * Test that a collection with data is returned when calling this function.
      * @covers ::get_metadata
      */
-    public function test_get_metadata() {
+    public function test_get_metadata(): void {
         $items = new collection('tool_coursemigration');
         $result = provider::get_metadata($items);
         $this->assertSame($items, $result);
@@ -97,7 +97,7 @@ class provider_test extends provider_testcase {
      * Test that the module context for a user who last modified the module is retrieved.
      * @covers ::get_contexts_for_userid
      */
-    public function test_get_contexts_for_userid() {
+    public function test_get_contexts_for_userid(): void {
         $this->setup_test_data();
         $contextlist = provider::get_contexts_for_userid($this->user->id);
         $contextids = $contextlist->get_contextids();
@@ -109,7 +109,7 @@ class provider_test extends provider_testcase {
      * Test that no module context is found for a user who has not modified any section settings.
      * @covers ::get_contexts_for_userid
      */
-    public function test_get_no_contexts_for_userid() {
+    public function test_get_no_contexts_for_userid(): void {
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
         $contexts = provider::get_contexts_for_userid($user->id);
@@ -121,7 +121,7 @@ class provider_test extends provider_testcase {
      * Test that all users with the system context is fetched.
      * @covers ::get_users_in_context
      */
-    public function test_get_users_in_context() {
+    public function test_get_users_in_context(): void {
         $component = 'tool_coursemigration';
         $this->setup_test_data();
 
@@ -145,7 +145,7 @@ class provider_test extends provider_testcase {
      * Test that user data is exported correctly.
      * @covers ::export_user_data
      */
-    public function test_export_user_data() {
+    public function test_export_user_data(): void {
         $context = context_system::instance();
         writer::reset();
         $writer = writer::with_context($context);
@@ -160,7 +160,7 @@ class provider_test extends provider_testcase {
         );
         provider::export_user_data($approvedcontextlist);
         $data = $writer->get_data([
-            get_string('pluginname', 'tool_coursemigration')
+            get_string('pluginname', 'tool_coursemigration'),
         ]);
         $this->assertNotEmpty($data->coursemigrations);
         $this->assertIsArray($data->coursemigrations);
@@ -179,7 +179,7 @@ class provider_test extends provider_testcase {
         );
         provider::export_user_data($approvedcontextlist);
         $data = $writer->get_data([
-            get_string('pluginname', 'tool_coursemigration')
+            get_string('pluginname', 'tool_coursemigration'),
         ]);
         $this->assertNotEmpty($data->coursemigrations);
         $this->assertIsArray($data->coursemigrations);
@@ -193,7 +193,7 @@ class provider_test extends provider_testcase {
      * Test deleting all user data for a specific context.
      * @covers ::delete_data_for_all_users_in_context
      */
-    public function test_delete_data_for_all_users_in_context() {
+    public function test_delete_data_for_all_users_in_context(): void {
         global $DB;
         $this->setup_test_data();
 
@@ -211,7 +211,7 @@ class provider_test extends provider_testcase {
      * Test that data for a user in approved userlist is deleted.
      * @covers ::delete_data_for_user
      */
-    public function test_delete_data_for_user() {
+    public function test_delete_data_for_user(): void {
         global $DB;
         $this->setup_test_data();
 
@@ -232,7 +232,7 @@ class provider_test extends provider_testcase {
      * Test that data for users in approved userlist is deleted.
      * @covers ::delete_data_for_all_users_in_context
      */
-    public function test_delete_data_for_users() {
+    public function test_delete_data_for_users(): void {
         global $DB;
         $this->setup_test_data();
 

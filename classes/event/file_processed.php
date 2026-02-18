@@ -28,7 +28,6 @@ use context_system;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class file_processed extends base {
-
     /**
      * Initialise the data.
      */

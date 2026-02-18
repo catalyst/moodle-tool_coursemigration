@@ -25,7 +25,6 @@ namespace tool_coursemigration;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class upload_results {
-
     /**
      * Count of errors.
      * @var int

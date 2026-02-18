@@ -32,12 +32,11 @@ use storage\type\mock_storage_class;
  *
  * @covers     \tool_coursemigration\helper
  */
-class helper_test extends advanced_testcase {
-
+final class helper_test extends advanced_testcase {
     /**
      * Test can get action list.
      */
-    public function test_get_action_list() {
+    public function test_get_action_list(): void {
         $list = helper::get_action_list();
         $this->assertCount(2, $list);
         $this->assertSame(get_string('settings:backup', 'tool_coursemigration'), $list[coursemigration::ACTION_BACKUP]);
@@ -47,7 +46,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test can get status list.
      */
-    public function test_get_status_list() {
+    public function test_get_status_list(): void {
         $list = helper::get_status_list();
         $this->assertCount(5, $list);
         $this->assertSame(get_string('status:notstarted', 'tool_coursemigration'), $list[coursemigration::STATUS_NOT_STARTED]);
@@ -60,7 +59,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test can get action string.
      */
-    public function test_get_action_string() {
+    public function test_get_action_string(): void {
         $this->assertSame(
             get_string('settings:backup', 'tool_coursemigration'),
             helper::get_action_string(coursemigration::ACTION_BACKUP)
@@ -80,7 +79,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test can get status string.
      */
-    public function test_get_status_string() {
+    public function test_get_status_string(): void {
         $this->assertSame(
             get_string('status:notstarted', 'tool_coursemigration'),
             helper::get_status_string(coursemigration::STATUS_NOT_STARTED)
@@ -115,7 +114,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test can get uploaded file name.
      */
-    public function test_get_uploaded_filename() {
+    public function test_get_uploaded_filename(): void {
         $this->resetAfterTest();
 
         $user = $this->getDataGenerator()->create_user();
@@ -148,7 +147,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test restore category.
      */
-    public function test_get_restore_category() {
+    public function test_get_restore_category(): void {
         $this->resetAfterTest();
         $category = $this->getDataGenerator()->create_category();
         $restorecategory = helper::get_restore_category($category->id);
@@ -158,7 +157,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test restore default category.
      */
-    public function test_get_restore_category_default() {
+    public function test_get_restore_category_default(): void {
         $this->resetAfterTest();
         $category = $this->getDataGenerator()->create_category();
         set_config('defaultcategory', $category->id, 'tool_coursemigration');
@@ -169,7 +168,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test invalid category.
      */
-    public function test_get_restore_category_invalid() {
+    public function test_get_restore_category_invalid(): void {
         $this->resetAfterTest();
         set_config('defaultcategory', 12345, 'tool_coursemigration');
         $this->expectException(invalid_parameter_exception::class);
@@ -180,7 +179,7 @@ class helper_test extends advanced_testcase {
     /**
      * Test the selected storage class.
      */
-    public function test_get_selected() {
+    public function test_get_selected(): void {
         global $CFG;
         $this->resetAfterTest();
 
@@ -233,8 +232,7 @@ class helper_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_get_retry_number_from_fail_delay(int $faildelay, int $expected) {
+    public function test_get_retry_number_from_fail_delay(int $faildelay, int $expected): void {
         $this->assertSame($expected, helper::get_retry_number_from_fail_delay($faildelay));
     }
-
 }

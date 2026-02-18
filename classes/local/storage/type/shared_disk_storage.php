@@ -31,7 +31,6 @@ use tool_coursemigration\local\storage\storage_interface;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class shared_disk_storage implements storage_interface {
-
     /**
      * @var string Full path to the directory where you want to store the backup files.
      */
@@ -66,9 +65,9 @@ class shared_disk_storage implements storage_interface {
             $context = context_system::instance();
             $sourcefullpath = $this->directory . $filename;
             $fs = get_file_storage();
-            $filerecord = array('contextid' => $context->id, 'component' => 'tool_coursemigration', 'filearea' => 'backup',
+            $filerecord = ['contextid' => $context->id, 'component' => 'tool_coursemigration', 'filearea' => 'backup',
                 'itemid' => 0, 'filepath' => '/', 'filename' => $filename,
-                'timecreated' => time(), 'timemodified' => time());
+                'timecreated' => time(), 'timemodified' => time()];
             // Delete existing file (if any) and create new one.
             $this::delete_existing_file_record($fs, $filerecord);
             return $fs->create_file_from_pathname($filerecord, $sourcefullpath);
@@ -143,9 +142,16 @@ class shared_disk_storage implements storage_interface {
      * @param array $filerecord File record in same format used to create file
      */
     public static function delete_existing_file_record(file_storage $fs, array $filerecord) {
-        if ($existing = $fs->get_file($filerecord['contextid'], $filerecord['component'],
-            $filerecord['filearea'], $filerecord['itemid'], $filerecord['filepath'],
-            $filerecord['filename'])) {
+        if (
+            $existing = $fs->get_file(
+                $filerecord['contextid'],
+                $filerecord['component'],
+                $filerecord['filearea'],
+                $filerecord['itemid'],
+                $filerecord['filepath'],
+                $filerecord['filename']
+            )
+        ) {
             $existing->delete();
         }
     }

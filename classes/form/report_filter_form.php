@@ -21,7 +21,7 @@ use tool_coursemigration\helper;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->libdir . '/formslib.php');
 
 /**
  * A form for filtering Callista Access Start and End Dates report.
@@ -32,7 +32,6 @@ require_once($CFG->libdir.'/formslib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_filter_form extends moodleform {
-
     /**
      * Definition of the Mform for filters displayed in the report.
      */
@@ -46,8 +45,8 @@ class report_filter_form extends moodleform {
         $mform->setType('action', PARAM_INT);
         $mform->setDefault('action', -1);
 
-        $mform->addElement('date_time_selector', 'datefrom', get_string('from'), array('optional' => true));
-        $mform->addElement('date_time_selector', 'datetill', get_string('to'), array('optional' => true));
+        $mform->addElement('date_time_selector', 'datefrom', get_string('from'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'datetill', get_string('to'), ['optional' => true]);
 
         $statuslist = [-1 => get_string('any')] + helper::get_status_list();
         $mform->addElement('select', 'status', get_string('status'), $statuslist);
@@ -56,5 +55,4 @@ class report_filter_form extends moodleform {
 
         $mform->addElement('submit', 'submitbutton', get_string('filter'));
     }
-
 }

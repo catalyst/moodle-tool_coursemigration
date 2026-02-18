@@ -27,7 +27,6 @@ use core\persistent;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class coursemigration extends persistent {
-
     /**
      * Table name for course migration.
      */
@@ -72,7 +71,7 @@ class coursemigration extends persistent {
      * A list of all statuses.
      */
     const STATUSES = [
-        self::STATUS_NOT_STARTED, self::STATUS_IN_PROGRESS, self::STATUS_COMPLETED, self::STATUS_RETRYING, self::STATUS_FAILED
+        self::STATUS_NOT_STARTED, self::STATUS_IN_PROGRESS, self::STATUS_COMPLETED, self::STATUS_RETRYING, self::STATUS_FAILED,
     ];
 
     /**
@@ -133,7 +132,7 @@ class coursemigration extends persistent {
      */
     protected function set_error(string $value) {
         if (!empty($this->get('error'))) {
-            $errors = explode (self::ERROR_DELIMITER, $this->get('error'));
+            $errors = explode(self::ERROR_DELIMITER, $this->get('error'));
             $errors[] = $value;
 
             $value = implode(self::ERROR_DELIMITER, $errors);

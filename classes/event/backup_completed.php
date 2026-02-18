@@ -29,7 +29,6 @@ use context_system;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_completed extends base {
-
     /**
      * Initialise the data.
      */

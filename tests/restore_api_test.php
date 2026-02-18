@@ -36,8 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @covers     \tool_coursemigration\restore_api
  */
-class restore_api_test extends advanced_testcase {
-
+final class restore_api_test extends advanced_testcase {
     /**
      * Sent requests.
      * @var array
@@ -70,7 +69,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test error if the plugin is not configured.
      */
-    public function test_plugin_not_configured() {
+    public function test_plugin_not_configured(): void {
         $this->expectException(\moodle_exception::class);
         $this->expectExceptionMessage('Error attempting to make HTTP request: Plugin is not configured.');
 
@@ -102,7 +101,7 @@ class restore_api_test extends advanced_testcase {
 
         $expectederror = 'Client error: `GET https://test.com?wstoken=XXX&wsfunction='
             . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json`'
-            .' resulted in a `403 Forbidden` response';
+            . ' resulted in a `403 Forbidden` response';
 
         $expectedurl = 'https://test.com?wstoken=XXX&wsfunction='
             . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json';
@@ -248,7 +247,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test success.
      */
-    public function test_success() {
+    public function test_success(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 

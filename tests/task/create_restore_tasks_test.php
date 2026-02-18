@@ -29,12 +29,11 @@ use tool_coursemigration\coursemigration;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \tool_coursemigration\task\create_restore_tasks
  */
-class create_restore_tasks_test extends advanced_testcase {
-
+final class create_restore_tasks_test extends advanced_testcase {
     /**
      * Test create_restore_tasks.
      */
-    public function test_create_restore_tasks() {
+    public function test_create_restore_tasks(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -72,7 +71,7 @@ class create_restore_tasks_test extends advanced_testcase {
     /**
      * Test ignoring backup tasks.
      */
-    public function test_create_restore_tasks_ignore_backup() {
+    public function test_create_restore_tasks_ignore_backup(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -110,7 +109,7 @@ class create_restore_tasks_test extends advanced_testcase {
     /**
      * Test create_restore_tasks.
      */
-    public function test_fail_to_create_restore_tasks() {
+    public function test_fail_to_create_restore_tasks(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 

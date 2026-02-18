@@ -38,7 +38,6 @@ use core_course_category;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class coursemigration_table extends table_sql implements renderable {
-
     /**
      * A list of filters to be applied to the sql query.
      * @var stdClass
@@ -119,12 +118,12 @@ class coursemigration_table extends table_sql implements renderable {
                 case 'action':
                 case 'status':
                     if ($value >= 0) {
-                        $where[] = 'tc.' . $field . ' = :' .$field;
+                        $where[] = 'tc.' . $field . ' = :' . $field;
                     }
                     break;
                 case 'datefrom':
                     if ($value > 0) {
-                        $where[] = 'tc.timecreated >= :' .$field;
+                        $where[] = 'tc.timecreated >= :' . $field;
                     }
                     break;
                 case 'datetill':
@@ -295,4 +294,3 @@ class coursemigration_table extends table_sql implements renderable {
         return userdate($row->timemodified);
     }
 }
-

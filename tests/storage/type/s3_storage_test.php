@@ -28,7 +28,7 @@ use advanced_testcase;
  *
  * @covers     \tool_coursemigration\local\storage\type\s3_storage
  */
-class s3_storage_test extends advanced_testcase {
+final class s3_storage_test extends advanced_testcase {
     /** @var string Test bucket name */
     const TEST_BUCKET = 'test-bucket';
     /** @var string Test region */
@@ -55,7 +55,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test s3_storage without configuration.
      */
-    public function test_without_configuration() {
+    public function test_without_configuration(): void {
         $storage = new s3_storage();
 
         $this->assertFalse($storage->ready_for_pull());
@@ -65,7 +65,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test s3_storage with missing bucket configuration.
      */
-    public function test_missing_bucket_configuration() {
+    public function test_missing_bucket_configuration(): void {
         set_config('storagetype', 'tool_coursemigration\\local\\storage\\type\\s3_storage', 'tool_coursemigration');
         set_config('awss3_s3region', self::TEST_REGION, 'tool_coursemigration');
         set_config('awss3_keyid', self::TEST_KEY_ID, 'tool_coursemigration');
@@ -83,7 +83,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test s3_storage with missing region configuration.
      */
-    public function test_missing_region_configuration() {
+    public function test_missing_region_configuration(): void {
         set_config('storagetype', 'tool_coursemigration\\local\\storage\\type\\s3_storage', 'tool_coursemigration');
         set_config('awss3_bucket', self::TEST_BUCKET, 'tool_coursemigration');
         set_config('awss3_keyid', self::TEST_KEY_ID, 'tool_coursemigration');
@@ -101,7 +101,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test s3_storage with missing credentials when not using SDK creds.
      */
-    public function test_missing_credentials_configuration() {
+    public function test_missing_credentials_configuration(): void {
         set_config('storagetype', 'tool_coursemigration\\local\\storage\\type\\s3_storage', 'tool_coursemigration');
         set_config('awss3_bucket', self::TEST_BUCKET, 'tool_coursemigration');
         set_config('awss3_s3region', self::TEST_REGION, 'tool_coursemigration');
@@ -118,7 +118,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test s3_storage without missing configuration.
      */
-    public function test_with_full_configuration() {
+    public function test_with_full_configuration(): void {
         set_config('storagetype', 'tool_coursemigration\\local\\storage\\type\\s3_storage', 'tool_coursemigration');
         set_config('awss3_bucket', self::TEST_BUCKET, 'tool_coursemigration');
         set_config('awss3_s3region', self::TEST_REGION, 'tool_coursemigration');
@@ -138,7 +138,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test pull_file with non-functional client.
      */
-    public function test_pull_file_without_configuration() {
+    public function test_pull_file_without_configuration(): void {
         $storage = new s3_storage();
 
         $result = $storage->pull_file(self::TEST_PULL_FILE);
@@ -150,7 +150,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test push_file with non-functional client.
      */
-    public function test_push_file_without_configuration() {
+    public function test_push_file_without_configuration(): void {
         $storage = new s3_storage();
 
         // Create a test file to push.
@@ -179,7 +179,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test delete_file with non-functional client.
      */
-    public function test_delete_file_without_configuration() {
+    public function test_delete_file_without_configuration(): void {
         $storage = new s3_storage();
 
         $result = $storage->delete_file(self::TEST_DELETE_FILE);
@@ -191,7 +191,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test define_storage_section creates proper admin settings.
      */
-    public function test_define_storage_section() {
+    public function test_define_storage_section(): void {
         global $CFG;
         require_once($CFG->libdir . '/adminlib.php');
 
@@ -225,7 +225,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test delete_existing_file_record static method.
      */
-    public function test_delete_existing_file_record() {
+    public function test_delete_existing_file_record(): void {
         $context = \context_system::instance();
         $fs = get_file_storage();
 
@@ -267,7 +267,7 @@ class s3_storage_test extends advanced_testcase {
     /**
      * Test delete_existing_file_record when file doesn't exist.
      */
-    public function test_delete_existing_file_record_no_file() {
+    public function test_delete_existing_file_record_no_file(): void {
         $context = \context_system::instance();
         $fs = get_file_storage();
 
