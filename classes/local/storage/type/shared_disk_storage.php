@@ -15,11 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace tool_coursemigration\local\storage\type;
+use admin_settingpage;
 use context_system;
 use Exception;
-use file_storage;
 use stored_file;
-use tool_coursemigration\local\storage\backup_directory;
+use tool_coursemigration\helper;
+use tool_coursemigration\local\settings\backup_directory;
 use tool_coursemigration\local\storage\storage_interface;
 
 /**
@@ -45,10 +46,7 @@ class shared_disk_storage implements storage_interface {
      * Construct the shared disk storage.
      */
     public function __construct() {
-        $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
-        $thisclass = get_class($this);
-
-        if ($configselectedstorage == $thisclass) {
+        if (helper::is_selected_storage($this)) {
             // Initialise directory paths.
             $directory = get_config('tool_coursemigration', 'directory');
             $this->directory = ($directory) ? rtrim($directory, '/') . '/' : null;
@@ -69,7 +67,7 @@ class shared_disk_storage implements storage_interface {
                 'itemid' => 0, 'filepath' => '/', 'filename' => $filename,
                 'timecreated' => time(), 'timemodified' => time()];
             // Delete existing file (if any) and create new one.
-            $this::delete_existing_file_record($fs, $filerecord);
+            helper::delete_existing_file_record($fs, $filerecord);
             return $fs->create_file_from_pathname($filerecord, $sourcefullpath);
         } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
@@ -130,30 +128,8 @@ class shared_disk_storage implements storage_interface {
     /**
      * Clear error message from exception.
      */
-    public function clear_error() {
+    public function clear_error(): void {
         $this->errormessage = '';
-    }
-
-    /**
-     * Wrapper function useful for deleting an existing file (if present) just
-     * before creating a new one.
-     *
-     * @param file_storage $fs File storage
-     * @param array $filerecord File record in same format used to create file
-     */
-    public static function delete_existing_file_record(file_storage $fs, array $filerecord) {
-        if (
-            $existing = $fs->get_file(
-                $filerecord['contextid'],
-                $filerecord['component'],
-                $filerecord['filearea'],
-                $filerecord['itemid'],
-                $filerecord['filepath'],
-                $filerecord['filename']
-            )
-        ) {
-            $existing->delete();
-        }
     }
 
     /**
@@ -175,10 +151,10 @@ class shared_disk_storage implements storage_interface {
     /**
      * Define storage-specific settings section.
      *
-     * @param \admin_settingpage $settings The settings page object
-     * @return \admin_settingpage Modified settings page
+     * @param admin_settingpage $settings The settings page object
+     * @return admin_settingpage Modified settings page
      */
-    public function define_storage_section($settings) {
+    public function define_settings(admin_settingpage $settings): admin_settingpage {
         // Add shared disk settings header with connection check.
         $settings->add(new \admin_setting_heading(
             'tool_coursemigration/shareddisk',
@@ -198,9 +174,14 @@ class shared_disk_storage implements storage_interface {
      *
      * @return string HTML notification output
      */
-    private function define_storage_check() {
+    private function define_storage_check(): string {
         global $OUTPUT;
         $output = '';
+
+        if (!helper::is_coursemigration_settings_page()) {
+            // Only check on course migration settings page.
+            return $output;
+        }
 
         if (!empty($this->directory)) {
             // Check if directory exists.

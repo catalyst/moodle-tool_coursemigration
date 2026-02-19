@@ -18,9 +18,12 @@ namespace tool_coursemigration;
 
 use advanced_testcase;
 use coding_exception;
+use context_system;
 use context_user;
 use invalid_parameter_exception;
+use moodle_url;
 use storage\type\mock_storage_class;
+use tool_coursemigration\local\storage\type\shared_disk_storage;
 
 /**
  * Tests for helper class.
@@ -234,5 +237,145 @@ final class helper_test extends advanced_testcase {
      */
     public function test_get_retry_number_from_fail_delay(int $faildelay, int $expected): void {
         $this->assertSame($expected, helper::get_retry_number_from_fail_delay($faildelay));
+    }
+
+    /**
+     * Test delete_existing_file_record removes an existing file.
+     */
+    public function test_delete_existing_file_record(): void {
+        $this->resetAfterTest();
+
+        $context = context_system::instance();
+        $fs = get_file_storage();
+
+        // Create a test file.
+        $filerecord = [
+            'contextid' => $context->id,
+            'component' => 'tool_coursemigration',
+            'filearea' => 'backup',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => 'test_delete_existing.mbz',
+        ];
+        $fs->create_file_from_string($filerecord, 'test content');
+
+        // Verify file exists.
+        $this->assertNotFalse($fs->get_file(
+            $filerecord['contextid'],
+            $filerecord['component'],
+            $filerecord['filearea'],
+            $filerecord['itemid'],
+            $filerecord['filepath'],
+            $filerecord['filename']
+        ));
+
+        // Delete it using the static method.
+        helper::delete_existing_file_record($fs, $filerecord);
+
+        // Verify file is deleted.
+        $this->assertFalse($fs->get_file(
+            $filerecord['contextid'],
+            $filerecord['component'],
+            $filerecord['filearea'],
+            $filerecord['itemid'],
+            $filerecord['filepath'],
+            $filerecord['filename']
+        ));
+    }
+
+    /**
+     * Test delete_existing_file_record does not throw when file doesn't exist.
+     */
+    public function test_delete_existing_file_record_no_file(): void {
+        $this->resetAfterTest();
+
+        $context = context_system::instance();
+        $fs = get_file_storage();
+
+        $filerecord = [
+            'contextid' => $context->id,
+            'component' => 'tool_coursemigration',
+            'filearea' => 'backup',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => 'nonexistent.mbz',
+        ];
+
+        // Do not throw exception when file doesn't exist.
+        helper::delete_existing_file_record($fs, $filerecord);
+
+        // Verify file still doesn't exist.
+        $this->assertFalse($fs->get_file(
+            $filerecord['contextid'],
+            $filerecord['component'],
+            $filerecord['filearea'],
+            $filerecord['itemid'],
+            $filerecord['filepath'],
+            $filerecord['filename']
+        ));
+    }
+
+    /**
+     * Test is_selected_storage returns true when the instance matches the configured storage type.
+     */
+    public function test_is_selected_storage_returns_true_when_selected(): void {
+        $this->resetAfterTest();
+
+        $storage = new shared_disk_storage();
+        set_config('storagetype', shared_disk_storage::class, 'tool_coursemigration');
+
+        $this->assertTrue(helper::is_selected_storage($storage));
+    }
+
+    /**
+     * Test is_selected_storage returns false when a different storage type is configured.
+     */
+    public function test_is_selected_storage_returns_false_when_not_selected(): void {
+        $this->resetAfterTest();
+
+        $storage = new shared_disk_storage();
+        set_config('storagetype', 'some_other_storage_class', 'tool_coursemigration');
+
+        $this->assertFalse(helper::is_selected_storage($storage));
+    }
+
+    /**
+     * Test is_coursemigration_settings_page returns true on the settings page.
+     */
+    public function test_is_coursemigration_settings_page_settings_url(): void {
+        global $PAGE;
+        $PAGE->set_url(new moodle_url('/admin/settings.php', ['section' => 'tool_coursemigration_settings']));
+
+        $this->assertTrue(helper::is_coursemigration_settings_page());
+    }
+
+    /**
+     * Test is_coursemigration_settings_page returns true on the category page.
+     */
+    public function test_is_coursemigration_settings_page_category_url(): void {
+        global $PAGE;
+        $PAGE->set_url(new moodle_url('/admin/category.php', ['category' => 'tool_coursemigration']));
+
+        $this->assertTrue(helper::is_coursemigration_settings_page());
+    }
+
+    /**
+     * Test is_coursemigration_settings_page returns false on an unrelated admin page.
+     */
+    public function test_is_coursemigration_settings_page_other_url(): void {
+        global $PAGE;
+        $PAGE->set_url(new moodle_url('/admin/settings.php', ['section' => 'some_other_plugin']));
+
+        $this->assertFalse(helper::is_coursemigration_settings_page());
+    }
+
+    /**
+     * Test is_coursemigration_settings_page returns false on an unrelated category page.
+     */
+    public function test_is_coursemigration_settings_page_other_category_url(): void {
+        global $PAGE;
+        $PAGE->set_url(new moodle_url('/admin/category.php', ['category' => 'some_other_category']));
+
+        $this->assertFalse(helper::is_coursemigration_settings_page());
     }
 }

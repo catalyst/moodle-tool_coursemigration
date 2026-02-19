@@ -16,13 +16,16 @@
 
 namespace tool_coursemigration\local\storage\type;
 
+use admin_settingpage;
 use Aws\Exception\MultipartUploadException;
 use Aws\S3\ObjectUploader;
 use Aws\S3\S3Client;
 use context_system;
 use Exception;
-use file_storage;
 use stored_file;
+use tool_coursemigration\helper;
+use tool_coursemigration\local\settings\s3_storage_acl_settings_configselect;
+use tool_coursemigration\local\settings\s3_storage_region_settings_configselect;
 use tool_coursemigration\local\storage\storage_interface;
 
 /**
@@ -68,10 +71,7 @@ class s3_storage implements storage_interface {
      * Construct the S3 storage.
      */
     public function __construct() {
-        $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
-        $thisclass = get_class($this);
-
-        if ($configselectedstorage == $thisclass) {
+        if (helper::is_selected_storage($this)) {
             // Initialise S3 settings.
             $this->bucket = get_config('tool_coursemigration', 'awss3_bucket');
             $this->region = get_config('tool_coursemigration', 'awss3_s3region');
@@ -86,7 +86,7 @@ class s3_storage implements storage_interface {
     /**
      * Sets AWS S3 client.
      */
-    private function set_client() {
+    private function set_client(): void {
         if (!$this->is_configured()) {
             $this->client = null;
         } else {
@@ -139,7 +139,18 @@ class s3_storage implements storage_interface {
      * @return bool
      */
     private function is_functional(): bool {
-        return isset($this->client);
+        // If the client is set, it's functional.
+        if (isset($this->client)) {
+            return true;
+        }
+
+        // If there's already a specific error recorded (for example from set_client), keep it.
+        if (empty($this->errormessage)) {
+            // Provide a generic error message so callers can report why the client is not functional.
+            $this->errormessage = 'S3 client is not configured properly.';
+        }
+
+        return false;
     }
 
     /**
@@ -150,7 +161,6 @@ class s3_storage implements storage_interface {
      */
     public function pull_file(string $filename): ?stored_file {
         if (!$this->is_functional()) {
-            $this->errormessage = 'S3 client is not configured properly.';
             return null;
         }
 
@@ -169,7 +179,7 @@ class s3_storage implements storage_interface {
             ];
 
             // Delete existing file (if any).
-            $this::delete_existing_file_record($fs, $filerecord);
+            helper::delete_existing_file_record($fs, $filerecord);
 
             // Download from S3 to a temporary file.
             $tempfile = make_temp_directory('tool_coursemigration') . '/' . $filename;
@@ -191,6 +201,11 @@ class s3_storage implements storage_interface {
         } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
             return null;
+        } finally {
+            // Ensure temporary file is cleaned up in case of any exception.
+            if (isset($tempfile) && file_exists($tempfile)) {
+                unlink($tempfile);
+            }
         }
     }
 
@@ -203,23 +218,14 @@ class s3_storage implements storage_interface {
      */
     public function push_file(string $filename, stored_file $filerecord): bool {
         if (!$this->is_functional()) {
-            $this->errormessage = 'S3 client is not configured properly.';
             return false;
         }
 
-        // Copy file content to a temporary location.
-        $tempfile = make_temp_directory('tool_coursemigration') . '/' . $filename;
-        $filerecord->copy_content_to($tempfile);
-
-        // Open file handle for upload.
-        $filehandle = fopen($tempfile, 'rb');
+        // Open file handle directly from stored_file.
+        $filehandle = $filerecord->get_content_file_handle();
 
         if (!$filehandle) {
-            $this->errormessage = 'Can not open the file for reading: ' . $tempfile;
-            // Clean up temporary file.
-            if (file_exists($tempfile)) {
-                unlink($tempfile);
-            }
+            $this->errormessage = 'Can not open the file for reading: ' . $filename;
             return false;
         }
 
@@ -238,37 +244,23 @@ class s3_storage implements storage_interface {
                 ]
             );
             $uploader->upload();
-            fclose($filehandle);
-
-            // Clean up temporary file.
-            if (file_exists($tempfile)) {
-                unlink($tempfile);
-            }
-
-            return true;
+            $success = true;
         } catch (MultipartUploadException $e) {
             $params = $e->getState()->getId();
             $this->client->abortMultipartUpload($params);
-            fclose($filehandle);
-
-            // Clean up temporary file.
-            if (file_exists($tempfile)) {
-                unlink($tempfile);
-            }
-
             $this->errormessage = $e->getMessage();
-            return false;
+            $success = false;
         } catch (Exception $e) {
-            fclose($filehandle);
-
-            // Clean up temporary file.
-            if (file_exists($tempfile)) {
-                unlink($tempfile);
-            }
-
             $this->errormessage = $e->getMessage();
-            return false;
+            $success = false;
+        } finally {
+            // Ensure file handle is closed in case of any exception.
+            if (is_resource($filehandle)) {
+                fclose($filehandle);
+            }
         }
+
+        return $success;
     }
 
     /**
@@ -279,7 +271,6 @@ class s3_storage implements storage_interface {
      */
     public function delete_file(string $filename): bool {
         if (!$this->is_functional()) {
-            $this->errormessage = 'S3 client is not configured properly.';
             return false;
         }
 
@@ -329,30 +320,8 @@ class s3_storage implements storage_interface {
     /**
      * Clear error message from exception.
      */
-    public function clear_error() {
+    public function clear_error(): void {
         $this->errormessage = '';
-    }
-
-    /**
-     * Wrapper function useful for deleting an existing file (if present) just
-     * before creating a new one.
-     *
-     * @param file_storage $fs File storage
-     * @param array $filerecord File record in same format used to create file
-     */
-    public static function delete_existing_file_record(file_storage $fs, array $filerecord) {
-        if (
-            $existing = $fs->get_file(
-                $filerecord['contextid'],
-                $filerecord['component'],
-                $filerecord['filearea'],
-                $filerecord['itemid'],
-                $filerecord['filepath'],
-                $filerecord['filename']
-            )
-        ) {
-            $existing->delete();
-        }
     }
 
     /**
@@ -381,18 +350,7 @@ class s3_storage implements storage_interface {
      * @return boolean true if configuration is valid.
      */
     public function ready_for_push(): bool {
-        if (!$this->is_configured() || !$this->is_functional()) {
-            return false;
-        }
-
-        // Test connection and write permissions by checking bucket.
-        try {
-            $this->client->headBucket(['Bucket' => $this->bucket]);
-            return true;
-        } catch (Exception $e) {
-            $this->errormessage = $e->getMessage();
-            return false;
-        }
+        return $this->ready_for_pull();
     }
 
     /**
@@ -401,9 +359,7 @@ class s3_storage implements storage_interface {
      * @param \admin_settingpage $settings The settings page object
      * @return \admin_settingpage Modified settings page
      */
-    public function define_storage_section($settings) {
-        global $OUTPUT;
-
+    public function define_settings(admin_settingpage $settings): admin_settingpage {
         // Read S3-specific configuration.
         $usesdkcreds = get_config('tool_coursemigration', 'awss3_usesdkcreds');
 
@@ -447,30 +403,18 @@ class s3_storage implements storage_interface {
             PARAM_TEXT
         ));
 
-        $acloptions = [
-            'private' => 'private',
-            'public-read' => 'public-read',
-            'public-read-write' => 'public-read-write',
-            'authenticated-read' => 'authenticated-read',
-            'aws-exec-read' => 'aws-exec-read',
-            'bucket-owner-read' => 'bucket-owner-read',
-            'bucket-owner-full-control' => 'bucket-owner-full-control',
-        ];
-
-        $settings->add(new \admin_setting_configselect(
+        $settings->add(new s3_storage_acl_settings_configselect(
             'tool_coursemigration/awss3_bucket_acl',
             get_string('settings:awss3_bucket_acl', 'tool_coursemigration'),
             get_string('settings:awss3_bucket_acldesc', 'tool_coursemigration'),
-            'private',
-            $acloptions
+            'private'
         ));
 
-        $settings->add(new \admin_setting_configtext(
+        $settings->add(new s3_storage_region_settings_configselect(
             'tool_coursemigration/awss3_s3region',
             get_string('settings:awss3_s3region', 'tool_coursemigration'),
             get_string('settings:awss3_s3regiondesc', 'tool_coursemigration'),
-            'ap-southeast-2',
-            PARAM_TEXT
+            'ap-southeast-2'
         ));
 
         $settings->add(new \admin_setting_configtext(
@@ -489,9 +433,14 @@ class s3_storage implements storage_interface {
      *
      * @return string HTML notification output
      */
-    private function define_storage_check() {
+    private function define_storage_check(): string {
         global $OUTPUT;
         $output = '';
+
+        if (!helper::is_coursemigration_settings_page()) {
+            // Only check on course migration settings page.
+            return $output;
+        }
 
         if ($this->is_configured()) {
             // Test connection for pull (restore).

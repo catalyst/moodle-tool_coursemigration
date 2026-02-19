@@ -191,14 +191,14 @@ final class s3_storage_test extends advanced_testcase {
     /**
      * Test define_storage_section creates proper admin settings.
      */
-    public function test_define_storage_section(): void {
+    public function test_define_settings(): void {
         global $CFG;
         require_once($CFG->libdir . '/adminlib.php');
 
         // Create a new settings page and define the storage section.
         $storage = new s3_storage();
         $settingpage = new \admin_settingpage('test_s3_settings', 'Test S3 Settings');
-        $result = $storage->define_storage_section($settingpage);
+        $result = $storage->define_settings($settingpage);
 
         // Get settings added to the page.
         $settings = $result->settings;
@@ -220,77 +220,5 @@ final class s3_storage_test extends advanced_testcase {
         $this->assertContains('s_tool_coursemigration_awss3_key_prefix', $settingnames);
         $this->assertContains('s_tool_coursemigration_awss3_keyid', $settingnames);
         $this->assertContains('s_tool_coursemigration_awss3_secretkey', $settingnames);
-    }
-
-    /**
-     * Test delete_existing_file_record static method.
-     */
-    public function test_delete_existing_file_record(): void {
-        $context = \context_system::instance();
-        $fs = get_file_storage();
-
-        // Create a test file.
-        $filerecord = [
-            'contextid' => $context->id,
-            'component' => 'tool_coursemigration',
-            'filearea' => 'backup',
-            'itemid' => 0,
-            'filepath' => '/',
-            'filename' => 'test_delete_existing.mbz',
-        ];
-        $fs->create_file_from_string($filerecord, 'test content');
-
-        // Verify file exists.
-        $this->assertNotFalse($fs->get_file(
-            $filerecord['contextid'],
-            $filerecord['component'],
-            $filerecord['filearea'],
-            $filerecord['itemid'],
-            $filerecord['filepath'],
-            $filerecord['filename']
-        ));
-
-        // Delete it using the static method.
-        s3_storage::delete_existing_file_record($fs, $filerecord);
-
-        // Verify file is deleted.
-        $this->assertFalse($fs->get_file(
-            $filerecord['contextid'],
-            $filerecord['component'],
-            $filerecord['filearea'],
-            $filerecord['itemid'],
-            $filerecord['filepath'],
-            $filerecord['filename']
-        ));
-    }
-
-    /**
-     * Test delete_existing_file_record when file doesn't exist.
-     */
-    public function test_delete_existing_file_record_no_file(): void {
-        $context = \context_system::instance();
-        $fs = get_file_storage();
-
-        $filerecord = [
-            'contextid' => $context->id,
-            'component' => 'tool_coursemigration',
-            'filearea' => 'backup',
-            'itemid' => 0,
-            'filepath' => '/',
-            'filename' => 'nonexistent.mbz',
-        ];
-
-        // Do not throw exception when file doesn't exist.
-        s3_storage::delete_existing_file_record($fs, $filerecord);
-
-        // Verify file still doesn't exist.
-        $this->assertFalse($fs->get_file(
-            $filerecord['contextid'],
-            $filerecord['component'],
-            $filerecord['filearea'],
-            $filerecord['itemid'],
-            $filerecord['filepath'],
-            $filerecord['filename']
-        ));
     }
 }

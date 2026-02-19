@@ -23,9 +23,8 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_coursemigration\local\storage\backup_directory;
+use tool_coursemigration\local\settings\storage_setting_configselect;
 use tool_coursemigration\local\storage\storage_interface;
-use tool_coursemigration\local\storage\storage_setting_configselect;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -118,7 +117,7 @@ if ($hassiteconfig) {
             try {
                 $storage = new $storagetype();
                 if ($storage instanceof storage_interface) {
-                    $settings = $storage->define_storage_section($settings);
+                    $settings = $storage->define_settings($settings);
                 }
             } catch (\Exception $e) {
                 // If storage instantiation fails, show error but continue.
