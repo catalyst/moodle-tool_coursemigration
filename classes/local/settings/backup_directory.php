@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_coursemigration\local\storage;
+namespace tool_coursemigration\local\settings;
 
 use admin_setting_configdirectory;
+use tool_coursemigration\local\storage\type\shared_disk_storage;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -50,7 +51,7 @@ class backup_directory extends admin_setting_configdirectory {
      */
     public function write_setting($data): string {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
-        if ($configselectedstorage == __NAMESPACE__ . '\type\shared_disk_storage') {
+        if ($configselectedstorage == shared_disk_storage::class) {
             // Allow empty, otherwise must exist and be writable.
             if (!empty($data) && !$this->is_directory_path_valid($data)) {
                 return get_string('directory:error', 'tool_coursemigration');

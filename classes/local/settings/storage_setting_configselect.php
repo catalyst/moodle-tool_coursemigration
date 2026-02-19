@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_coursemigration\local\storage;
+namespace tool_coursemigration\local\settings;
 
 use admin_setting_configselect;
+use tool_coursemigration\local\storage\type\shared_disk_storage;
 
 /**
  * Autoloads course migration storage config select.
@@ -28,11 +29,6 @@ use admin_setting_configselect;
  */
 class storage_setting_configselect extends admin_setting_configselect {
     /**
-     * Default storagetype used for course migration config when none is set.
-     */
-    private const DEFAULT_STORAGE_TYPE = 'tool_coursemigration\local\storage\type\shared_disk_storage';
-
-    /**
      * Calls parent::__construct with specific arguments.
      */
     public function __construct() {
@@ -41,7 +37,7 @@ class storage_setting_configselect extends admin_setting_configselect {
             'tool_coursemigration/storagetype',
             new \lang_string('storagetype', 'tool_coursemigration'),
             new \lang_string('storagetype_help', 'tool_coursemigration'),
-            self::DEFAULT_STORAGE_TYPE,
+            shared_disk_storage::class,
             $options
         );
     }
@@ -52,14 +48,14 @@ class storage_setting_configselect extends admin_setting_configselect {
      */
     private function get_storage_names(): array {
         $storagenames = [];
-        $files = scandir(__DIR__  . '/type');
+        $files = scandir(__DIR__  . '/../storage/type');
         foreach ($files as $file) {
             $base = basename($file, '.php');
             if ($base[0] == '.') {
                 // Skip hidden.
                 continue;
             }
-            $fullpath = __NAMESPACE__ . '\type\\' . $base;
+            $fullpath = 'tool_coursemigration\\local\\storage\\type\\' . $base;
             $storagenames[$fullpath] = get_string('storage:' . $base, 'tool_coursemigration');
         }
         return $storagenames;
