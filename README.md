@@ -44,14 +44,20 @@ location to be deleted after a successful restore.
 deleted after a failed restore.
 
 **Storage**
-* Backup storage - Select one of a list of available storage types. Currently only
-`Shared disk storage` is supported.
+* Backup storage - Select one of a list of available storage types.
 * Shared disk storage
   * Save to - the full path to the directory on the local file system where you want
-  to save the backup files.
+    to save the backup files.
   * Restore from - the full path to the directory on the local file system where
-  the backup files are restored from.
-
+    the backup files are restored from.
+* S3 storage
+  * Bucket - The S3 bucket name used to store backup files.
+  * Region - The AWS region for the bucket (e.g. ap-southeast-2, us-east-1).
+  * Access key ID - Access key ID for an IAM user with permissions to the bucket (unless using SDK credentials).
+  * Secret access key - Secret access key for the IAM user (unless using SDK credentials).
+  * Use SDK credentials - If enabled, the system will use the server's IAM role or environment credentials instead of explicit keys.
+  * Bucket ACL - The ACL to apply to uploaded objects (e.g. private, public-read).
+  * Key prefix - (Optional) An object key prefix (sub-folder) inside the bucket where backups will be stored.
 
 **Scheduled Tasks**
 
