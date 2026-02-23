@@ -14,11 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_coursemigration;
+namespace tool_coursemigration\local\settings;
 
 use advanced_testcase;
-use tool_coursemigration\local\storage\backup_directory;
-
 
 /**
  * The backup_directory test class.
@@ -27,14 +25,13 @@ use tool_coursemigration\local\storage\backup_directory;
  * @copyright   2023 Catalyst IT
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- * @covers     \tool_coursemigration\local\storage\backup_directory
+ * @covers     \tool_coursemigration\local\settings\backup_directory
  */
-class backup_directory_test extends advanced_testcase {
-
+final class backup_directory_test extends advanced_testcase {
     /**
      * Tests the backup_directory element can be created and the data (path) is validated.
      */
-    public function test_backup_directory() {
+    public function test_backup_directory(): void {
         $this->resetAfterTest();
 
         // Tests the constructor.

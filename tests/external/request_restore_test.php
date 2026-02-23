@@ -34,8 +34,7 @@ use tool_coursemigration\coursemigration;
  *
  * @covers     \tool_coursemigration\external\request_restore
  */
-class request_restore_test extends externallib_advanced_testcase {
-
+final class request_restore_test extends externallib_advanced_testcase {
     /**
      * A helper method to verify web service error.
      *
@@ -64,7 +63,7 @@ class request_restore_test extends externallib_advanced_testcase {
     /**
      * Test request_restore to invalid category.
      */
-    public function test_request_restore_to_invalid_category() {
+    public function test_request_restore_to_invalid_category(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -86,7 +85,7 @@ class request_restore_test extends externallib_advanced_testcase {
     /**
      * Test request_restore without permissions.
      */
-    public function test_request_restore_without_permissions() {
+    public function test_request_restore_without_permissions(): void {
         $this->resetAfterTest();
 
         $user = $this->getDataGenerator()->create_user();
@@ -110,7 +109,7 @@ class request_restore_test extends externallib_advanced_testcase {
     /**
      * Test request_restore with permissions.
      */
-    public function test_request_restore_with_permissions() {
+    public function test_request_restore_with_permissions(): void {
         $this->resetAfterTest();
 
         $this->assertSame(0, coursemigration::count_records());
@@ -144,7 +143,7 @@ class request_restore_test extends externallib_advanced_testcase {
     /**
      * Test request_restore falls back to default category.
      */
-    public function test_request_restore_falls_back_to_default_category() {
+    public function test_request_restore_falls_back_to_default_category(): void {
         $this->resetAfterTest();
 
         $this->setAdminUser();

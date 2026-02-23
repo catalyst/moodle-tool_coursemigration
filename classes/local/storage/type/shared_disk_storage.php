@@ -15,10 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace tool_coursemigration\local\storage\type;
+use admin_settingpage;
 use context_system;
 use Exception;
-use file_storage;
 use stored_file;
+use tool_coursemigration\helper;
+use tool_coursemigration\local\settings\backup_directory;
 use tool_coursemigration\local\storage\storage_interface;
 
 /**
@@ -30,7 +32,6 @@ use tool_coursemigration\local\storage\storage_interface;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class shared_disk_storage implements storage_interface {
-
     /**
      * @var string Full path to the directory where you want to store the backup files.
      */
@@ -45,10 +46,7 @@ class shared_disk_storage implements storage_interface {
      * Construct the shared disk storage.
      */
     public function __construct() {
-        $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
-        $thisclass = get_class($this);
-
-        if ($configselectedstorage == $thisclass) {
+        if (helper::is_selected_storage($this)) {
             // Initialise directory paths.
             $directory = get_config('tool_coursemigration', 'directory');
             $this->directory = ($directory) ? rtrim($directory, '/') . '/' : null;
@@ -65,11 +63,11 @@ class shared_disk_storage implements storage_interface {
             $context = context_system::instance();
             $sourcefullpath = $this->directory . $filename;
             $fs = get_file_storage();
-            $filerecord = array('contextid' => $context->id, 'component' => 'tool_coursemigration', 'filearea' => 'backup',
+            $filerecord = ['contextid' => $context->id, 'component' => 'tool_coursemigration', 'filearea' => 'backup',
                 'itemid' => 0, 'filepath' => '/', 'filename' => $filename,
-                'timecreated' => time(), 'timemodified' => time());
+                'timecreated' => time(), 'timemodified' => time()];
             // Delete existing file (if any) and create new one.
-            $this::delete_existing_file_record($fs, $filerecord);
+            helper::delete_existing_file_record($fs, $filerecord);
             return $fs->create_file_from_pathname($filerecord, $sourcefullpath);
         } catch (Exception $e) {
             $this->errormessage = $e->getMessage();
@@ -130,23 +128,8 @@ class shared_disk_storage implements storage_interface {
     /**
      * Clear error message from exception.
      */
-    public function clear_error() {
+    public function clear_error(): void {
         $this->errormessage = '';
-    }
-
-    /**
-     * Wrapper function useful for deleting an existing file (if present) just
-     * before creating a new one.
-     *
-     * @param file_storage $fs File storage
-     * @param array $filerecord File record in same format used to create file
-     */
-    public static function delete_existing_file_record(file_storage $fs, array $filerecord) {
-        if ($existing = $fs->get_file($filerecord['contextid'], $filerecord['component'],
-            $filerecord['filearea'], $filerecord['itemid'], $filerecord['filepath'],
-            $filerecord['filename'])) {
-            $existing->delete();
-        }
     }
 
     /**
@@ -163,5 +146,85 @@ class shared_disk_storage implements storage_interface {
      */
     public function ready_for_push(): bool {
         return !empty($this->directory) && is_dir($this->directory) && is_writable($this->directory);
+    }
+
+    /**
+     * Define storage-specific settings section.
+     *
+     * @param admin_settingpage $settings The settings page object
+     * @return admin_settingpage Modified settings page
+     */
+    public function define_settings(admin_settingpage $settings): admin_settingpage {
+        // Add shared disk settings header with connection check.
+        $settings->add(new \admin_setting_heading(
+            'tool_coursemigration/shareddisk',
+            get_string('settings:shareddisk', 'tool_coursemigration'),
+            $this->define_storage_check()
+        ));
+
+        $settings->add(new backup_directory('directory'));
+
+        return $settings;
+    }
+
+    /**
+     * Display connection and permission check status.
+     * Backup directory admin_setting_configdirectory should have already checked the new directory value,
+     * this check applies to existing value.
+     *
+     * @return string HTML notification output
+     */
+    private function define_storage_check(): string {
+        global $OUTPUT;
+        $output = '';
+
+        if (!helper::is_coursemigration_settings_page()) {
+            // Only check on course migration settings page.
+            return $output;
+        }
+
+        if (!empty($this->directory)) {
+            // Check if directory exists.
+            if (!is_dir($this->directory)) {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_notexist', 'tool_coursemigration'),
+                    'notifyproblem'
+                );
+                return $output;
+            }
+
+            // Test read permissions (for restore/pull).
+            if ($this->ready_for_pull()) {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_readablesuccess', 'tool_coursemigration'),
+                    'notifysuccess'
+                );
+            } else {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_readablefailure', 'tool_coursemigration'),
+                    'notifyproblem'
+                );
+            }
+
+            // Test write permissions (for backup/push).
+            if ($this->ready_for_push()) {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_writablesuccess', 'tool_coursemigration'),
+                    'notifysuccess'
+                );
+            } else {
+                $output .= $OUTPUT->notification(
+                    get_string('settings:shareddisk_writablefailure', 'tool_coursemigration'),
+                    'notifyproblem'
+                );
+            }
+        } else {
+            $output .= $OUTPUT->notification(
+                get_string('settings:shareddisk_notconfigured', 'tool_coursemigration'),
+                'notifywarning'
+            );
+        }
+
+        return $output;
     }
 }

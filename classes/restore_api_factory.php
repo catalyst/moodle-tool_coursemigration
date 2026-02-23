@@ -25,7 +25,6 @@ namespace tool_coursemigration;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_api_factory {
-
     /**
      * Instance of restore API.
      * @var \tool_coursemigration\restore_api

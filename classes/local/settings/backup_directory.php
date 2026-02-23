@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_coursemigration\local\storage;
+namespace tool_coursemigration\local\settings;
 
 use admin_setting_configdirectory;
+use tool_coursemigration\local\storage\type\shared_disk_storage;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 /**
  * Setting for backup directory.
@@ -40,7 +41,8 @@ class backup_directory extends admin_setting_configdirectory {
         parent::__construct(
             'tool_coursemigration/' . $identifier,
             new \lang_string($identifier, 'tool_coursemigration'),
-            new \lang_string($identifier . '_help', 'tool_coursemigration'), ''
+            new \lang_string($identifier . '_help', 'tool_coursemigration'),
+            ''
         );
     }
 
@@ -51,7 +53,7 @@ class backup_directory extends admin_setting_configdirectory {
      */
     public function write_setting($data): string {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
-        if ($configselectedstorage == __NAMESPACE__ . '\type\shared_disk_storage') {
+        if ($configselectedstorage == shared_disk_storage::class) {
             // Allow empty, otherwise must exist and be writable.
             if (!empty($data) && !$this->is_directory_path_valid($data)) {
                 return get_string('directory:error', 'tool_coursemigration');
@@ -67,7 +69,7 @@ class backup_directory extends admin_setting_configdirectory {
      * @param string $query
      * @return string XHTML
      */
-    public function output_html($data, $query='') {
+    public function output_html($data, $query = '') {
         global $CFG, $OUTPUT;
         $default = $this->get_defaultsetting();
 
@@ -79,16 +81,16 @@ class backup_directory extends admin_setting_configdirectory {
             'showvalidity' => !empty($data),
             'valid' => $data && file_exists($data) && is_dir($data),
             'readonly' => !empty($CFG->preventexecpath),
-            'forceltr' => $this->get_force_ltr()
+            'forceltr' => $this->get_force_ltr(),
         ];
 
         // Allow empty, otherwise must exist and be writable.
         if (!empty($data) && !$this->is_directory_path_valid($data)) {
-            $this->visiblename .= '<div class="alert alert-danger">'.get_string('directory:error', 'tool_coursemigration').'</div>';
+            $this->visiblename .= '<div class="alert alert-danger">' . get_string('directory:error', 'tool_coursemigration') . '</div>';
         }
 
         if (!empty($CFG->preventexecpath)) {
-            $this->visiblename .= '<div class="alert alert-info">'.get_string('execpathnotallowed', 'admin').'</div>';
+            $this->visiblename .= '<div class="alert alert-info">' . get_string('execpathnotallowed', 'admin') . '</div>';
         }
 
         $element = $OUTPUT->render_from_template('core_admin/setting_configdirectory', $context);

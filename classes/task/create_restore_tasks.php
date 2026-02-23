@@ -32,7 +32,6 @@ use tool_coursemigration\helper;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class create_restore_tasks extends scheduled_task {
-
     /**
      * Returns the task name.
      *
@@ -50,7 +49,7 @@ class create_restore_tasks extends scheduled_task {
 
         $coursemigrations = coursemigration::get_records([
             'action' => coursemigration::ACTION_RESTORE,
-            'status' => coursemigration::STATUS_NOT_STARTED
+            'status' => coursemigration::STATUS_NOT_STARTED,
         ]);
         mtrace(count($coursemigrations) . ' courses found.');
         foreach ($coursemigrations as $coursemigration) {

@@ -28,14 +28,13 @@ use moodle_url;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class upload_course_list {
-
     /**
      * List of valid colums and validation groups for each DB field.
      * One of id or url AND one of category id should be in the file to pass validation.
      */
     const VALID_COLUMN_GROUPS = [
         'courseid' => ['courseid', 'url'],
-        'destinationcategoryid' => ['categoryid']
+        'destinationcategoryid' => ['categoryid'],
     ];
 
     /**
@@ -48,7 +47,7 @@ class upload_course_list {
         $results = new upload_results();
 
         $columns = $csvimportreader->get_columns();
-        list($status, $message, $fields) = self::csv_required_columns($columns);
+        [$status, $message, $fields] = self::csv_required_columns($columns);
         if (!$status) {
             $results->set_result_message($message);
             return $results;
@@ -61,7 +60,7 @@ class upload_course_list {
         $failed = 0;
 
         while ($row = $csvimportreader->next()) {
-            $coursemigration = new coursemigration;
+            $coursemigration = new coursemigration();
             [$status, $rowdata, $messages] = self::process_row($row, $fields, $rownumber);
             if ($status) {
                 // Add record to DB.
@@ -87,7 +86,7 @@ class upload_course_list {
             'errormessages' => implode("<br\>", $errors),
             'rowcount' => $rowcount,
             'success' => $success,
-            'failed' => $failed
+            'failed' => $failed,
         ]);
 
         $results->set_errorcount(count($errors));
@@ -128,8 +127,12 @@ class upload_course_list {
                 case 'categoryid':
                     $value = $row[$fields[$type]['columnindex']];
                     $params = ['mode' => 'integer', 'csvcolumn' => $datafield, 'rownumber' => $rownumber];
-                    $data[$type] = self::validate_csv_field($value, $status,
-                        $message, $params);
+                    $data[$type] = self::validate_csv_field(
+                        $value,
+                        $status,
+                        $message,
+                        $params
+                    );
                     break;
                 case 'url':
                     $url = new moodle_url($row[$fields[$type]['columnindex']]);
@@ -166,8 +169,11 @@ class upload_course_list {
             $check = array_values(array_intersect($columns, $validcolumns));
             if (empty($check)) {
                 $status = false;
-                $errors[] = get_string('missing_column', 'tool_coursemigration',
-                    ['columnlist' => implode(", ", $validcolumns)]);
+                $errors[] = get_string(
+                    'missing_column',
+                    'tool_coursemigration',
+                    ['columnlist' => implode(", ", $validcolumns)]
+                );
             } else {
                 // Store index of column for processing of rows.
                 // This selects one field from each column group in priority order.
@@ -199,8 +205,11 @@ class upload_course_list {
                 $value = (int)$datavalue;
             } else {
                 $status = false;
-                $message[] = get_string('error:nonintegervalue', 'tool_coursemigration',
-                    ['csvcolumn' => $params['csvcolumn'], 'rownumber' => $params['rownumber']]);
+                $message[] = get_string(
+                    'error:nonintegervalue',
+                    'tool_coursemigration',
+                    ['csvcolumn' => $params['csvcolumn'], 'rownumber' => $params['rownumber']]
+                );
             }
         }
         return $value;

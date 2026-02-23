@@ -105,7 +105,10 @@ class restore_api {
     private function validate_response(Response $response): void {
         if ($response->getStatusCode() != 200) {
             throw new moodle_exception(
-                'error:http:get', 'tool_coursemigration', '', 'Invalid HTTP code: ' . $response->getStatusCode()
+                'error:http:get',
+                'tool_coursemigration',
+                '',
+                'Invalid HTTP code: ' . $response->getStatusCode()
             );
         }
 
@@ -163,7 +166,7 @@ class restore_api {
                 'other' => [
                     'url' => $this->strip_wstoken($uri),
                     'error' => $this->strip_wstoken($exception->getMessage()),
-                ]
+                ],
             ])->trigger();
 
             return false;

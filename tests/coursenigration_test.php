@@ -27,13 +27,11 @@ use advanced_testcase;
  *
  * @covers     \tool_coursemigration\coursemigration
  */
-class coursenigration_test extends advanced_testcase {
-
-
+final class coursenigration_test extends advanced_testcase {
     /**
      * Test setting errors.
      */
-    public function test_set_errors() {
+    public function test_set_errors(): void {
         $this->resetAfterTest();
 
         $coursemigration = new coursemigration(0, (object)[

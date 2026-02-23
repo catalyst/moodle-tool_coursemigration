@@ -34,7 +34,7 @@ require_once($CFG->libdir . '/csvlib.class.php');
  *
  * @covers     \tool_coursemigration\upload_course_list
  */
-class upload_course_list_test extends advanced_testcase {
+final class upload_course_list_test extends advanced_testcase {
     /**
      * Test test_csv_content
      *
@@ -43,7 +43,7 @@ class upload_course_list_test extends advanced_testcase {
      * @param array $dbrecords The db records that should be created
      * @dataProvider csv_content_provider
      */
-    public function test_csv_content($input, $expected, $dbrecords) {
+    public function test_csv_content($input, $expected, $dbrecords): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -77,14 +77,14 @@ class upload_course_list_test extends advanced_testcase {
      * Dataprovider for csv_content
      * @return array Data for csv_content
      */
-    public function csv_content_provider() {
+    public function csv_content_provider(): array {
         return [
             "One row, valid courseid and category" => [
                 'input' => ["courseid,categoryid",
                     "2,1"],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
-                'dbrecords' => [[2, 1], ],
+                'dbrecords' => [[2, 1] ],
             ],
             "One row, valid url and category" => [
                 'input' => ["url,categoryid",
@@ -92,7 +92,7 @@ class upload_course_list_test extends advanced_testcase {
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
 
-                'dbrecords' => [[2, 1], ],
+                'dbrecords' => [[2, 1] ],
             ],
             "Four rows, one valid and three errors" => [
                 'input' => ["courseid,categoryid",
@@ -104,7 +104,7 @@ class upload_course_list_test extends advanced_testcase {
                     "Failed: 3<br\>\nErrors in CSV file: 3<br\><br\>\n" .
                     "Non integer value for courseid found on row 2<br\>Non integer value" .
                     " for categoryid found on row 3<br\>Non integer value for courseid found on row 4",
-                'dbrecords' => [[2, 1], ],
+                'dbrecords' => [[2, 1] ],
             ],
             "Invalid columns" => [
                 'input' => ["invalid,invalid",

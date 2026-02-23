@@ -19,7 +19,9 @@ namespace tool_coursemigration;
 use coding_exception;
 use context_user;
 use core_course_category;
+use file_storage;
 use invalid_parameter_exception;
+use moodle_url;
 use tool_coursemigration\local\storage\storage_interface;
 
 /**
@@ -31,7 +33,6 @@ use tool_coursemigration\local\storage\storage_interface;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class helper {
-
     /**
      * Get all actions with string by associative array.
      * @return array
@@ -165,7 +166,7 @@ class helper {
     public static function get_selected_storage(): ?storage_interface {
         $configselectedstorage = get_config('tool_coursemigration', 'storagetype');
         if ($configselectedstorage) {
-            $storage = new $configselectedstorage;
+            $storage = new $configselectedstorage();
             $classimplements = class_implements($storage);
             if (!isset($classimplements['tool_coursemigration\local\storage\storage_interface'])) {
                 throw new coding_exception('The selected Storage class does not implement the storage_interface.');
@@ -187,5 +188,57 @@ class helper {
         }
 
         return intval(log($faildelay / 60, 2) + 1);
+    }
+
+    /**
+     * Returns true if the given object is the currently configured storage type.
+     *
+     * @param object $instance Storage instance to check.
+     * @return bool
+     */
+    public static function is_selected_storage(object $instance): bool {
+        return get_config('tool_coursemigration', 'storagetype') === get_class($instance);
+    }
+
+    /**
+     * Returns true if the current page is the course migration settings page or category page.
+     *
+     * @return bool
+     */
+    public static function is_coursemigration_settings_page(): bool {
+        global $PAGE;
+
+        if (!$PAGE->has_set_url()) {
+            return false;
+        }
+
+        $thisurl = $PAGE->url;
+        $caturl = new moodle_url('/admin/category.php');
+        $pageurl = new moodle_url('/admin/settings.php');
+
+        return ($caturl->compare($thisurl, URL_MATCH_BASE) && $thisurl->get_param('category') == 'tool_coursemigration') ||
+               ($pageurl->compare($thisurl, URL_MATCH_BASE) && $thisurl->get_param('section') == 'tool_coursemigration_settings');
+    }
+
+    /**
+     * Wrapper function useful for deleting an existing file (if present) just
+     * before creating a new one.
+     *
+     * @param file_storage $fs File storage
+     * @param array $filerecord File record in same format used to create file
+     */
+    public static function delete_existing_file_record(file_storage $fs, array $filerecord): void {
+        if (
+            $existing = $fs->get_file(
+                $filerecord['contextid'],
+                $filerecord['component'],
+                $filerecord['filearea'],
+                $filerecord['itemid'],
+                $filerecord['filepath'],
+                $filerecord['filename']
+            )
+        ) {
+            $existing->delete();
+        }
     }
 }

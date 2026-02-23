@@ -29,7 +29,6 @@ use coding_exception;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class file_uploaded extends base {
-
     /**
      * Initialise the data.
      */

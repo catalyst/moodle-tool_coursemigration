@@ -42,8 +42,7 @@ require_once($CFG->libdir . '/completionlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \tool_coursemigration\task\course_backup
  */
-class course_backup_test extends advanced_testcase {
-
+final class course_backup_test extends advanced_testcase {
     /**
      * Test backup.
      */
@@ -381,7 +380,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test delete after fail.
      */
-    public function test_delete_after_fail() {
+    public function test_delete_after_fail(): void {
         global $CFG;
 
         $this->resetAfterTest();

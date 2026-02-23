@@ -32,7 +32,7 @@ $tasks = [
         'hour'      => '*',
         'day'       => '*',
         'dayofweek' => '*',
-        'month'     => '*'
+        'month'     => '*',
     ],
     [
         'classname' => 'tool_coursemigration\task\create_restore_tasks',
@@ -40,6 +40,6 @@ $tasks = [
         'hour'      => '*',
         'day'       => '*',
         'dayofweek' => '*',
-        'month'     => '*'
+        'month'     => '*',
     ],
 ];
