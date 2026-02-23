@@ -32,7 +32,7 @@ use tool_coursemigration\form\upload_course_list_form;
 use tool_coursemigration\coursemigration;
 
 require_once(__DIR__ . '/../../../config.php');
-require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/csvlib.class.php');
 
 admin_externalpage_setup('coursemigrationupload', '', null);
@@ -81,7 +81,7 @@ if ($data = $form->get_data()) {
     file_uploaded::create([
         'other' => [
             'filename' => helper::get_uploaded_filename($data->csvfile),
-        ]
+        ],
     ])->trigger();
 
     $importid = csv_import_reader::get_new_iid('csvfile');
@@ -91,11 +91,21 @@ if ($data = $form->get_data()) {
 
     unset($content);
     if ($readcount === false) {
-        throw new moodle_exception('csvfileerror', 'error',
-            $returnurl, null, $csvimportreader->get_error());
+        throw new moodle_exception(
+            'csvfileerror',
+            'error',
+            $returnurl,
+            null,
+            $csvimportreader->get_error()
+        );
     } else if ($readcount == 0) {
-        throw new moodle_exception('csvemptyfile', 'error',
-            $returnurl, null, $csvimportreader->get_error());
+        throw new moodle_exception(
+            'csvemptyfile',
+            'error',
+            $returnurl,
+            null,
+            $csvimportreader->get_error()
+        );
     }
 
     // Process CSV file.
@@ -107,7 +117,7 @@ if ($data = $form->get_data()) {
             'rowcount' => $results->get_rowcount(),
             'success' => $results->get_success(),
             'failed' => $results->get_failed(),
-        ]
+        ],
     ])->trigger();
 
     $notificationtype = $results->get_success() > 0 ? notification::NOTIFY_SUCCESS : notification::NOTIFY_ERROR;
@@ -130,5 +140,3 @@ if ($data = $form->get_data()) {
     $form->display();
 }
 echo $OUTPUT->footer();
-
-

@@ -44,7 +44,6 @@ require_once($CFG->libdir . '/completionlib.php');
  * @covers     \tool_coursemigration\task\course_restore
  */
 class course_restore_test extends advanced_testcase {
-
     /**
      * Test restore.
      */
@@ -61,8 +60,14 @@ class course_restore_test extends advanced_testcase {
         $category = $generator->create_category();
 
         // Backup the course.
-        $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
-                backup::INTERACTIVE_YES, backup::MODE_GENERAL, $USER->id);
+        $bc = new backup_controller(
+            backup::TYPE_1COURSE,
+            $course->id,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_YES,
+            backup::MODE_GENERAL,
+            $USER->id
+        );
         $bc->finish_ui();
         $bc->execute_plan();
         $bc->destroy();
@@ -148,8 +153,14 @@ class course_restore_test extends advanced_testcase {
         $category = $generator->create_category();
 
         // Backup the course.
-        $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
-            backup::INTERACTIVE_YES, backup::MODE_GENERAL, $USER->id);
+        $bc = new backup_controller(
+            backup::TYPE_1COURSE,
+            $course->id,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_YES,
+            backup::MODE_GENERAL,
+            $USER->id
+        );
         $bc->finish_ui();
         $bc->execute_plan();
         $bc->destroy();
@@ -511,8 +522,14 @@ class course_restore_test extends advanced_testcase {
         $category = $generator->create_category();
 
         // Backup the course.
-        $bc = new backup_controller(backup::TYPE_1COURSE, $course->id, backup::FORMAT_MOODLE,
-            backup::INTERACTIVE_YES, backup::MODE_GENERAL, $USER->id);
+        $bc = new backup_controller(
+            backup::TYPE_1COURSE,
+            $course->id,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_YES,
+            backup::MODE_GENERAL,
+            $USER->id
+        );
         $bc->finish_ui();
         $bc->execute_plan();
         $bc->destroy();

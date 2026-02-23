@@ -26,9 +26,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_coursemigration';
 $plugin->release = '0.1.0';
-$plugin->version = 2023081600;
+$plugin->version = 2023081601;
 $plugin->requires = 2020061500;
 $plugin->maturity = MATURITY_STABLE;
+$plugin->supported = [39, 401];
 $plugin->dependencies = [
-    'local_aws' => ANY_VERSION
+    'local_aws' => ANY_VERSION,
 ];

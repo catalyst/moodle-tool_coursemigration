@@ -31,7 +31,6 @@ use Exception;
  * @covers     \tool_coursemigration\task\course_cleanup
  */
 class course_cleanup_test extends advanced_testcase {
-
     /**
      * Test clean up when no fail delay.
      */
@@ -52,7 +51,7 @@ class course_cleanup_test extends advanced_testcase {
         $task->execute();
 
         // Course should be deleted.
-        $this->assertFalse($DB->get_record('course', array('id' => $course->id)));
+        $this->assertFalse($DB->get_record('course', ['id' => $course->id]));
     }
 
     /**
@@ -76,7 +75,7 @@ class course_cleanup_test extends advanced_testcase {
         $task->execute();
 
         // Course should be deleted.
-        $this->assertFalse($DB->get_record('course', array('id' => $course->id)));
+        $this->assertFalse($DB->get_record('course', ['id' => $course->id]));
     }
 
     /**
@@ -140,6 +139,6 @@ class course_cleanup_test extends advanced_testcase {
 
         $task->execute();
         // Course should be deleted.
-        $this->assertFalse($DB->get_record('course', array('id' => $course->id)));
+        $this->assertFalse($DB->get_record('course', ['id' => $course->id]));
     }
 }

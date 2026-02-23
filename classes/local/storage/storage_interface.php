@@ -16,6 +16,7 @@
 
 namespace tool_coursemigration\local\storage;
 
+use admin_settingpage;
 use stored_file;
 
 /**
@@ -73,4 +74,12 @@ interface storage_interface {
      * @return boolean true if configuration is valid.
      */
     public function ready_for_push(): bool;
+
+    /**
+     * Define storage-specific settings section.
+     *
+     * @param admin_settingpage $settings The settings page object
+     * @return admin_settingpage Modified settings page
+     */
+    public function define_settings(admin_settingpage $settings): admin_settingpage;
 }

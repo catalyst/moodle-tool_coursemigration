@@ -77,14 +77,14 @@ class upload_course_list_test extends advanced_testcase {
      * Dataprovider for csv_content
      * @return array Data for csv_content
      */
-    public function csv_content_provider() {
+    public function csv_content_provider(): array {
         return [
             "One row, valid courseid and category" => [
                 'input' => ["courseid,categoryid",
                     "2,1"],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
-                'dbrecords' => [[2, 1], ],
+                'dbrecords' => [[2, 1] ],
             ],
             "One row, valid url and category" => [
                 'input' => ["url,categoryid",
@@ -92,7 +92,7 @@ class upload_course_list_test extends advanced_testcase {
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
 
-                'dbrecords' => [[2, 1], ],
+                'dbrecords' => [[2, 1] ],
             ],
             "Four rows, one valid and three errors" => [
                 'input' => ["courseid,categoryid",
@@ -104,7 +104,7 @@ class upload_course_list_test extends advanced_testcase {
                     "Failed: 3<br\>\nErrors in CSV file: 3<br\><br\>\n" .
                     "Non integer value for courseid found on row 2<br\>Non integer value" .
                     " for categoryid found on row 3<br\>Non integer value for courseid found on row 4",
-                'dbrecords' => [[2, 1], ],
+                'dbrecords' => [[2, 1] ],
             ],
             "Invalid columns" => [
                 'input' => ["invalid,invalid",
