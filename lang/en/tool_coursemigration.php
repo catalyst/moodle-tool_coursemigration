@@ -71,6 +71,7 @@ $string['examplecsv'] = 'Example text file';
 $string['examplecsv_help'] = 'To use the example text file, download it then open it with a text or spreadsheet editor. Leave the first line unchanged, then edit the following lines (records) and add your course ids and category ids. Save the file as CSV then upload it.';
 $string['filename'] = 'Filename';
 $string['filters'] = 'Filters';
+$string['from'] = 'From';
 $string['migrationid'] = 'ID';
 $string['missing_column'] = 'CSV file must include one of {$a->columnlist} as column headings';
 $string['pluginname'] = 'Course migration';
@@ -144,9 +145,8 @@ $string['storage:shared_disk_storage'] = 'Shared disk storage';
 $string['storagetype'] = 'Backup storage';
 $string['storagetype_help'] = 'Choose the location where you want backups to be stored.';
 $string['successfullycreatebackuptask'] = 'Successfully created a backup task. Migration id: {$a->coursemigrationid}';
-
-
 $string['task:createbackuptasks'] = 'Create backup adhoc tasks for course migration';
 $string['task:createrestoretasks'] = 'Create restore adhoc tasks for course migration';
 $string['timecreated'] = 'Time created';
 $string['timemodified'] = 'Time modified';
+$string['to'] = 'To';

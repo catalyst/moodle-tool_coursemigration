@@ -45,8 +45,8 @@ class report_filter_form extends moodleform {
         $mform->setType('action', PARAM_INT);
         $mform->setDefault('action', -1);
 
-        $mform->addElement('date_time_selector', 'datefrom', get_string('from'), ['optional' => true]);
-        $mform->addElement('date_time_selector', 'datetill', get_string('to'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'datefrom', get_string('from', 'tool_coursemigration'), ['optional' => true]);
+        $mform->addElement('date_time_selector', 'datetill', get_string('to', 'tool_coursemigration'), ['optional' => true]);
 
         $statuslist = [-1 => get_string('any')] + helper::get_status_list();
         $mform->addElement('select', 'status', get_string('status'), $statuslist);
