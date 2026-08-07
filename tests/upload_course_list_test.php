@@ -68,6 +68,14 @@ class upload_course_list_test extends advanced_testcase {
                 'courseid' => $record[0],
                 'destinationcategoryid' => $record[1],
             ]));
+            // Verify excluded_mods value if provided in the test record.
+            if (array_key_exists(2, $record)) {
+                $dbrecord = $DB->get_record('tool_coursemigration', [
+                    'courseid' => $record[0],
+                    'destinationcategoryid' => $record[1],
+                ]);
+                $this->assertEquals($record[2], $dbrecord->excluded_mods);
+            }
         }
 
         $this->assertEquals($expected, $results->get_result_message());
@@ -84,7 +92,7 @@ class upload_course_list_test extends advanced_testcase {
                     "2,1"],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
-                'dbrecords' => [[2, 1] ],
+                'dbrecords' => [[2, 1, null] ],
             ],
             "One row, valid url and category" => [
                 'input' => ["url,categoryid",
@@ -92,7 +100,7 @@ class upload_course_list_test extends advanced_testcase {
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
 
-                'dbrecords' => [[2, 1] ],
+                'dbrecords' => [[2, 1, null] ],
             ],
             "Four rows, one valid and three errors" => [
                 'input' => ["courseid,categoryid",
@@ -104,7 +112,7 @@ class upload_course_list_test extends advanced_testcase {
                     "Failed: 3<br\>\nErrors in CSV file: 3<br\><br\>\n" .
                     "Non integer value for courseid found on row 2<br\>Non integer value" .
                     " for categoryid found on row 3<br\>Non integer value for courseid found on row 4",
-                'dbrecords' => [[2, 1] ],
+                'dbrecords' => [[2, 1, null] ],
             ],
             "Invalid columns" => [
                 'input' => ["invalid,invalid",
@@ -112,6 +120,28 @@ class upload_course_list_test extends advanced_testcase {
                 'expected' => "CSV file must include one of courseid, url as column headings AND CSV file must include one of" .
                     " categoryid as column headings",
                 'dbrecords' => [],
+            ],
+            "One row, with excluded_mods column" => [
+                'input' => ["courseid,categoryid,excluded_mods",
+                    "2,1,\"turnitintooltwo, quiz\""],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'dbrecords' => [[2, 1, 'turnitintooltwo, quiz']],
+            ],
+            "One row, with empty excluded_mods column" => [
+                'input' => ["courseid,categoryid,excluded_mods",
+                    "2,1,"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'dbrecords' => [[2, 1, null]],
+            ],
+            "Multiple rows, some with excluded_mods" => [
+                'input' => ["courseid,categoryid,excluded_mods",
+                    "2,1,quiz",
+                    "3,2,"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 2<br\>\nSuccess: 2<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'dbrecords' => [[2, 1, 'quiz'], [3, 2, null]],
             ],
         ];
     }

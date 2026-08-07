@@ -51,5 +51,19 @@ function xmldb_tool_coursemigration_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2023080800, 'tool', 'coursemigration');
     }
 
+    if ($oldversion < 2023081602) {
+        // Define field excluded_mods to be added to tool_coursemigration.
+        $table = new xmldb_table('tool_coursemigration');
+        $field = new xmldb_field('excluded_mods', XMLDB_TYPE_TEXT, null, null, null, null, null, 'filename');
+
+        // Conditionally launch add field excluded_mods.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Coursemigration savepoint reached.
+        upgrade_plugin_savepoint(true, 2023081602, 'tool', 'coursemigration');
+    }
+
     return true;
 }

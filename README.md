@@ -66,6 +66,30 @@ These two scheduled tasks are created and run every 1 minute by default.
 * Create backup adhoc tasks for course migration
 * Create restore adhoc tasks for course migration
 
+## Exclude certain activity types ##
+
+The `excluded_mods` feature allows you to exclude specific activity types from the
+backup on a per-course basis. This is useful when certain modules (e.g. third-party plugins
+like `turnitintooltwo`) should not be included in the migrated
+course backup.
+
+To use this feature, add an optional `excluded_mods` column to your CSV file containing a
+comma-separated list of activity types to exclude. For example:
+
+```
+courseid,categoryid,excluded_mods
+101,5,turnitintooltwo
+102,5,"turnitintooltwo, quiz"
+103,5,
+```
+
+* If the `excluded_mods` column is omitted or left empty for a row, no activity type are excluded
+  and a standard backup is performed.
+* Activity type names must match the plugin's short module name (e.g. `quiz`, `forum`,
+  `turnitintooltwo`), without the `mod_` prefix.
+* An example CSV file with the `excluded_mods` column is available on the
+  `Upload course list` page.
+
 ## Quick start ##
 * Install plugin on source and taget sites.
 * Create a shared folder/disk accessible to both sites in their local file system.
@@ -74,6 +98,7 @@ These two scheduled tasks are created and run every 1 minute by default.
 * Create a web service token _Site administration > Plugins > Web services > Manage tokens_
 * Add the web service token to the source site configuration.
 * Create a CSV file with course id and category id of courses to migrate.
+  * An optional `excluded_mods` column can be added to exclude specific activity types from backup.
   * An example csv file is available on the `Upload course list` page.
 * Upload the csv file at _Site administration > Plugins > Admin tools > Course migration > Upload course list_
 
