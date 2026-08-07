@@ -38,6 +38,13 @@ class upload_course_list {
     ];
 
     /**
+     * Optional columns that may be present in the CSV but are not required.
+     */
+    const OPTIONAL_COLUMNS = [
+        'excluded_mods',
+    ];
+
+    /**
      * Function to process upload courses form.
      *
      * @param csv_import_reader $csvimportreader CSV import reader object.
@@ -141,6 +148,14 @@ class upload_course_list {
             }
         }
 
+        // Handle optional columns.
+        foreach (self::OPTIONAL_COLUMNS as $optcol) {
+            if (isset($fields[$optcol])) {
+                $value = trim($row[$fields[$optcol]['columnindex']]);
+                $data[$optcol] = !empty($value) ? $value : null;
+            }
+        }
+
         return [$status, (object) $data, $message];
     }
 
@@ -182,6 +197,14 @@ class upload_course_list {
         }
 
         $message = empty($errors) ? null : implode(" AND ", $errors);
+
+        // Detect optional columns present in the CSV.
+        foreach (self::OPTIONAL_COLUMNS as $optcol) {
+            if (in_array($optcol, $columns)) {
+                $fields[$optcol] = ['columnname' => $optcol, 'columnindex' => array_search($optcol, $columns)];
+            }
+        }
+
         return [$status, $message, $fields];
     }
 

@@ -74,12 +74,15 @@ $string['filters'] = 'Filters';
 $string['from'] = 'From';
 $string['migrationid'] = 'ID';
 $string['missing_column'] = 'CSV file must include one of {$a->columnlist} as column headings';
+$string['excluded_mods'] = 'Excluded activity types';
+$string['excluded_mods_help'] = 'Comma-separated list of activity types to exclude from backup (e.g. turnitintooltwo, quiz).';
 $string['pluginname'] = 'Course migration';
 $string['pluginname_help'] = 'Upload a list of courses as a CSV file that will be migrated to the remote instance as defined in the plugin settings. An example CSV file can be downloaded below.';
 $string['privacy:metadata:tool_coursemigration'] = 'Data relating users for the tool coursemigration plugin';
 $string['privacy:metadata:tool_coursemigration:action'] = 'The action type for course migration';
 $string['privacy:metadata:tool_coursemigration:courseid'] = 'The source/destination courseid';
 $string['privacy:metadata:tool_coursemigration:destinationcategoryid'] = 'The destination categoryid';
+$string['privacy:metadata:tool_coursemigration:excluded_mods'] = 'Comma-separated list of activity types excluded from backup';
 $string['privacy:metadata:tool_coursemigration:usermodified'] = 'The ID of the user who modified the record';
 $string['returnmessages'] = 'File successfully processed.<br\><br\>
 Total rows: {$a->rowcount}<br\>
