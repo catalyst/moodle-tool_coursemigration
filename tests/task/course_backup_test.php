@@ -473,7 +473,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test backup with excluded_mods containing multiple modules (comma-separated).
      */
-    public function test_course_backup_with_multiple_excluded_modss(): void {
+    public function test_course_backup_with_multiple_excluded_mods(): void {
         global $CFG;
 
         $this->resetAfterTest();

@@ -84,7 +84,7 @@ courseid,categoryid,excluded_mods
 103,5,
 ```
 
-* If the `excluded_mods` column is omitted or left empty for a row, no activity type are excluded
+* If the `excluded_mods` column is omitted or left empty for a row, no activity type is excluded
   and a standard backup is performed.
 * Activity type names must match the plugin's short module name (e.g. `quiz`, `forum`,
   `turnitintooltwo`), without the `mod_` prefix.

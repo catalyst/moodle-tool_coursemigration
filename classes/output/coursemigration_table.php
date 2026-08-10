@@ -267,7 +267,8 @@ class coursemigration_table extends table_sql implements renderable {
      * @return string
      */
     public function col_excluded_mods(stdClass $row): string {
-        return $row->excluded_mods ?? '';
+        $value = $row->excluded_mods ?? '';
+        return $this->is_downloading() ? $value : s($value);
     }
 
     /**
