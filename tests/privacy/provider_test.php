@@ -68,6 +68,7 @@ final class provider_test extends provider_testcase {
         $data->action = coursemigration::ACTION_RESTORE;
         $data->courseid = 123456;
         $data->destinationcategoryid = 654321;
+        $data->excluded_mods = 'turnitintooltwo,quiz';
         $coursemigration1 = new coursemigration(0, $data);
         $coursemigration1->save();
 
@@ -168,6 +169,7 @@ final class provider_test extends provider_testcase {
         $this->assertEquals(coursemigration::ACTION_RESTORE, $coursemigrations['action']);
         $this->assertEquals(123456, $coursemigrations['courseid']);
         $this->assertEquals(654321, $coursemigrations['destinationcategoryid']);
+        $this->assertEquals('turnitintooltwo,quiz', $coursemigrations['excluded_mods']);
 
         writer::reset();
         $writer = writer::with_context($context);
@@ -187,6 +189,7 @@ final class provider_test extends provider_testcase {
         $this->assertEquals(coursemigration::ACTION_BACKUP, $coursemigrations['action']);
         $this->assertEquals(112233, $coursemigrations['courseid']);
         $this->assertEquals(332211, $coursemigrations['destinationcategoryid']);
+        $this->assertNull($coursemigrations['excluded_mods']);
     }
 
     /**

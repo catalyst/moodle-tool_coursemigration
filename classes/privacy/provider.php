@@ -45,6 +45,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                 'action' => 'privacy:metadata:tool_coursemigration:action',
                 'courseid' => 'privacy:metadata:tool_coursemigration:courseid',
                 'destinationcategoryid' => 'privacy:metadata:tool_coursemigration:destinationcategoryid',
+                'excluded_mods' => 'privacy:metadata:tool_coursemigration:excluded_mods',
                 'usermodified' => 'privacy:metadata:tool_coursemigration:usermodified',
             ],
             'privacy:metadata:tool_coursemigration'
@@ -100,7 +101,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             'tool_coursemigration',
             ['usermodified' => $user->id],
             '',
-            'action,courseid,destinationcategoryid'
+            'action,courseid,destinationcategoryid,excluded_mods'
         );
 
         foreach ($recordset as $record) {
@@ -108,6 +109,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                 'action' => $record->action,
                 'courseid' => $record->courseid,
                 'destinationcategoryid' => $record->destinationcategoryid,
+                'excluded_mods' => $record->excluded_mods,
             ];
         }
         $recordset->close();
