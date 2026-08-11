@@ -31,5 +31,5 @@ $plugin->requires = 2020061500;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->supported = [39, 401];
 $plugin->dependencies = [
-    'local_aws' => ANY_VERSION,
+    'local_aws' => 2024050800,
 ];
