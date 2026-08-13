@@ -26,6 +26,7 @@
 namespace tool_coursemigration\task;
 
 use backup;
+use backup_activity_task;
 use backup_controller;
 use backup_plan_dbops;
 use core\task\adhoc_task;
@@ -102,6 +103,21 @@ class course_backup extends adhoc_task {
             // Override setting to not include users.
             $bc->get_plan()->get_setting('users')->set_value(0);
             $bc->get_plan()->get_setting('anonymize')->set_value(0);
+
+            // Apply module exclusions if specified.
+            $excludedmods = $coursemigration->get('excluded_mods');
+            if (!empty($excludedmods)) {
+                $exclusions = array_map('trim', explode(',', $excludedmods));
+                $exclusions = array_map('strtolower', array_filter($exclusions));
+                foreach ($bc->get_plan()->get_tasks() as $task) {
+                    if ($task instanceof backup_activity_task) {
+                        $modulename = strtolower($task->get_modulename());
+                        if (in_array($modulename, $exclusions)) {
+                            $task->get_setting('included')->set_value(0);
+                        }
+                    }
+                }
+            }
 
             $format = $bc->get_format();
             $type = $bc->get_type();

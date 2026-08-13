@@ -6,4 +6,4 @@ jobs:
   ci:
     uses: catalyst/catalyst-moodle-workflows/.github/workflows/ci.yml@main
     with:
-      extra_plugin_runners: 'moodle-plugin-ci add-plugin catalyst/moodle-local_aws'
+      extra_plugin_runners: 'git clone --branch MOODLE_33_STABLE https://github.com/catalyst/moodle-local_aws.git $GITHUB_WORKSPACE/moodle/local/aws'

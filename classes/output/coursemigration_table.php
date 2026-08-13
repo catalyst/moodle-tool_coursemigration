@@ -62,6 +62,7 @@ class coursemigration_table extends table_sql implements renderable {
             'destinationcategory',
             'status',
             'filename',
+            'excluded_mods',
             'timecreated',
             'timemodified',
             'error',
@@ -74,6 +75,7 @@ class coursemigration_table extends table_sql implements renderable {
             get_string('destinationcategory', 'tool_coursemigration'),
             get_string('status'),
             get_string('filename', 'tool_coursemigration'),
+            get_string('excluded_mods', 'tool_coursemigration'),
             get_string('timecreated', 'tool_coursemigration'),
             get_string('timemodified', 'tool_coursemigration'),
             get_string('error'),
@@ -88,6 +90,7 @@ class coursemigration_table extends table_sql implements renderable {
         $this->no_sorting('destinationcategory');
         $this->no_sorting('status');
         $this->no_sorting('filename');
+        $this->no_sorting('excluded_mods');
         $this->no_sorting('error');
 
         $this->pageable(!empty($pagesize));
@@ -255,6 +258,17 @@ class coursemigration_table extends table_sql implements renderable {
      */
     public function col_filename(stdClass $row): string {
         return $row->filename ?? '';
+    }
+
+    /**
+     * Excluded mods column.
+     *
+     * @param stdClass $row
+     * @return string
+     */
+    public function col_excluded_mods(stdClass $row): string {
+        $value = $row->excluded_mods ?? '';
+        return $this->is_downloading() ? $value : s($value);
     }
 
     /**

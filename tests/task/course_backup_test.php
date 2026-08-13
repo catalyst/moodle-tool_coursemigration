@@ -44,6 +44,39 @@ require_once($CFG->libdir . '/completionlib.php');
  */
 class course_backup_test extends advanced_testcase {
     /**
+     * Opens a Moodle backup file (.mbz) and returns the list of activity module
+     * names recorded in moodle_backup.xml.
+     *
+     * @param string $filename Backup filename (as stored in the coursemigration record).
+     * @return string[] Module type names, e.g. ['forum', 'quiz'].
+     */
+    private function get_backup_modulenames(string $filename): array {
+        $directory = get_config('tool_coursemigration', 'directory');
+        $filepath = rtrim($directory, '/') . '/' . $filename;
+
+        $this->assertFileExists($filepath, "Backup file not found at: $filepath");
+
+        $fp = get_file_packer('application/vnd.moodle.backup');
+        $tmpdir = make_backup_temp_directory('test_excluded_mods_' . uniqid());
+        $extracted = $fp->extract_to_pathname($filepath, $tmpdir, ['moodle_backup.xml']);
+        $xmlfile = $tmpdir . '/moodle_backup.xml';
+
+        $this->assertTrue(
+            !empty($extracted) && is_readable($xmlfile),
+            "Could not extract moodle_backup.xml from: $filepath"
+        );
+
+        $xml = simplexml_load_file($xmlfile);
+        remove_dir($tmpdir);
+
+        $modulenames = [];
+        foreach (($xml->information->contents->activities->activity ?? []) as $activity) {
+            $modulenames[] = strtolower((string) $activity->modulename);
+        }
+        return $modulenames;
+    }
+
+    /**
      * Test backup.
      */
     public function test_course_backup() {
@@ -375,6 +408,173 @@ class course_backup_test extends advanced_testcase {
         $this->assertEquals($coursemigration->get('id'), $event->objectid);
         $this->assertStringContainsString('backup storage has not been configured ', $event->get_description());
         $this->assertEquals(get_string('event:backup_failed', 'tool_coursemigration'), $event->get_name());
+    }
+
+    /**
+     * Test backup with excluded_mods set — backup completes and excluded module is skipped.
+     */
+    public function test_course_backup_with_excluded_mods(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test module exclusion']);
+
+        // Create a forum and a quiz in the course.
+        $generator->create_module('forum', ['course' => $course->id]);
+        $generator->create_module('quiz', ['course' => $course->id]);
+
+        // Mock restore api.
+        $mockedrestoreapi = $this->createMock(restore_api::class);
+        $mockedrestoreapi->method('request_restore')->willReturn(true);
+        restore_api_factory::set_restore_api($mockedrestoreapi);
+
+        // Create coursemigration record with excluded_mods = 'quiz'.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'excluded_mods' => 'quiz',
+        ]);
+        $coursemigration->save();
+
+        // Confirm excluded_mods value.
+        $this->assertEquals('quiz', $coursemigration->get('excluded_mods'));
+
+        // Configure backup directory.
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
+
+        $task = new course_backup();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Backup completed.', $output);
+
+        // Confirm the status is now completed.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
+        $this->assertNotEmpty($currentcoursemigration->get('filename'));
+        $this->assertStringStartsWith($coursemigration->get('id'), $currentcoursemigration->get('filename'));
+        restore_api_factory::reset_restore_api();
+
+        // Confirm quiz is absent from the backup and forum is present.
+        $modulenames = $this->get_backup_modulenames($currentcoursemigration->get('filename'));
+        $this->assertNotContains('quiz', $modulenames, 'quiz should have been excluded from the backup.');
+        $this->assertContains('forum', $modulenames, 'forum should be present in the backup.');
+    }
+
+    /**
+     * Test backup with excluded_mods containing multiple modules (comma-separated).
+     */
+    public function test_course_backup_with_multiple_excluded_mods(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test multi-exclusion course']);
+
+        // Create modules in the course.
+        $generator->create_module('forum', ['course' => $course->id]);
+        $generator->create_module('quiz', ['course' => $course->id]);
+
+        // Mock restore api.
+        $mockedrestoreapi = $this->createMock(restore_api::class);
+        $mockedrestoreapi->method('request_restore')->willReturn(true);
+        restore_api_factory::set_restore_api($mockedrestoreapi);
+
+        // Exclude both forum and quiz (space after comma tests trim() handling in task).
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'excluded_mods' => 'forum, quiz',
+        ]);
+        $coursemigration->save();
+
+        // Confirm excluded_mods value is persisted correctly.
+        $this->assertEquals('forum, quiz', $coursemigration->get('excluded_mods'));
+
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
+
+        $task = new course_backup();
+        $task->set_custom_data(['coursemigrationid' => $coursemigration->get('id')]);
+        manager::queue_adhoc_task($task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Backup completed.', $output);
+
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
+        $this->assertNotEmpty($currentcoursemigration->get('filename'));
+        restore_api_factory::reset_restore_api();
+
+        // Confirm both forum and quiz are absent from the backup.
+        $modulenames = $this->get_backup_modulenames($currentcoursemigration->get('filename'));
+        $this->assertNotContains('forum', $modulenames, 'forum should have been excluded from the backup.');
+        $this->assertNotContains('quiz', $modulenames, 'quiz should have been excluded from the backup.');
+    }
+
+    /**
+     * Test backup with no excluded_mods — standard backup still works.
+     */
+    public function test_course_backup_without_excluded_mods(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['fullname' => 'Test no exclusion course']);
+        $generator->create_module('forum', ['course' => $course->id]);
+
+        // Mock restore api.
+        $mockedrestoreapi = $this->createMock(restore_api::class);
+        $mockedrestoreapi->method('request_restore')->willReturn(true);
+        restore_api_factory::set_restore_api($mockedrestoreapi);
+
+        // Create coursemigration record with no excluded_mods.
+        $coursemigration = new coursemigration(0, (object)[
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+        ]);
+        $coursemigration->save();
+
+        // Confirm excluded_mods.
+        $this->assertNull($coursemigration->get('excluded_mods'));
+
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
+
+        $task = new course_backup();
+        $task->set_custom_data(['coursemigrationid' => $coursemigration->get('id')]);
+        manager::queue_adhoc_task($task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Backup completed.', $output);
+
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
+        $this->assertNotEmpty($currentcoursemigration->get('filename'));
+        restore_api_factory::reset_restore_api();
+
+        // Confirm forum is present in the backup (no exclusions applied).
+        $modulenames = $this->get_backup_modulenames($currentcoursemigration->get('filename'));
+        $this->assertContains('forum', $modulenames, 'forum should be present in the backup when no exclusion is set.');
     }
 
     /**
