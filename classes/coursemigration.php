@@ -120,6 +120,10 @@ class coursemigration extends persistent {
                 'null' => NULL_ALLOWED,
                 'default' => null,
             ],
+            'includeuserdata' => [
+                'type' => PARAM_BOOL,
+                'default' => false,
+            ],
             'error' => [
                 'type' => PARAM_TEXT,
                 'null' => NULL_ALLOWED,

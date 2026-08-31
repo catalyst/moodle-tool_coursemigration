@@ -32,7 +32,7 @@ class upload_course_list {
      * List of valid colums and validation groups for each DB field.
      * One of id or url AND one of category id should be in the file to pass validation.
      */
-    const VALID_COLUMN_GROUPS = [
+    private const VALID_COLUMN_GROUPS = [
         'courseid' => ['courseid', 'url'],
         'destinationcategoryid' => ['categoryid'],
     ];
@@ -40,8 +40,9 @@ class upload_course_list {
     /**
      * Optional columns that may be present in the CSV but are not required.
      */
-    const OPTIONAL_COLUMNS = [
+    private const OPTIONAL_COLUMNS = [
         'excluded_mods',
+        'includeuserdata',
     ];
 
     /**
@@ -150,9 +151,24 @@ class upload_course_list {
 
         // Handle optional columns.
         foreach (self::OPTIONAL_COLUMNS as $optcol) {
-            if (isset($fields[$optcol])) {
-                $value = trim($row[$fields[$optcol]['columnindex']]);
-                $data[$optcol] = !empty($value) ? $value : null;
+            if (!isset($fields[$optcol])) {
+                continue;
+            }
+
+            $value = trim($row[$fields[$optcol]['columnindex']]);
+
+            switch ($optcol) {
+                case 'includeuserdata':
+                    $data[$optcol] = self::validate_csv_field($value, $status, $message, [
+                        'mode' => 'boolean',
+                        'csvcolumn' => $optcol,
+                        'rownumber' => $rownumber,
+                    ]);
+                    break;
+
+                case 'excluded_mods':
+                    $data[$optcol] = $value !== '' ? $value : null;
+                    break;
             }
         }
 
@@ -217,24 +233,39 @@ class upload_course_list {
      * @param array $params Information to be included in processing and error messages.
      * @return int|null $value
      *
-     * Params: Mode      - only integer used at the moment.
+     * Params: Mode      - only integer and boolean used at the moment.
      *         csvcolumn - Name of column in CSV file
      *         rownumber - The current row of the CSV file.
      */
     private static function validate_csv_field($datavalue, bool &$status, array &$message, array $params): ?int {
         $value = null;
-        if ($params['mode'] == 'integer') {
-            if (is_number($datavalue)) {
-                $value = (int)$datavalue;
-            } else {
-                $status = false;
-                $message[] = get_string(
-                    'error:nonintegervalue',
-                    'tool_coursemigration',
-                    ['csvcolumn' => $params['csvcolumn'], 'rownumber' => $params['rownumber']]
-                );
-            }
+        switch ($params['mode']) {
+            case 'integer':
+                if (is_number($datavalue)) {
+                    $value = (int) $datavalue;
+                } else {
+                    $status = false;
+                    $message[] = get_string(
+                        'error:nonintegervalue',
+                        'tool_coursemigration',
+                        ['csvcolumn' => $params['csvcolumn'], 'rownumber' => $params['rownumber']]
+                    );
+                }
+                break;
+
+            case 'boolean':
+                if ($datavalue === '0' || $datavalue === '1') {
+                    $value = (int) $datavalue;
+                } else {
+                    $status = false;
+                    $message[] = get_string('error:invalidbooleanvalue', 'tool_coursemigration', [
+                        'csvcolumn' => $params['csvcolumn'],
+                        'rownumber' => $params['rownumber'],
+                    ]);
+                }
+                break;
         }
+
         return $value;
     }
 }

@@ -77,6 +77,26 @@ final class course_backup_test extends advanced_testcase {
     }
 
     /**
+     * Returns whether users.xml contains the given username.
+     *
+     * @param string $filename Backup filename.
+     * @param string $username Username to find.
+     * @return bool
+     */
+    private function backup_contains_username(string $filename, string $username): bool {
+        $directory = get_config('tool_coursemigration', 'directory');
+        $filepath = rtrim($directory, '/') . '/' . $filename;
+        $tmpdir = make_backup_temp_directory('test_includeuserdata_' . uniqid());
+        $fp = get_file_packer('application/vnd.moodle.backup');
+        $extracted = $fp->extract_to_pathname($filepath, $tmpdir, ['users.xml']);
+        $usersxml = $tmpdir . '/users.xml';
+        $contents = !empty($extracted) && is_readable($usersxml) ? file_get_contents($usersxml) : false;
+        remove_dir($tmpdir);
+
+        return $contents !== false && str_contains($contents, "<username>{$username}</username>");
+    }
+
+    /**
      * Test backup.
      */
     public function test_course_backup() {
@@ -142,6 +162,66 @@ final class course_backup_test extends advanced_testcase {
             " for category id: 1.";
         $this->assertEquals($expectdescription, $event->get_description());
         $this->assertEquals(get_string('event:backup_completed', 'tool_coursemigration'), $event->get_name());
+    }
+
+    /**
+     * Provides migration settings for user-data backup tests.
+     *
+     * @return array
+     */
+    public static function course_backup_user_data_provider(): array {
+        return [
+            'User data omitted' => [null],
+            'User data explicitly excluded' => [false],
+            'User data explicitly included' => [true],
+        ];
+    }
+
+    /**
+     * User data is included only when explicitly requested by the migration.
+     *
+     * @param bool|null $includeuserdata Whether the migration includes user data.
+     * @dataProvider course_backup_user_data_provider
+     */
+    public function test_course_backup_includes_user_data_when_requested(?bool $includeuserdata): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $user = $generator->create_user(['username' => 'migrationbackupuser']);
+        $generator->enrol_user($user->id, $course->id, 'student');
+
+        $restoreapi = $this->createMock(restore_api::class);
+        $restoreapi->method('request_restore')->willReturn(true);
+        restore_api_factory::set_restore_api($restoreapi);
+
+        $migrationdata = [
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+        ];
+        if ($includeuserdata !== null) {
+            $migrationdata['includeuserdata'] = $includeuserdata;
+        }
+        $migration = new coursemigration(0, (object) $migrationdata);
+        $migration->save();
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
+
+        $task = new course_backup();
+        $task->set_custom_data(['coursemigrationid' => $migration->get('id')]);
+        ob_start();
+        $task->execute();
+        ob_end_clean();
+
+        $migration = coursemigration::get_record(['id' => $migration->get('id')]);
+        $this->assertSame(coursemigration::STATUS_COMPLETED, $migration->get('status'));
+        $this->assertSame(
+            $includeuserdata === true,
+            $this->backup_contains_username($migration->get('filename'), $user->username)
+        );
+        restore_api_factory::reset_restore_api();
     }
 
     /**
