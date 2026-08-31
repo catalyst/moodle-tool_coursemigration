@@ -14,19 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+namespace tool_coursemigration\hook;
+
+use restore_controller;
+use tool_coursemigration\coursemigration;
+
 /**
- * Plugin version and other meta-data are defined here.
+ * Allows plugins to perform actions after a course migration restore completes.
  *
  * @package     tool_coursemigration
- * @copyright   2023 Catalyst IT
+ * @copyright   2026 Catalyst IT Australia Pty Ltd
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->component = 'tool_coursemigration';
-$plugin->release = '0.1.0';
-$plugin->version = 2024112105;
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->supported = [404, 405];
+final class after_restore {
+    /**
+     * @param restore_controller $controller The restore controller.
+     * @param coursemigration $coursemigration The course migration record.
+     */
+    public function __construct(
+        public readonly restore_controller $controller,
+        public readonly coursemigration $coursemigration,
+    ) {
+    }
+}

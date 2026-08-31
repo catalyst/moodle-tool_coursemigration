@@ -18,6 +18,7 @@ namespace tool_coursemigration\task;
 
 use backup;
 use core\task\adhoc_task;
+use core\hook\manager as hook_manager;
 use Exception;
 use invalid_parameter_exception;
 use moodle_exception;
@@ -25,6 +26,9 @@ use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
 use tool_coursemigration\event\restore_failed;
 use tool_coursemigration\helper;
+use tool_coursemigration\hook\after_restore;
+use tool_coursemigration\hook\after_restore_precheck;
+use tool_coursemigration\hook\before_restore_precheck;
 use restore_controller;
 use restore_dbops;
 use core\task\manager;
@@ -142,8 +146,12 @@ class course_restore extends adhoc_task {
                 $USER->id,
                 backup::TARGET_NEW_COURSE
             );
+            $hookmanager = \core\di::get(hook_manager::class);
+            $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
             $rc->execute_precheck();
+            $hookmanager->dispatch(new after_restore_precheck($rc, $coursemigration));
             $rc->execute_plan();
+            $hookmanager->dispatch(new after_restore($rc, $coursemigration));
             $rc->destroy();
 
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
