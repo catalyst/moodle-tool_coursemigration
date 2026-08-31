@@ -90,6 +90,18 @@ courseid,categoryid,excluded_mods
 * An example CSV file with the `excluded_mods` column is available on the
   `Upload course list` page.
 
+## Include user data ##
+
+Add the optional `includeuserdata` column with a value of `1` to include enrolled-user data in an
+individual course backup. Omit the column or use `0` to retain the default behaviour of excluding
+user data. The target site determines whether user data is available from the extracted backup.
+
+```
+courseid,categoryid,includeuserdata
+101,5,1
+102,5,0
+```
+
 ## Quick start ##
 * Install plugin on source and taget sites.
 * Create a shared folder/disk accessible to both sites in their local file system.
@@ -99,6 +111,7 @@ courseid,categoryid,excluded_mods
 * Add the web service token to the source site configuration.
 * Create a CSV file with course id and category id of courses to migrate.
   * An optional `excluded_mods` column can be added to exclude specific activity types from backup.
+  * An optional `includeuserdata` column can be set to `1` to include user data for a course.
   * An example csv file is available on the `Upload course list` page.
 * Upload the csv file at _Site administration > Plugins > Admin tools > Course migration > Upload course list_
 
