@@ -92,9 +92,7 @@ courseid,categoryid,excluded_mods
 
 ## Include user data ##
 
-Add the optional `includeuserdata` column with a value of `1` to include enrolled-user data in an
-individual course backup. Omit the column or use `0` to retain the default behaviour of excluding
-user data. The target site determines whether user data is available from the extracted backup.
+Add the optional `includeuserdata` column with a value of `1` to include enrolled-user data in an individual course backup. Omit the column, leave empty, or use `0` to retain the default behaviour of excluding user data. The target site determines whether user data is available from the extracted backup.
 
 ```
 courseid,categoryid,includeuserdata

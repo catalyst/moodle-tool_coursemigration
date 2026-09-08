@@ -152,7 +152,7 @@ class upload_course_list_test extends advanced_testcase {
                     'excluded_mods' => null,
                 ]],
             ],
-            "One row, with includeuserdata column" => [
+            "One row, with includeuserdata enabled" => [
                 'input' => ["courseid,categoryid,includeuserdata", "2,1,1"],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
@@ -161,6 +161,33 @@ class upload_course_list_test extends advanced_testcase {
                     'destinationcategoryid' => 1,
                     'includeuserdata' => 1,
                 ]],
+            ],
+            "One row, with includeuserdata disabled" => [
+                'input' => ["courseid,categoryid,includeuserdata", "2,1,0"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                    'includeuserdata' => 0,
+                ]],
+            ],
+            "One row, with includeuserdata unset" => [
+                'input' => ["courseid,categoryid,includeuserdata", "2,1,"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                    'includeuserdata' => 0,
+                ]],
+            ],
+            "One row, with invalid includeuserdata" => [
+                'input' => ["courseid,categoryid,includeuserdata", "2,1,invalid"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 0<br\>\n"
+                    . "Failed: 1<br\>\nErrors in CSV file: 1<br\><br\>\n"
+                    . "Value for includeuserdata must be empty, 0, or 1 on row 1",
+                'expectedrecords' => [],
             ],
             "Multiple rows, some with excluded_mods" => [
                 'input' => ["courseid,categoryid,excluded_mods",
