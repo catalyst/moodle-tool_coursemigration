@@ -84,7 +84,9 @@ class backup_directory extends admin_setting_configdirectory {
 
         // Allow empty, otherwise must exist and be writable.
         if (!empty($data) && !$this->is_directory_path_valid($data)) {
-            $this->visiblename .= '<div class="alert alert-danger">' . get_string('directory:error', 'tool_coursemigration') . '</div>';
+            $this->visiblename .= '<div class="alert alert-danger">'
+                . get_string('directory:error', 'tool_coursemigration')
+                . '</div>';
         }
 
         if (!empty($CFG->preventexecpath)) {

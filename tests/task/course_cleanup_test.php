@@ -30,11 +30,11 @@ use Exception;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \tool_coursemigration\task\course_cleanup
  */
-class course_cleanup_test extends advanced_testcase {
+final class course_cleanup_test extends advanced_testcase {
     /**
      * Test clean up when no fail delay.
      */
-    public function test_cleanup_no_fail_delay() {
+    public function test_cleanup_no_fail_delay(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -57,7 +57,7 @@ class course_cleanup_test extends advanced_testcase {
     /**
      * Test clean up when with fail delay.
      */
-    public function test_cleanup_with_fail_delay() {
+    public function test_cleanup_with_fail_delay(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -81,7 +81,7 @@ class course_cleanup_test extends advanced_testcase {
     /**
      * Test clean course with broken section and no fail delay.
      */
-    public function test_cleanup_fails_with_broken_section_no_fail_delay() {
+    public function test_cleanup_fails_with_broken_section_no_fail_delay(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -114,7 +114,7 @@ class course_cleanup_test extends advanced_testcase {
     /**
      * Test clean course with broken section and with fail delay.
      */
-    public function test_cleanup_fails_with_broken_section_with_fail_delay() {
+    public function test_cleanup_fails_with_broken_section_with_fail_delay(): void {
         global $DB;
 
         $this->resetAfterTest();

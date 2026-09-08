@@ -100,8 +100,7 @@ class course_backup extends adhoc_task {
                 $USER->id
             );
 
-            // Override setting to not include users.
-            $bc->get_plan()->get_setting('users')->set_value(0);
+            $bc->get_plan()->get_setting('users')->set_value((int) $coursemigration->get('includeuserdata'));
             $bc->get_plan()->get_setting('anonymize')->set_value(0);
 
             // Apply module exclusions if specified.

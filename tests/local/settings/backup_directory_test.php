@@ -27,11 +27,11 @@ use advanced_testcase;
  *
  * @covers     \tool_coursemigration\local\settings\backup_directory
  */
-class backup_directory_test extends advanced_testcase {
+final class backup_directory_test extends advanced_testcase {
     /**
      * Tests the backup_directory element can be created and the data (path) is validated.
      */
-    public function test_backup_directory() {
+    public function test_backup_directory(): void {
         $this->resetAfterTest();
 
         // Tests the constructor.

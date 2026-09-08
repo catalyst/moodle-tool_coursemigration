@@ -29,13 +29,13 @@ use tool_coursemigration\task\restore;
  * @copyright  2023 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class create_backup_tasks_test extends advanced_testcase {
+final class create_backup_tasks_test extends advanced_testcase {
     /**
      * Test create_backup_tasks.
      *
      * @covers ::create_backup_tasks
      */
-    public function test_create_backup_tasks() {
+    public function test_create_backup_tasks(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -79,7 +79,7 @@ class create_backup_tasks_test extends advanced_testcase {
      *
      * @covers ::create_backup_tasks
      */
-    public function test_create_backup_tasks_ignore_restore() {
+    public function test_create_backup_tasks_ignore_restore(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -116,7 +116,7 @@ class create_backup_tasks_test extends advanced_testcase {
      *
      * @covers ::create_backup_tasks
      */
-    public function test_fail_to_create_backup_tasks() {
+    public function test_fail_to_create_backup_tasks(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 

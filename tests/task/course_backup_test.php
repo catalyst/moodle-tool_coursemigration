@@ -42,7 +42,7 @@ require_once($CFG->libdir . '/completionlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \tool_coursemigration\task\course_backup
  */
-class course_backup_test extends advanced_testcase {
+final class course_backup_test extends advanced_testcase {
     /**
      * Opens a Moodle backup file (.mbz) and returns the list of activity module
      * names recorded in moodle_backup.xml.
@@ -77,9 +77,29 @@ class course_backup_test extends advanced_testcase {
     }
 
     /**
+     * Returns whether users.xml contains the given username.
+     *
+     * @param string $filename Backup filename.
+     * @param string $username Username to find.
+     * @return bool
+     */
+    private function backup_contains_username(string $filename, string $username): bool {
+        $directory = get_config('tool_coursemigration', 'directory');
+        $filepath = rtrim($directory, '/') . '/' . $filename;
+        $tmpdir = make_backup_temp_directory('test_includeuserdata_' . uniqid());
+        $fp = get_file_packer('application/vnd.moodle.backup');
+        $extracted = $fp->extract_to_pathname($filepath, $tmpdir, ['users.xml']);
+        $usersxml = $tmpdir . '/users.xml';
+        $contents = !empty($extracted) && is_readable($usersxml) ? file_get_contents($usersxml) : false;
+        remove_dir($tmpdir);
+
+        return $contents !== false && strpos($contents, "<username>{$username}</username>") !== false;
+    }
+
+    /**
      * Test backup.
      */
-    public function test_course_backup() {
+    public function test_course_backup(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -145,9 +165,69 @@ class course_backup_test extends advanced_testcase {
     }
 
     /**
+     * Provides migration settings for user-data backup tests.
+     *
+     * @return array
+     */
+    public static function course_backup_user_data_provider(): array {
+        return [
+            'User data omitted' => [null],
+            'User data explicitly excluded' => [false],
+            'User data explicitly included' => [true],
+        ];
+    }
+
+    /**
+     * User data is included only when explicitly requested by the migration.
+     *
+     * @param bool|null $includeuserdata Whether the migration includes user data.
+     * @dataProvider course_backup_user_data_provider
+     */
+    public function test_course_backup_includes_user_data_when_requested(?bool $includeuserdata): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $user = $generator->create_user(['username' => 'migrationbackupuser']);
+        $generator->enrol_user($user->id, $course->id, 'student');
+
+        $restoreapi = $this->createMock(restore_api::class);
+        $restoreapi->method('request_restore')->willReturn(true);
+        restore_api_factory::set_restore_api($restoreapi);
+
+        $migrationdata = [
+            'action' => coursemigration::ACTION_BACKUP,
+            'courseid' => $course->id,
+            'destinationcategoryid' => 1,
+        ];
+        if ($includeuserdata !== null) {
+            $migrationdata['includeuserdata'] = $includeuserdata;
+        }
+        $migration = new coursemigration(0, (object) $migrationdata);
+        $migration->save();
+        set_config('directory', $CFG->tempdir, 'tool_coursemigration');
+
+        $task = new course_backup();
+        $task->set_custom_data(['coursemigrationid' => $migration->get('id')]);
+        ob_start();
+        $task->execute();
+        ob_end_clean();
+
+        $migration = coursemigration::get_record(['id' => $migration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_COMPLETED, $migration->get('status'));
+        $this->assertSame(
+            $includeuserdata === true,
+            $this->backup_contains_username($migration->get('filename'), $user->username)
+        );
+        restore_api_factory::reset_restore_api();
+    }
+
+    /**
      * Test backup failed on WS call.
      */
-    public function test_course_backup_failed_on_ws_call() {
+    public function test_course_backup_failed_on_ws_call(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -206,7 +286,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test backup without param.
      */
-    public function test_backup_invalid_param() {
+    public function test_backup_invalid_param(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -237,7 +317,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test restore with invalid coursemigrationid.
      */
-    public function test_backup_invalid_coursemigrationid() {
+    public function test_backup_invalid_coursemigrationid(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -270,7 +350,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test push file error.
      */
-    public function test_push_file_error() {
+    public function test_push_file_error(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -321,7 +401,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test not_configured_storage.
      */
-    public function test_not_configured_storage() {
+    public function test_not_configured_storage(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -367,7 +447,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test restore without configured backup directory.
      */
-    public function test_restore_not_configured_backup_directory() {
+    public function test_restore_not_configured_backup_directory(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -580,7 +660,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test delete after fail.
      */
-    public function test_delete_after_fail() {
+    public function test_delete_after_fail(): void {
         global $CFG;
 
         $this->resetAfterTest();

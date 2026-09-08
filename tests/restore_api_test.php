@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/local/aws/sdk/aws-autoloader.php');
  *
  * @covers     \tool_coursemigration\restore_api
  */
-class restore_api_test extends advanced_testcase {
+final class restore_api_test extends advanced_testcase {
     /**
      * Sent requests.
      * @var array
@@ -71,7 +71,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test error if the plugin is not configured.
      */
-    public function test_plugin_not_configured() {
+    public function test_plugin_not_configured(): void {
         $this->expectException(\moodle_exception::class);
         $this->expectExceptionMessage('Error attempting to make HTTP request: Plugin is not configured.');
 
@@ -81,7 +81,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test guzzle error response.
      */
-    public function test_guzzle_error_response() {
+    public function test_guzzle_error_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -100,10 +100,11 @@ class restore_api_test extends advanced_testcase {
 
         $this->assertCount(1, $events);
         $event = reset($events);
+        $backtick = chr(96);
 
-        $expectederror = 'Client error: `GET https://test.com?wstoken=XXX&wsfunction='
-            . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json`'
-            . ' resulted in a `403 Forbidden` response';
+        $expectederror = "Client error: {$backtick}GET https://test.com?wstoken=XXX&wsfunction="
+            . "tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json{$backtick}"
+            . " resulted in a {$backtick}403 Forbidden{$backtick} response";
 
         $expectedurl = 'https://test.com?wstoken=XXX&wsfunction='
             . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json';
@@ -115,7 +116,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test response is not 200.
      */
-    public function test_not_200_response() {
+    public function test_not_200_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -146,7 +147,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test exception in response.
      */
-    public function test_exception_in_response() {
+    public function test_exception_in_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -181,7 +182,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test exception in response but no message.
      */
-    public function test_exception_in_response_but_no_message() {
+    public function test_exception_in_response_but_no_message(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -215,7 +216,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test exception in response but no message.
      */
-    public function test_unexpected_response() {
+    public function test_unexpected_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -249,7 +250,7 @@ class restore_api_test extends advanced_testcase {
     /**
      * Test success.
      */
-    public function test_success() {
+    public function test_success(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 

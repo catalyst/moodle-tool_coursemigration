@@ -29,7 +29,7 @@ use tool_coursemigration\local\storage\type\shared_disk_storage;
  *
  * @covers     \tool_coursemigration\local\storage\type\shared_disk_storage
  */
-class shared_disk_storage_test extends advanced_testcase {
+final class shared_disk_storage_test extends advanced_testcase {
     /** @var string Test directory name for where files are stored */
     const TEST_DIRECTORY = '/tmp/directory/';
     /** @var string File name of test pull */
@@ -70,7 +70,7 @@ class shared_disk_storage_test extends advanced_testcase {
     /**
      * Tests the shared_disk_storage upload, download and delete methods.
      */
-    public function test_shared_disk_storage_methods() {
+    public function test_shared_disk_storage_methods(): void {
         $this->resetAfterTest();
         $this->setup_test_file();
 
@@ -121,7 +121,7 @@ class shared_disk_storage_test extends advanced_testcase {
     /**
      * Test without directories configured.
      */
-    public function test_without_directories_configured() {
+    public function test_without_directories_configured(): void {
         $storage = new shared_disk_storage();
         $this->assertFalse($storage->ready_for_pull());
         $this->assertFalse($storage->ready_for_push());
@@ -130,7 +130,7 @@ class shared_disk_storage_test extends advanced_testcase {
     /**
      * Test file configured as directory.
      */
-    public function test_file_configured_as_directory() {
+    public function test_file_configured_as_directory(): void {
         $this->resetAfterTest();
         $this->setup_test_file();
 
@@ -145,7 +145,7 @@ class shared_disk_storage_test extends advanced_testcase {
     /**
      * Test with not readable directory configured.
      */
-    public function test_configured_directory_is_not_readable() {
+    public function test_configured_directory_is_not_readable(): void {
         $this->resetAfterTest();
 
         $vfileroot = vfsStream::setup();
@@ -168,7 +168,7 @@ class shared_disk_storage_test extends advanced_testcase {
     /**
      * Test with not writable directory configured.
      */
-    public function test_configured_directory_is_not_writable() {
+    public function test_configured_directory_is_not_writable(): void {
         $this->resetAfterTest();
 
         $vfileroot = vfsStream::setup();

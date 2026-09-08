@@ -34,16 +34,16 @@ require_once($CFG->libdir . '/csvlib.class.php');
  *
  * @covers     \tool_coursemigration\upload_course_list
  */
-class upload_course_list_test extends advanced_testcase {
+final class upload_course_list_test extends advanced_testcase {
     /**
      * Test test_csv_content
      *
      * @param array $input The mock CSV content
      * @param string $expected The expected resultant messages
-     * @param array $dbrecords The db records that should be created
+     * @param array $expectedrecords The database records that should be created.
      * @dataProvider csv_content_provider
      */
-    public function test_csv_content($input, $expected, $dbrecords) {
+    public function test_csv_content($input, $expected, $expectedrecords): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -54,27 +54,27 @@ class upload_course_list_test extends advanced_testcase {
         $csvimportreader->load_csv_content($content, 'utf-8', 'comma');
         $csvimportreader->init();
 
-        foreach ($dbrecords as $record) {
+        foreach ($expectedrecords as $expectedrecord) {
             $this->assertFalse($DB->record_exists('tool_coursemigration', [
-                'courseid' => $record[0],
-                'destinationcategoryid' => $record[1],
+                'courseid' => $expectedrecord['courseid'],
+                'destinationcategoryid' => $expectedrecord['destinationcategoryid'],
             ]));
         }
 
         $results = upload_course_list::process_submitted_form($csvimportreader);
 
-        foreach ($dbrecords as $record) {
+        foreach ($expectedrecords as $expectedrecord) {
             $this->assertTrue($DB->record_exists('tool_coursemigration', [
-                'courseid' => $record[0],
-                'destinationcategoryid' => $record[1],
+                'courseid' => $expectedrecord['courseid'],
+                'destinationcategoryid' => $expectedrecord['destinationcategoryid'],
             ]));
-            // Verify excluded_mods value if provided in the test record.
-            if (array_key_exists(2, $record)) {
-                $dbrecord = $DB->get_record('tool_coursemigration', [
-                    'courseid' => $record[0],
-                    'destinationcategoryid' => $record[1],
-                ]);
-                $this->assertEquals($record[2], $dbrecord->excluded_mods);
+
+            $actualrecord = $DB->get_record('tool_coursemigration', [
+                'courseid' => $expectedrecord['courseid'],
+                'destinationcategoryid' => $expectedrecord['destinationcategoryid'],
+            ]);
+            foreach ($expectedrecord as $field => $value) {
+                $this->assertEquals($value, $actualrecord->$field);
             }
         }
 
@@ -85,14 +85,17 @@ class upload_course_list_test extends advanced_testcase {
      * Dataprovider for csv_content
      * @return array Data for csv_content
      */
-    public function csv_content_provider(): array {
+    public static function csv_content_provider(): array {
         return [
             "One row, valid courseid and category" => [
                 'input' => ["courseid,categoryid",
                     "2,1"],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
-                'dbrecords' => [[2, 1, null] ],
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                ]],
             ],
             "One row, valid url and category" => [
                 'input' => ["url,categoryid",
@@ -100,7 +103,10 @@ class upload_course_list_test extends advanced_testcase {
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
 
-                'dbrecords' => [[2, 1, null] ],
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                ]],
             ],
             "Four rows, one valid and three errors" => [
                 'input' => ["courseid,categoryid",
@@ -112,28 +118,76 @@ class upload_course_list_test extends advanced_testcase {
                     "Failed: 3<br\>\nErrors in CSV file: 3<br\><br\>\n" .
                     "Non integer value for courseid found on row 2<br\>Non integer value" .
                     " for categoryid found on row 3<br\>Non integer value for courseid found on row 4",
-                'dbrecords' => [[2, 1, null] ],
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                ]],
             ],
             "Invalid columns" => [
                 'input' => ["invalid,invalid",
                     "2,1"],
                 'expected' => "CSV file must include one of courseid, url as column headings AND CSV file must include one of" .
                     " categoryid as column headings",
-                'dbrecords' => [],
+                'expectedrecords' => [],
             ],
             "One row, with excluded_mods column" => [
                 'input' => ["courseid,categoryid,excluded_mods",
                     "2,1,\"turnitintooltwo, quiz\""],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
-                'dbrecords' => [[2, 1, 'turnitintooltwo, quiz']],
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                    'excluded_mods' => 'turnitintooltwo, quiz',
+                ]],
             ],
             "One row, with empty excluded_mods column" => [
                 'input' => ["courseid,categoryid,excluded_mods",
                     "2,1,"],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
-                'dbrecords' => [[2, 1, null]],
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                    'excluded_mods' => null,
+                ]],
+            ],
+            "One row, with includeuserdata enabled" => [
+                'input' => ["courseid,categoryid,includeuserdata", "2,1,1"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                    'includeuserdata' => 1,
+                ]],
+            ],
+            "One row, with includeuserdata disabled" => [
+                'input' => ["courseid,categoryid,includeuserdata", "2,1,0"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                    'includeuserdata' => 0,
+                ]],
+            ],
+            "One row, with includeuserdata unset" => [
+                'input' => ["courseid,categoryid,includeuserdata", "2,1,"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 1<br\>\n" .
+                    "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
+                'expectedrecords' => [[
+                    'courseid' => 2,
+                    'destinationcategoryid' => 1,
+                    'includeuserdata' => 0,
+                ]],
+            ],
+            "One row, with invalid includeuserdata" => [
+                'input' => ["courseid,categoryid,includeuserdata", "2,1,invalid"],
+                'expected' => "File successfully processed.<br\><br\>\nTotal rows: 1<br\>\nSuccess: 0<br\>\n"
+                    . "Failed: 1<br\>\nErrors in CSV file: 1<br\><br\>\n"
+                    . "Value for includeuserdata must be empty, 0, or 1 on row 1",
+                'expectedrecords' => [],
             ],
             "Multiple rows, some with excluded_mods" => [
                 'input' => ["courseid,categoryid,excluded_mods",
@@ -141,7 +195,18 @@ class upload_course_list_test extends advanced_testcase {
                     "3,2,"],
                 'expected' => "File successfully processed.<br\><br\>\nTotal rows: 2<br\>\nSuccess: 2<br\>\n" .
                     "Failed: 0<br\>\nErrors in CSV file: 0<br\><br\>\n",
-                'dbrecords' => [[2, 1, 'quiz'], [3, 2, null]],
+                'expectedrecords' => [
+                    [
+                        'courseid' => 2,
+                        'destinationcategoryid' => 1,
+                        'excluded_mods' => 'quiz',
+                    ],
+                    [
+                        'courseid' => 3,
+                        'destinationcategoryid' => 2,
+                        'excluded_mods' => null,
+                    ],
+                ],
             ],
         ];
     }

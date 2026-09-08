@@ -13,6 +13,7 @@
         <FIELD NAME="status" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="0 - failed, 1 - not started, 2 - in progress, 3 - completed"/>
         <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="The full Unicode name of this file (case sensitive)"/>
         <FIELD NAME="excluded_mods" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Comma-separated list of module types to exclude from backup, e.g. turnitintooltwo, quiz"/>
+        <FIELD NAME="includeuserdata" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether to include user data in the course backup"/>
         <FIELD NAME="error" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="in case if the status is failed we need to save an error"/>
         <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
