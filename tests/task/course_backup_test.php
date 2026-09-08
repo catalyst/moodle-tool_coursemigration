@@ -42,7 +42,7 @@ require_once($CFG->libdir . '/completionlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \tool_coursemigration\task\course_backup
  */
-class course_backup_test extends advanced_testcase {
+final class course_backup_test extends advanced_testcase {
     /**
      * Opens a Moodle backup file (.mbz) and returns the list of activity module
      * names recorded in moodle_backup.xml.
@@ -93,13 +93,13 @@ class course_backup_test extends advanced_testcase {
         $contents = !empty($extracted) && is_readable($usersxml) ? file_get_contents($usersxml) : false;
         remove_dir($tmpdir);
 
-        return $contents !== false && str_contains($contents, "<username>{$username}</username>");
+        return $contents !== false && strpos($contents, "<username>{$username}</username>") !== false;
     }
 
     /**
      * Test backup.
      */
-    public function test_course_backup() {
+    public function test_course_backup(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -227,7 +227,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test backup failed on WS call.
      */
-    public function test_course_backup_failed_on_ws_call() {
+    public function test_course_backup_failed_on_ws_call(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -286,7 +286,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test backup without param.
      */
-    public function test_backup_invalid_param() {
+    public function test_backup_invalid_param(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -317,7 +317,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test restore with invalid coursemigrationid.
      */
-    public function test_backup_invalid_coursemigrationid() {
+    public function test_backup_invalid_coursemigrationid(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -350,7 +350,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test push file error.
      */
-    public function test_push_file_error() {
+    public function test_push_file_error(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -401,7 +401,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test not_configured_storage.
      */
-    public function test_not_configured_storage() {
+    public function test_not_configured_storage(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -447,7 +447,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test restore without configured backup directory.
      */
-    public function test_restore_not_configured_backup_directory() {
+    public function test_restore_not_configured_backup_directory(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -660,7 +660,7 @@ class course_backup_test extends advanced_testcase {
     /**
      * Test delete after fail.
      */
-    public function test_delete_after_fail() {
+    public function test_delete_after_fail(): void {
         global $CFG;
 
         $this->resetAfterTest();

@@ -43,11 +43,11 @@ require_once($CFG->libdir . '/completionlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \tool_coursemigration\task\course_restore
  */
-class course_restore_test extends advanced_testcase {
+final class course_restore_test extends advanced_testcase {
     /**
      * Test restore.
      */
-    public function test_restore() {
+    public function test_restore(): void {
         global $CFG, $USER;
 
         $this->resetAfterTest();
@@ -138,7 +138,7 @@ class course_restore_test extends advanced_testcase {
     /**
      * Test restore as hidden course.
      */
-    public function test_restore_hidden() {
+    public function test_restore_hidden(): void {
         global $CFG, $USER;
 
         $this->resetAfterTest();
@@ -214,7 +214,7 @@ class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_invalid_param() {
+    public function test_restore_invalid_param(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -251,7 +251,7 @@ class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_invalid_coursemigrationid() {
+    public function test_restore_invalid_coursemigrationid(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -290,7 +290,7 @@ class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_invalid_filename() {
+    public function test_restore_invalid_filename(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -350,7 +350,7 @@ class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_not_configured_storage() {
+    public function test_restore_not_configured_storage(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -404,7 +404,7 @@ class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_not_configured_restore_directory() {
+    public function test_restore_not_configured_restore_directory(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -457,7 +457,7 @@ class course_restore_test extends advanced_testcase {
     /**
      * Test delete after fail.
      */
-    public function test_delete_after_fail() {
+    public function test_delete_after_fail(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -510,7 +510,7 @@ class course_restore_test extends advanced_testcase {
     /**
      * Test restore when a course is set to course migration item.
      */
-    public function test_restore_when_course_is_already_set() {
+    public function test_restore_when_course_is_already_set(): void {
         global $CFG, $USER;
 
         $this->resetAfterTest();
@@ -593,7 +593,7 @@ class course_restore_test extends advanced_testcase {
     /**
      * Test that we set retry status if failed task, but file is there, so we can retry.
      */
-    public function test_set_retry_status_if_failed_but_file_is_there() {
+    public function test_set_retry_status_if_failed_but_file_is_there(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -651,7 +651,7 @@ class course_restore_test extends advanced_testcase {
     /**
      * Test restore to a broken category.
      */
-    public function test_restore_broken_category() {
+    public function test_restore_broken_category(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
