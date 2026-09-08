@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace tool_coursemigration;
+namespace tool_coursemigration\local\storage\type;
 
 use advanced_testcase;
 use org\bovigo\vfs\vfsStream;

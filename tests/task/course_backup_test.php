@@ -99,7 +99,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test backup.
      */
-    public function test_course_backup() {
+    public function test_course_backup(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -227,7 +227,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test backup failed on WS call.
      */
-    public function test_course_backup_failed_on_ws_call() {
+    public function test_course_backup_failed_on_ws_call(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -286,7 +286,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test backup without param.
      */
-    public function test_backup_invalid_param() {
+    public function test_backup_invalid_param(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -317,7 +317,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test restore with invalid coursemigrationid.
      */
-    public function test_backup_invalid_coursemigrationid() {
+    public function test_backup_invalid_coursemigrationid(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -350,7 +350,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test push file error.
      */
-    public function test_push_file_error() {
+    public function test_push_file_error(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -401,7 +401,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test not_configured_storage.
      */
-    public function test_not_configured_storage() {
+    public function test_not_configured_storage(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -447,7 +447,7 @@ final class course_backup_test extends advanced_testcase {
     /**
      * Test restore without configured backup directory.
      */
-    public function test_restore_not_configured_backup_directory() {
+    public function test_restore_not_configured_backup_directory(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();

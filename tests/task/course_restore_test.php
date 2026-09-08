@@ -47,7 +47,7 @@ final class course_restore_test extends advanced_testcase {
     /**
      * Test restore.
      */
-    public function test_restore() {
+    public function test_restore(): void {
         global $CFG, $USER;
 
         $this->resetAfterTest();
@@ -214,7 +214,7 @@ final class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_invalid_param() {
+    public function test_restore_invalid_param(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -251,7 +251,7 @@ final class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_invalid_coursemigrationid() {
+    public function test_restore_invalid_coursemigrationid(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -290,7 +290,7 @@ final class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_invalid_filename() {
+    public function test_restore_invalid_filename(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -350,7 +350,7 @@ final class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_not_configured_storage() {
+    public function test_restore_not_configured_storage(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();
@@ -404,7 +404,7 @@ final class course_restore_test extends advanced_testcase {
      *
      * @covers ::restore
      */
-    public function test_restore_not_configured_restore_directory() {
+    public function test_restore_not_configured_restore_directory(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
         $eventsink = $this->redirectEvents();

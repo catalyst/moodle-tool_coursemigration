@@ -213,7 +213,7 @@ final class helper_test extends advanced_testcase {
      *
      * @return \int[][]
      */
-    public function get_retry_number_from_fail_delay_data_provider(): array {
+    public static function get_retry_number_from_fail_delay_data_provider(): array {
         return [
             [-1, 0],
             [0, 0],

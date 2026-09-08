@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace tool_coursemigration\local\settings;
+
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 

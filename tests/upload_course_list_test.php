@@ -40,7 +40,7 @@ final class upload_course_list_test extends advanced_testcase {
      *
      * @param array $input The mock CSV content
      * @param string $expected The expected resultant messages
-    * @param array $expectedrecords The database records that should be created.
+     * @param array $expectedrecords The database records that should be created.
      * @dataProvider csv_content_provider
      */
     public function test_csv_content($input, $expected, $expectedrecords): void {
@@ -85,7 +85,7 @@ final class upload_course_list_test extends advanced_testcase {
      * Dataprovider for csv_content
      * @return array Data for csv_content
      */
-    public function csv_content_provider(): array {
+    public static function csv_content_provider(): array {
         return [
             "One row, valid courseid and category" => [
                 'input' => ["courseid,categoryid",
