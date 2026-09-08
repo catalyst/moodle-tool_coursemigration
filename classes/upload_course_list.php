@@ -254,7 +254,7 @@ class upload_course_list {
                 break;
 
             case 'boolean':
-                if ($datavalue === '0' || $datavalue === '1') {
+                if ($datavalue === '' || $datavalue === '0' || $datavalue === '1') {
                     $value = (int) $datavalue;
                 } else {
                     $status = false;
