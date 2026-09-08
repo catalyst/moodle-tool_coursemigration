@@ -24,9 +24,6 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use tool_coursemigration\event\http_request_failed;
 
-defined('MOODLE_INTERNAL') || die();
-
-
 /**
  * Tests for restore_api_test class.
  *
@@ -79,7 +76,7 @@ final class restore_api_test extends advanced_testcase {
     /**
      * Test guzzle error response.
      */
-    public function test_guzzle_error_response() {
+    public function test_guzzle_error_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -98,10 +95,11 @@ final class restore_api_test extends advanced_testcase {
 
         $this->assertCount(1, $events);
         $event = reset($events);
+        $backtick = chr(96);
 
-        $expectederror = 'Client error: `GET https://test.com?wstoken=XXX&wsfunction='
-            . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json`'
-            . ' resulted in a `403 Forbidden` response';
+        $expectederror = "Client error: {$backtick}GET https://test.com?wstoken=XXX&wsfunction="
+            . "tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json{$backtick}"
+            . " resulted in a {$backtick}403 Forbidden{$backtick} response";
 
         $expectedurl = 'https://test.com?wstoken=XXX&wsfunction='
             . 'tool_coursemigration_request_restore&filename=test&categoryid=1&moodlewsrestformat=json';
@@ -113,7 +111,7 @@ final class restore_api_test extends advanced_testcase {
     /**
      * Test response is not 200.
      */
-    public function test_not_200_response() {
+    public function test_not_200_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -144,7 +142,7 @@ final class restore_api_test extends advanced_testcase {
     /**
      * Test exception in response.
      */
-    public function test_exception_in_response() {
+    public function test_exception_in_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -179,7 +177,7 @@ final class restore_api_test extends advanced_testcase {
     /**
      * Test exception in response but no message.
      */
-    public function test_exception_in_response_but_no_message() {
+    public function test_exception_in_response_but_no_message(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 
@@ -213,7 +211,7 @@ final class restore_api_test extends advanced_testcase {
     /**
      * Test exception in response but no message.
      */
-    public function test_unexpected_response() {
+    public function test_unexpected_response(): void {
         $this->resetAfterTest();
         $this->configure_plugin();
 

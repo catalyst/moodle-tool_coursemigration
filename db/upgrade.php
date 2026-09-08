@@ -73,5 +73,16 @@ function xmldb_tool_coursemigration_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024112103, 'tool', 'coursemigration');
     }
 
+    if ($oldversion < 2024112104) {
+        $table = new xmldb_table('tool_coursemigration');
+        $field = new xmldb_field('includeuserdata', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'excluded_mods');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2024112104, 'tool', 'coursemigration');
+    }
+
     return true;
 }

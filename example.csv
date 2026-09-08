@@ -1,4 +1,4 @@
-courseid,categoryid,excluded_mods
-2,2,
-3,2,"turnitintooltwo, quiz"
-4,4,forum
+courseid,categoryid,excluded_mods,includeuserdata
+2,2,,0
+3,2,"turnitintooltwo, quiz",1
+4,4,forum,0
