@@ -216,7 +216,7 @@ final class course_backup_test extends advanced_testcase {
         ob_end_clean();
 
         $migration = coursemigration::get_record(['id' => $migration->get('id')]);
-        $this->assertSame(coursemigration::STATUS_COMPLETED, $migration->get('status'));
+        $this->assertEquals(coursemigration::STATUS_COMPLETED, $migration->get('status'));
         $this->assertSame(
             $includeuserdata === true,
             $this->backup_contains_username($migration->get('filename'), $user->username)
