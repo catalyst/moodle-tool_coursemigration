@@ -28,11 +28,12 @@ use tool_coursemigration\coursemigration;
  */
 final class after_restore {
     /**
-     * @param restore_controller $controller The restore controller.
-     * @param coursemigration $coursemigration The course migration record.
+     * Constructor.
      */
     public function __construct(
+        /** @var restore_controller $controller The restore controller. */
         public readonly restore_controller $controller,
+        /** @var coursemigration $coursemigration The course migration record. */
         public readonly coursemigration $coursemigration,
     ) {
     }
