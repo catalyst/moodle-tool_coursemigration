@@ -147,12 +147,15 @@ class course_restore extends adhoc_task {
                 backup::TARGET_NEW_COURSE
             );
             $hookmanager = \core\di::get(hook_manager::class);
-            $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
-            $rc->execute_precheck();
-            $hookmanager->dispatch(new after_restore_precheck($rc, $coursemigration));
-            $rc->execute_plan();
-            $hookmanager->dispatch(new after_restore($rc, $coursemigration));
-            $rc->destroy();
+            try {
+                $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
+                $rc->execute_precheck();
+                $hookmanager->dispatch(new after_restore_precheck($rc, $coursemigration));
+                $rc->execute_plan();
+                $hookmanager->dispatch(new after_restore($rc, $coursemigration));
+            } finally {
+                $rc->destroy();
+            }
 
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
                 ->save();
