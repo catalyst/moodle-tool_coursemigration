@@ -148,10 +148,7 @@ class course_restore extends adhoc_task {
                 backup::TARGET_NEW_COURSE
             );
             $hookmanager = \core\di::get(hook_manager::class);
-            // The plan is only loaded for valid backups.
-            if ($rc->get_plan() !== null) {
-                $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
-            }
+            $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
             $rc->execute_precheck();
             $hookmanager->dispatch(new after_restore_precheck($rc, $coursemigration));
             $rc->execute_plan();
