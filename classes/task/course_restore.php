@@ -105,6 +105,7 @@ class course_restore extends adhoc_task {
             mkdir($path, 0777, true);
         }
 
+        $rc = null;
         try {
             $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
 
@@ -147,21 +148,14 @@ class course_restore extends adhoc_task {
                 backup::TARGET_NEW_COURSE
             );
             $hookmanager = \core\di::get(hook_manager::class);
-            try {
-                // The plan is only loaded for valid backups.
-                if ($rc->get_plan() !== null) {
-                    $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
-                }
-                $rc->execute_precheck();
-                $hookmanager->dispatch(new after_restore_precheck($rc, $coursemigration));
-                $rc->execute_plan();
-                $hookmanager->dispatch(new after_restore($rc, $coursemigration));
-            } finally {
-                // Destroy requires the plan to be set.
-                if ($rc->get_plan() !== null) {
-                    $rc->destroy();
-                }
+            // The plan is only loaded for valid backups.
+            if ($rc->get_plan() !== null) {
+                $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
             }
+            $rc->execute_precheck();
+            $hookmanager->dispatch(new after_restore_precheck($rc, $coursemigration));
+            $rc->execute_plan();
+            $hookmanager->dispatch(new after_restore($rc, $coursemigration));
 
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
                 ->save();
@@ -229,6 +223,11 @@ class course_restore extends adhoc_task {
                     // Throw an exception which will restart the task later.
                     throw $exception;
                 }
+            }
+        } finally {
+            // The restore controller destroy method requires the plan to be set.
+            if ($rc?->get_plan() !== null) {
+                $rc->destroy();
             }
         }
     }
