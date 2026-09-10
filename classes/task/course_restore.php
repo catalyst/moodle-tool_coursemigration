@@ -18,6 +18,7 @@ namespace tool_coursemigration\task;
 
 use backup;
 use core\task\adhoc_task;
+use core\hook\manager as hook_manager;
 use Exception;
 use invalid_parameter_exception;
 use moodle_exception;
@@ -25,6 +26,9 @@ use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
 use tool_coursemigration\event\restore_failed;
 use tool_coursemigration\helper;
+use tool_coursemigration\hook\after_restore;
+use tool_coursemigration\hook\after_restore_precheck;
+use tool_coursemigration\hook\before_restore_precheck;
 use restore_controller;
 use restore_dbops;
 use core\task\manager;
@@ -101,6 +105,7 @@ class course_restore extends adhoc_task {
             mkdir($path, 0777, true);
         }
 
+        $rc = null;
         try {
             $category = helper::get_restore_category($coursemigration->get('destinationcategoryid'));
 
@@ -142,9 +147,12 @@ class course_restore extends adhoc_task {
                 $USER->id,
                 backup::TARGET_NEW_COURSE
             );
+            $hookmanager = \core\di::get(hook_manager::class);
+            $hookmanager->dispatch(new before_restore_precheck($rc, $coursemigration));
             $rc->execute_precheck();
+            $hookmanager->dispatch(new after_restore_precheck($rc, $coursemigration));
             $rc->execute_plan();
-            $rc->destroy();
+            $hookmanager->dispatch(new after_restore($rc, $coursemigration));
 
             $coursemigration->set('status', coursemigration::STATUS_COMPLETED)
                 ->save();
@@ -212,6 +220,11 @@ class course_restore extends adhoc_task {
                     // Throw an exception which will restart the task later.
                     throw $exception;
                 }
+            }
+        } finally {
+            // The restore controller destroy method requires the plan to be set.
+            if ($rc?->get_plan() !== null) {
+                $rc->destroy();
             }
         }
     }

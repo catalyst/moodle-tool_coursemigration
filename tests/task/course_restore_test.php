@@ -23,9 +23,13 @@ use context_course;
 use core\task\manager;
 use Exception;
 use invalid_parameter_exception;
+use restore_controller;
 use tool_coursemigration\coursemigration;
 use tool_coursemigration\event\restore_completed;
 use tool_coursemigration\event\restore_failed;
+use tool_coursemigration\hook\after_restore;
+use tool_coursemigration\hook\after_restore_precheck;
+use tool_coursemigration\hook\before_restore_precheck;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -133,6 +137,94 @@ final class course_restore_test extends advanced_testcase {
             " from file '{$backupfile->get_filename()}'.";
         $this->assertEquals($expectdescription, $event->get_description());
         $this->assertEquals(get_string('event:restore_completed', 'tool_coursemigration'), $event->get_name());
+    }
+
+    /**
+     * Test that the restore hooks are dispatched in the expected order with the expected arguments.
+     */
+    public function test_restore_dispatches_hooks(): void {
+        global $CFG, $USER;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course and category.
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $category = $generator->create_category();
+
+        // Backup the course.
+        $bc = new backup_controller(
+            backup::TYPE_1COURSE,
+            $course->id,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_GENERAL,
+            $USER->id
+        );
+        $bc->execute_plan();
+        $bc->destroy();
+
+        // Get the backup file.
+        $coursecontext = context_course::instance($course->id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($coursecontext->id, 'backup', 'course', includedirs: false);
+        $this->assertCount(1, $files);
+
+        $backupfile = reset($files);
+        $filename = $backupfile->get_filename();
+        $backuppath = $CFG->tempdir . DIRECTORY_SEPARATOR;
+        $backupfile->copy_content_to($backuppath . $filename);
+
+        // Create coursemigration record.
+        set_config('directory', $backuppath, 'tool_coursemigration');
+        $coursemigration = new coursemigration(0, (object) [
+            'action' => coursemigration::ACTION_RESTORE,
+            'destinationcategoryid' => $category->id,
+            'status' => coursemigration::STATUS_NOT_STARTED,
+            'filename' => $filename,
+        ]);
+        $coursemigration->save();
+
+        // Record the order and arguments the hooks are dispatched with.
+        $calls = [];
+        $this->redirectHook(before_restore_precheck::class, function (before_restore_precheck $hook) use (&$calls): void {
+            $calls[] = 'before_restore_precheck';
+            $this->assertInstanceOf(restore_controller::class, $hook->controller);
+            $this->assertInstanceOf(coursemigration::class, $hook->coursemigration);
+            $this->assertSame(coursemigration::STATUS_IN_PROGRESS, (int) $hook->coursemigration->get('status'));
+        });
+        $this->redirectHook(after_restore_precheck::class, function (after_restore_precheck $hook) use (&$calls): void {
+            $calls[] = 'after_restore_precheck';
+            $this->assertInstanceOf(restore_controller::class, $hook->controller);
+            $this->assertInstanceOf(coursemigration::class, $hook->coursemigration);
+            $this->assertSame(coursemigration::STATUS_IN_PROGRESS, (int) $hook->coursemigration->get('status'));
+        });
+        $this->redirectHook(after_restore::class, function (after_restore $hook) use (&$calls): void {
+            $calls[] = 'after_restore';
+            $this->assertInstanceOf(restore_controller::class, $hook->controller);
+            $this->assertInstanceOf(coursemigration::class, $hook->coursemigration);
+            $this->assertSame(coursemigration::STATUS_IN_PROGRESS, (int) $hook->coursemigration->get('status'));
+        });
+
+        $task = new course_restore();
+        $customdata = ['coursemigrationid' => $coursemigration->get('id')];
+        $task->set_custom_data($customdata);
+        manager::queue_adhoc_task($task);
+        $task->execute();
+
+        $this->stopHookRedirections();
+
+        // Confirm the status is now completed, i.e. the redirected hooks did not break the restore.
+        $currentcoursemigration = coursemigration::get_record(['id' => $coursemigration->get('id')]);
+        $this->assertEquals(coursemigration::STATUS_COMPLETED, $currentcoursemigration->get('status'));
+
+        // Confirm each hook was dispatched exactly once, in the expected order.
+        $this->assertSame([
+            'before_restore_precheck',
+            'after_restore_precheck',
+            'after_restore',
+        ], $calls);
     }
 
     /**
