@@ -101,6 +101,24 @@ courseid,categoryid,includeuserdata
 102,5,0
 ```
 
+## Hooks ##
+
+The plugin dispatches Moodle hooks during the restore process to allow other plugins to interact with the restore lifecycle:
+
+* `\tool_coursemigration\hook\before_restore_precheck`
+  * Dispatched before restore prechecks execute (`$rc->execute_precheck()`), provided a valid restore plan exists.
+  * Allows plugins to inspect or manipulate the extracted backup directory or alter restore controller configuration prior to validation.
+
+* `\tool_coursemigration\hook\after_restore_precheck`
+  * Dispatched immediately after prechecks have run and before plan execution (`$rc->execute_plan()`).
+  * Allows plugins to inspect precheck outcomes and adjust plan settings before database restore begins.
+
+* `\tool_coursemigration\hook\after_restore`
+  * Dispatched after the restore plan finishes executing and before the migration is marked as completed.
+  * Allows plugins to perform custom post-restore operations such as course adjustments, metadata updates, or external synchronisation.
+
+Plugins can subscribe to any of these hooks by registering callbacks in their `db/hooks.php` file.
+
 ## Quick start ##
 * Install plugin on source and taget sites.
 * Create a shared folder/disk accessible to both sites in their local file system.
